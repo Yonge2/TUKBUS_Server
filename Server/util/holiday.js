@@ -4,45 +4,52 @@ const holiday_url = require('../../../private/privatekey_Tuk');
 
 const xmlParser = new XMLParser();
 
-module.exports.getTodayObj = function getToday(){
-    let todayObj = {};
-    const day = new Date();
+module.exports = {
 
-    todayObj.year = String(day.getFullYear());
-    todayObj.month = "0" + String(day.getMonth()+1);
+    getTodayObj : ()=>{
+        let todayObj = {};
+        const day = new Date();
+    
+        todayObj.year = String(day.getFullYear());
+        if(day.getMonth()>8){
+            todayObj.month = String(day.getMonth()+1);
+        }
+        else todayObj.month = "0" + String(day.getMonth()+1);
+    
+        const tempstr1 = String(day.toJSON(day)).split('-');
+        const tempstr2 = String(tempstr1[2]).split('T');
+        todayObj.today = tempstr1[0] + tempstr1[1] + tempstr2[0];
+            
+        return todayObj;
+    },
 
-    const tempstr1 = String(day.toJSON(day)).split('-');
-    const tempstr2 = String(tempstr1[2]).split('T');
-    todayObj.today = tempstr1[0] + tempstr1[1] + tempstr2[0];
-        
-    return todayObj;
-}
 
-
-module.exports.getHolidays = function getHolidays(year, month){
-    let holiday_arr = [];
-    return new Promise((resolve, reject)=>{
-        const url = holiday_url.hoilday_url(year, month);       
-        request.get(url, (err, res, body) => {
-            if(err){
-                reject(err);
-            }
-            else {
-                try {
-                    const xml2json = xmlParser.parse(body);
-                    const holidays = xml2json.response.body.items.item;
-                    if(holidays != undefined){
-                        holidays.forEach((element, index) => {
-                            holiday_arr.push(String(holidays[index].locdate));
-                        });
-                        resolve(holiday_arr);
+    getHolidays : (year, month)=>{
+        let holiday_arr = [];
+        return new Promise((resolve, reject)=>{
+            console.log(year, month);
+            const url = holiday_url.hoilday_url(year, month);       
+            request.get(url, (err, res, body) => {
+                if(err){
+                    reject(err);
+                }
+                else {
+                    try {
+                        const xml2json = xmlParser.parse(body);
+                        const holidays = xml2json.response.body.items.item;
+                        if(holidays != undefined){
+                            holidays.forEach((element, index) => {
+                                holiday_arr.push(String(holidays[index].locdate));
+                            });
+                            resolve(holiday_arr);
+                        }
+                        else reject('No Holiday this month');
                     }
-                    else reject('No Holiday this month');
+                    catch(err){
+                        reject("holiday api요청 err : "+err);
+                    }
                 }
-                catch(err){
-                    reject("holiday api요청 err"+err);
-                }
-            }
+            })
         })
-    })
+    }
 }

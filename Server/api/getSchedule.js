@@ -1,105 +1,92 @@
 const connection = require('../db/conMysql');
-const sub_request = require('./callMetroSchedule');
 const dayFilter = require('../util/dayfilter');
-const holiday = require('../util/holiday');
+const schedulerJobs = require('../util/nodeSchedulerJobs');
 
 const express = require('express');
 const router = express.Router();
 const scheduler = require('node-schedule');
 
-let holiday_CODE = 0; //if today is holiday, code = 1, else code =0
-let sub_info = [];
+let Get_Option_Obj = {
+   holiday_CODE : null, //if today is not holiday, code = 1, else code = 0
+   operation_CODE : null, //if it is operation, code = 1, else code = 0
+   sub_INFO : null,
+   intervalID : null
+}
 
-scheduler.scheduleJob('00 00 01 * * *', function(){
-   let todayObj = holiday.getTodayObj();
-   holiday.getHolidays(todayObj.year, todayObj.month).then((holiday_arr)=>{
-
-      //check holiday
-      if(holiday_arr.indexOf(todayObj.today) === -1){
-         //check time(1h) and update subway data (60sec)
-         setInterval( () => {
-            dayFilter.dayFilter()
-            .then((time) => { //운행중
-               setInterval( () => {
-                  sub_info = sub_request.getMetro();
-               }, 60*1000)
-            })
-            .catch((err) => { //운행 종료
-               sub_info = [];
-               console.log(err)
-            })
-         }, 30*60*1000);
-      }
-      else { //holiday
-         sub_info = [];
-         holiday_CODE = 1;
-      } 
-   }).catch((err) => {
-      console.log(err);
-   })
-})
+//check holiday
+scheduler.scheduleJob('00 00 01 * * *', ()=>{
+   schedulerJobs.holiday_schedulerJob(Get_Option_Obj);
+   console.log(Get_Option_Obj);
+});
+//service start
+scheduler.scheduleJob('00 00 08 * * *', ()=>{
+   schedulerJobs.operation_Start_schedulerJob(Get_Option_Obj);
+   console.log(Get_Option_Obj);
+});
+//service stop
+scheduler.scheduleJob('00 00 23 * * *', ()=>{
+   console.log(Get_Option_Obj);
+   schedulerJobs.operation_Stop_schedulerJob(Get_Option_Obj)});
 
 
 //to Station, 4set of Bus schedules
 router.get('/toStation', (req, res) => {
-   if(holiday_CODE === 0){ //not holiday
-      dayFilter.dayFilter()
+   if(Get_Option_Obj.holiday_CODE){ //not holiday
+      dayFilter.dayFilter(Get_Option_Obj.operation_CODE)
       .then((nowTime) => {
          const getsql_toStation = getSQL("Station", nowTime);
       
-         connection.query(getsql_toStation.sql, getsql_toStation.param, function(err, result1){
+         connection.query(getsql_toStation.sql, getsql_toStation.param, function(err, result){
             if(err){
-               res.status(500);
-               res.json({success:false, message:err});
+               res.status(500).json({success:false, message:err});
                console.log(err);
             }
             else{
-               res.status(200);
-               res.json({success:true, Bus_schedule:result1, Subway_schedule:sub_info});
+               res.status(200).json({success:true, Bus_schedule:result,
+                  Subway_schedule:Get_Option_Obj.sub_INFO});
                console.log('Success Get');
             }
          });
       })
       .catch((err) => {
-         res.status(200);
-         res.json({success:true, Bus_schedule:[], Subway_schedule:sub_info, message:'운행종료'});
+         res.status(200).json({success:true, Bus_schedule:[],
+            Subway_schedule:Get_Option_Obj.sub_INFO, message:err});
       });      
    }
 
    else{
-      res.status(200);
-      res.json({success:true, Bus_schedule:[], Subway_schedule:sub_info, message:'공휴일'});      
+      res.status(200).json({success:true, Bus_schedule:[], 
+         Subway_schedule:Get_Option_Obj.sub_INFO, message:'공휴일'});
    }
 });
 
 //to TUK, 4set of Bus schedules 
 router.get('/toTuk', (req, res) =>{
-   if(holiday_CODE === 0){ //not holiday
-      dayFilter.dayFilter()
+   if(Get_Option_Obj.holiday_CODE){ //not holiday
+      dayFilter.dayFilter(Get_Option_Obj.operation_CODE)
       .then((nowTime) => {
          const getsql_toTUK = getSQL("TUK", nowTime);
       
-         connection.query(getsql_toTUK.sql, getsql_toTUK.param, function(err, result1){
+         connection.query(getsql_toTUK.sql, getsql_toTUK.param, function(err, result){
             if(err){
-               res.status(500);
-               res.json({success:false, message:err});
+               res.status(500).json({success:false, message:err});
                console.log(err);
             }
             else{
-               res.status(200);
-               res.json({success:true, Bus_schedule:result1, Subway_schedule:sub_info});
+               res.status(200).json({success:true, Bus_schedule:result,
+                  Subway_schedule:Get_Option_Obj.sub_INFO});
                console.log('Success Get');
             }
          });
       })
       .catch((err) => {
-         res.status(200);
-         res.json({success:true, Bus_schedule:[], Subway_schedule:sub_info, message:'운행종료'});
+         res.status(200).json({success:true, Bus_schedule:[],
+            Subway_schedule:Get_Option_Obj.sub_INFO, message:err});
       });
    }
    else{
-      res.status(200);
-      res.json({success:true, Bus_schedule:[], Subway_schedule:sub_info, message:'공휴일'}); 
+      res.status(200).json({success:true, Bus_schedule:[],
+         Subway_schedule:Get_Option_Obj.sub_INFO, message:'공휴일'}); 
    }
 });
 
@@ -133,13 +120,11 @@ router.get('/all', (req, res) => {
       connection.query(getsql, function(err, result) {
          if (err) 
          {
-            res.status(500);
-            res.json({success:false, message:err});
+            res.status(500).json({success:false, message:err});
             console.log(err);
          }
          else{
-            res.status(200);
-            res.json({success:true, Bus_schedule:result});
+            res.status(200).json({success:true, Bus_schedule:result});
             console.log('Success Get');
          }
       });
@@ -162,7 +147,7 @@ function getSQL(destination, nowTime){
    switch(nowTime.day){
       case 0 : //sunday 
       getsql = 'SELECT * FROM Bus_Sch_Weekend WHERE destination = ? AND day = ? AND(hour >= ? AND min > ? OR hour > ?) LIMIT 4 ;';
-      param = [destination, "sat", nowTime.hour, nowTime.min, nowTime.hour];
+      param = [destination, "sat&sun", nowTime.hour, nowTime.min, nowTime.hour];
       getsqlobj.sql = getsql;
       getsqlobj.param = param;
       break;

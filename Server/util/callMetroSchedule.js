@@ -3,7 +3,6 @@ const request = require('request');
 const privateinfo = require('../../../private/privatekey_Tuk');
 
 const station_name = encodeURI('정왕');
-
 const url = privateinfo.getMetroURL(station_name);
 
 module.exports.getMetro = function getmetro() {
@@ -31,8 +30,6 @@ module.exports.getMetro = function getmetro() {
                     subinfo.arvlMsg3 = bodyList[index].arvlMsg3;
                     info_arr.push(subinfo);
                 });
-                console.log('subway data get success'); 
-                console.log(bodyList);
             }
         }
     });

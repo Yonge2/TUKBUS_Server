@@ -1,5 +1,4 @@
-
-function dayFilter() {
+function dayFilter(operation_CODE) {
     return new Promise((resolve, reject) => {
 
         let nowTime = [];
@@ -12,7 +11,7 @@ function dayFilter() {
         {
             //일요일
             case 0 : 
-            if(nowHour < 9 || nowHour > 19) {
+            if(!operation_CODE){
                 reject('운행종료');
                 break;
             }
@@ -26,7 +25,7 @@ function dayFilter() {
     
             //토요일
             case 6 : 
-            if(nowHour < 9 || nowHour > 19) {
+            if(!operation_CODE) {
                 reject('운행종료');
                 break;
             }
@@ -40,7 +39,7 @@ function dayFilter() {
            
             //평일
             default : 
-            if(nowHour < 8 || nowHour > 22) {
+            if(!operation_CODE) {
                 reject('운행종료');
                 break;
             }
