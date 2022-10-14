@@ -8,7 +8,7 @@ const scheduler = require('node-schedule');
 
 let Get_Option_Obj = {
    holiday_CODE : null, //if today is not holiday, code = 1, else code = 0
-   operation_CODE : null, //if it is operation, code = 1, else code = 0
+   operation_CODE : null, //on : code = 1 / off : code = 0
    sub_INFO : null,
    intervalID : null
 }
@@ -25,8 +25,9 @@ scheduler.scheduleJob('00 00 08 * * *', ()=>{
 });
 //service stop
 scheduler.scheduleJob('00 00 23 * * *', ()=>{
+   schedulerJobs.operation_Stop_schedulerJob(Get_Option_Obj);
    console.log(Get_Option_Obj);
-   schedulerJobs.operation_Stop_schedulerJob(Get_Option_Obj)});
+});
 
 
 //to Station, 4set of Bus schedules
@@ -146,21 +147,21 @@ function getSQL(destination, nowTime){
 
    switch(nowTime.day){
       case 0 : //sunday 
-      getsql = 'SELECT * FROM Bus_Sch_Weekend WHERE destination = ? AND day = ? AND(hour >= ? AND min > ? OR hour > ?) LIMIT 4 ;';
+      getsql = 'SELECT * FROM Bus_Sch_Weekend WHERE destination = ? AND day = ? AND(hour >= ? AND min > ? OR hour > ?) ORDER BY hour LIMIT 4 ;';
       param = [destination, "sat&sun", nowTime.hour, nowTime.min, nowTime.hour];
       getsqlobj.sql = getsql;
       getsqlobj.param = param;
       break;
 
       case 1 : //saturday
-      getsql = 'SELECT * FROM Bus_Sch_Weekend WHERE destination = ? AND(hour >= ? AND min > ? OR hour > ?) LIMIT 4 ;';
+      getsql = 'SELECT * FROM Bus_Sch_Weekend WHERE destination = ? AND(hour >= ? AND min > ? OR hour > ?) ORDER BY hour LIMIT 4 ;';
       param = [destination, nowTime.hour, nowTime.min, nowTime.hour];
       getsqlobj.sql = getsql;
       getsqlobj.param = param;
       break;
 
       case 2 : //weekday
-      getsql = 'SELECT * FROM Bus_Sch_Weekday WHERE destination = ? AND(hour >= ? AND min > ? OR hour > ?) LIMIT 4 ;';
+      getsql = 'SELECT * FROM Bus_Sch_Weekday WHERE destination = ? AND(hour >= ? AND min > ? OR hour > ?) ORDER BY hour LIMIT 4 ;';
       param = [destination, nowTime.hour, nowTime.min, nowTime.hour];
       getsqlobj.sql = getsql;
       getsqlobj.param = param;

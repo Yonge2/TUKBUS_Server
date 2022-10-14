@@ -13,13 +13,23 @@ module.exports = {
             //check holiday
            if(holiday_arr.indexOf(todayObj.today) === -1) {
             Get_Option_Obj.holiday_CODE = 1;
-            console.log('not holiday : ', Get_Option_Obj);
+            console.log('not holiday');
            }
             //holiday
-            else Get_Option_Obj.holiday_CODE = 0;
+            else {
+                Get_Option_Obj.holiday_CODE = 0;
+                console.log('holiday');
+            }
         })
         .catch((err) => {
-           console.log(err);
+            if(err === []){
+                console.log('There is not holiday this month');
+                Get_Option_Obj.holiday_CODE = 1;
+            }
+            else {
+                console.log(err);
+                Get_Option_Obj.holiday_CODE = 1;
+            }
         })
         return Get_Option_Obj;
     },
@@ -30,7 +40,7 @@ module.exports = {
             Get_Option_Obj.operation_CODE = 1;
             Get_Option_Obj.intervalID = setInterval(()=>{
                 Get_Option_Obj.sub_INFO = sub_request.getMetro();
-            }, 60*1000)
+            }, 60*1000);
         }
         else {
             Get_Option_Obj.operation_CODE = 0;

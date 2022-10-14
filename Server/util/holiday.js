@@ -43,7 +43,7 @@ module.exports = {
                             });
                             resolve(holiday_arr);
                         }
-                        else reject('No Holiday this month');
+                        else reject(holiday_arr);
                     }
                     catch(err){
                         reject("holiday api요청 err : "+err);
