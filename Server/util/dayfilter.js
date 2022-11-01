@@ -7,50 +7,37 @@ function dayFilter(operation_CODE) {
         const nowMin = now.getMinutes();
         const nowDay = now.getDay();
 
-        switch (nowDay)
-        {
-            //일요일
-            case 0 : 
-            if(!operation_CODE){
-                reject('운행종료');
-                break;
-            }
-            else{
-                nowTime.hour = nowHour;
-                nowTime.min = nowMin;
-                nowTime.day = 0;
-                resolve(nowTime);
-                break;           
-            }
-    
-            //토요일
-            case 6 : 
-            if(!operation_CODE) {
-                reject('운행종료');
-                break;
-            }
-            else{
-                nowTime.hour = nowHour;
-                nowTime.min = nowMin;
-                nowTime.day = 1;
-                resolve(nowTime); 
-                break;           
-            }
-           
-            //평일
-            default : 
-            if(!operation_CODE) {
-                reject('운행종료');
-                break;
-            }
-            else{
-                nowTime.hour = nowHour;
-                nowTime.min = nowMin;
-                nowTime.day = 2;
-                resolve(nowTime);
-                break;
-            }
-        }       
+        if(!operation_CODE) {
+            reject('운행종료');
+        }
+        else{
+            switch (nowDay)
+            {
+                //일요일
+                case 0 : 
+                    nowTime.hour = nowHour;
+                    nowTime.min = nowMin;
+                    nowTime.day = 0;
+                    resolve(nowTime);
+                    break;           
+        
+                //토요일
+                case 6 : 
+                    nowTime.hour = nowHour;
+                    nowTime.min = nowMin;
+                    nowTime.day = 1;
+                    resolve(nowTime); 
+                    break;           
+               
+                //평일
+                default : 
+                    nowTime.hour = nowHour;
+                    nowTime.min = nowMin;
+                    nowTime.day = 2;
+                    resolve(nowTime);
+                    break;
+            }     
+        }
     });
 }
 module.exports.dayFilter = dayFilter;

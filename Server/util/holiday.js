@@ -5,7 +5,7 @@ const holiday_url = require('../../../private/privatekey_Tuk');
 const xmlParser = new XMLParser();
 
 module.exports = {
-
+    //return Object after get today{years, month, day}
     getTodayObj : ()=>{
         let todayObj = {};
         const day = new Date();
@@ -23,7 +23,7 @@ module.exports = {
         return todayObj;
     },
 
-
+    //return promise after either today is holiday or not
     getHolidays : (year, month)=>{
         let holiday_arr = [];
         return new Promise((resolve, reject)=>{
