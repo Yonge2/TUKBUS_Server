@@ -1,10 +1,9 @@
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 
-const redisClient = require('../db/redis');
-const auth_private = require('../../../private/privatekey_Tuk').nodemailer_private;
-const connection = require('../db/conMysql');
-
+const connection = require('../../../db/conMysql');
+const redisClient = require('../../../db/redis');
+const auth_private = require('../../../../../private/privatekey_Tuk').nodemailer_private;
 
 
 module.exports = {
