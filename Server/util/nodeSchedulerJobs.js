@@ -22,12 +22,12 @@ module.exports = {
             }
         })
         .catch((err) => {
-            if(err === []){
+            if(Array.isArray(err) && err.length ===0){ // case : err == []
                 console.log('There is not holiday this month');
                 Get_Option_Obj.holiday_CODE = 1;
             }
             else {
-                console.log(err);
+                console.log('holiday err : ', err);
                 Get_Option_Obj.holiday_CODE = 1;
             }
         })
