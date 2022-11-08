@@ -119,7 +119,7 @@ async function reqInfo(req){
     let registerUser_Info = {};
 
     registerUser_Info.userID = await req.body.userID;
-    registerUser_Info.userPW = await bcrypt.hash(req.body.userPW, 10);
+    registerUser_Info.userPW = await bcrypt.hash(req.body.userPW, auth_private.salt);
     registerUser_Info.userNAME = await req.body.userNAME;
     registerUser_Info.userPHON_NUM = await req.body.userPHON_NUM;
     registerUser_Info.userEmail = await req.body.userEmail;
