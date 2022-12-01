@@ -11,6 +11,7 @@ app.use(bodyParser.json());
 app.use('/api/getSchedule', require('./api/getSchedule'));
 app.use('/api/manage', require('./api/editSchedule'));
 app.use('/api/user', require('./api/user/userRouter'));
+app.use('/api/chatting', require('./api/chatApi/chatRouter'));
 
 
 const port = process.env.PORT || 3000;

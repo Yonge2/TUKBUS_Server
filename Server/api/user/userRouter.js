@@ -3,7 +3,7 @@ const router = express.Router();
 
 const register_util = require('./user_util/register_util');
 const login = require('./user_util/login_util');
-const token_middleWare = require('./user_util/authMiddleware');
+const jwt_middleWare = require('./user_util/authMiddleware');
 const refresh_token = require('./user_util/refresh_token');
 
 
@@ -12,7 +12,7 @@ router.post('/login', login.loginPass);
 
 //헤더에 authorization만 실어서 보내셈
 // 테스트는 일반토큰 1분, 리프레쉬토큰 3분으로 설정함
-router.get('/login/tokentest', token_middleWare, (req, res)=>{
+router.get('/login/tokentest', jwt_middleWare, (req, res)=>{
     console.log(req.userID + "토큰 검증 테스트 성공");
     res.status(200).json({
         success : true,

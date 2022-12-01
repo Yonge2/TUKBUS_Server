@@ -1,19 +1,19 @@
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
+const dayjs = require('dayjs');
 
 const connection = require('../../../db/conMysql');
 const redisClient = require('../../../db/redis');
 const auth_private = require('../../../../../private/privatekey_Tuk').nodemailer_private;
-
+const {makeRandomNum} = require('../../../util/utilFunc');
 
 module.exports = {
 //-----------------------------------register-------------------------------------//
     register: async(req, res)=>{
-        //check mail auth
-        const registerAuth = await redisClient.v4.get(req.body.userEmail+"_registerAuth")
-        console.log(registerAuth)
 
-        if(registerAuth){
+        //check mail auth
+        if(await redisClient.v4.get(req.body.userEmail+"_registerAuth")){
+
             const registerSet = await reqInfo(req);
 
             const insertsql = 'insert into user set ?'
@@ -35,7 +35,7 @@ module.exports = {
 //-----------------------------------send to auth mail-------------------------------------//
     sendmail: async(req, res)=>{
         
-        const mail_authNum = await Math.floor(Math.random()*10000).toString();
+        const mail_authNum = makeRandomNum(4);
 
         //example("email_mailAuth" : "1234", expire after 180sec)
         redisClient.set(req.body.userEmail+"_mailAuth", mail_authNum, 'EX', 180, ()=>{
@@ -65,12 +65,12 @@ module.exports = {
 
         if(checkNum){
             if(checkNum == req.body.mail_authNum){
-                redisClient.set(req.body.userEmail+"_registerAuth", "OK", 'EX', 300, ()=>{
-                    console.log('register Auth redis set for 5 min to ', req.body.userEmail);
+                redisClient.set(req.body.userEmail+"_registerAuth", "OK", 'EX', 600, ()=>{
+                    console.log('register Auth redis set for 10 min to ', req.body.userEmail);
                 })
                 res.status(200).json({
                     success: true,
-                    message: "메일인증 완료"
+                    message: "메일인증 완료, 10분간 메일 인증 유효"
                 });
             }
             else{
@@ -123,7 +123,7 @@ async function reqInfo(req){
     registerUser_Info.userNAME = await req.body.userNAME;
     registerUser_Info.userPHON_NUM = await req.body.userPHON_NUM;
     registerUser_Info.userEmail = await req.body.userEmail;
-    registerUser_Info.dayOfRegister = await new Date(+new Date() + 3240 * 10000).toISOString().split("T")[0];
+    registerUser_Info.dayOfRegister = await new dayjs().format('YYYY-MM-DD');
 
     return registerUser_Info;
 }

@@ -1,6 +1,7 @@
+const { request } = require('express');
 const jwt = require('jsonwebtoken');
 const redisClient = require('../../../db/redis');
-const secret = require('../../../../../private/privatekey_Tuk').jwt_sec
+const secret = require('../../../../../private/privatekey_Tuk').jwt_sec;
 
 
 module.exports = {
@@ -11,8 +12,8 @@ module.exports = {
     };
 
     return jwt.sign(payload, secret, {
-      algorithm: 'HS256', // 암호화 알고리즘
-      expiresIn: '1m', 	  // 유효기간
+      algorithm: 'HS256', 
+      expiresIn: '1d', 	  // 유효기간
     });
   },
 
@@ -37,7 +38,7 @@ module.exports = {
   refresh: () => { // sign refresh token
     return jwt.sign({}, secret, { // not payload
       algorithm: 'HS256',
-      expiresIn: '3m',
+      expiresIn: '30d',
     });
   },
   
