@@ -21,25 +21,26 @@ module.exports = {
                         success: true,
                         token:{
                             accessToken: accessToken,
-                            refreshToken: refreshToken
+                            refreshToken: refreshToken,
+                            userID: userOBJ.userID,
                         }
                     })
                     return ;
                 }
                 catch(err) {
                     console.log(userOBJ.userNAME, ' 토큰실패\n err: ',err);
-                    res.status(401).json({success:false, message:'token sign fail'});
+                    res.status(204).json({success:false, message:'token sign fail'});
                     return ;
                 }
             }
             else { //비번틀림
                 console.log(userOBJ.userNAME, '비번틀림');
-                res.status(401).json({success:false, message:'PW is not correct'});
+                res.status(204).json({success:false, message:'PW is not correct'});
                 return ;
             }
         }
         else {
-            res.status(401).json({success:false, message:'ID is not exist'});
+            res.status(204).json({success:false, message:'ID is not exist'});
         }
     }
 };

@@ -9,12 +9,12 @@ const authJWT = (req, res, next) => {
       next();
     } else {
       console.log("<토큰인증>"+result.message);
-      res.status(401).json({success: false, message: result.message});
+      res.status(204).json({success: false, message: result.message});
     }
   }
   else {
     console.log("<토큰인증> 안실림>");
-    res.status(401).json({success: false, message: "token is not exist"})
+    res.status(204).json({success: false, message: "token is not exist"})
   }
 };
 

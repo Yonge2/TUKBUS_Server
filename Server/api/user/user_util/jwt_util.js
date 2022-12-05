@@ -1,7 +1,7 @@
 const { request } = require('express');
 const jwt = require('jsonwebtoken');
 const redisClient = require('../../../db/redis');
-const secret = require('../../../../../private/privatekey_Tuk').jwt_sec;
+const secret = require('../../../private/privatekey_Tuk').jwt_sec;
 
 
 module.exports = {

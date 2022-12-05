@@ -1,6 +1,6 @@
 const request = require('request');
 const {XMLParser} = require('fast-xml-parser');
-const holiday_url = require('../../../private/privatekey_Tuk');
+const holiday_url = require('../private/privatekey_Tuk');
 const dayjs = require('dayjs');
 
 const xmlParser = new XMLParser();

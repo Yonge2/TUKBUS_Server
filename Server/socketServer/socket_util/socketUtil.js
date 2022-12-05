@@ -34,6 +34,7 @@ const saveMessage = async(obj) =>{
 }
 
 const socketJWTMiddleware = async(socket, next) => {
+    //check socket auth
     if (socket.handshake.auth.token && socket.handshake.auth.roomID) {
         const token = socket.handshake.auth.token;
         const result = verify(token);
@@ -41,7 +42,7 @@ const socketJWTMiddleware = async(socket, next) => {
             const userID = socket.userID = result.userID;
             socket.roomID = socket.handshake.auth.roomID;
             console.log(userID);
-
+            //insertion to redis user in room set
             await redisClient.sAdd(`${socket.handshake.auth.roomID}_IN`, `${userID}`, (err, data)=>{
                 if(!err) {
                     console.log("sAdd 결과 : ",data);

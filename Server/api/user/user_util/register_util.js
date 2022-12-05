@@ -4,7 +4,7 @@ const dayjs = require('dayjs');
 
 const connection = require('../../../db/conMysql');
 const redisClient = require('../../../db/redis');
-const auth_private = require('../../../../../private/privatekey_Tuk').nodemailer_private;
+const auth_private = require('../../../private/privatekey_Tuk').nodemailer_private;
 const {makeRandomNum} = require('../../../util/utilFunc');
 
 module.exports = {
@@ -27,7 +27,7 @@ module.exports = {
                 }
             });
         }
-        else res.status(401).json({success: false, message: "메일이 인증되지 않았음."})
+        else res.status(204).json({success: false, message: "메일이 인증되지 않았음."})
         
         
     },
@@ -49,7 +49,7 @@ module.exports = {
         await mailTransport.sendMail(mailOBJ.mailOptions,(err, info)=>{
 
             if(err) {
-                res.status(400).json({success: false, message: "email 발송 오류"})
+                res.status(204).json({success: false, message: "email 발송 오류"})
                 console.log("email 발송오류 : ",err);
             }
             else{
@@ -74,20 +74,33 @@ module.exports = {
                 });
             }
             else{
-                res.status(401).json({
+                res.status(204).json({
                     success: false,
                     message: "인증번호 틀림"
                 });
             }
         }
         else{
-            res.status(401).json({
+            res.status(204).json({
                 success: false,
-                message: "요청 아이디로 인증번호 저장이 안됨."
+                message: "요청 아이디로 잘못됨."
             })
+        }
+    },
+ //------------------------------id check---------------------------------------//
+ //중복확인
+    userIdCheck: async(req, res)=>{
+        const checkID = req.body.userID;
+        const result = await redisClient.v4.get(checkID+"_token");
+        if(!result) {
+            res.status(200).json({success:true});
+        }
+        else {
+            res.status(200).json({success: false});
         }
     }
 }
+
 
 //---------------------------------------for clean code -------------------------// 
 async function mailObj(authnum, userEmail){

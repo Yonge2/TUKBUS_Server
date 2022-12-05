@@ -1,5 +1,5 @@
 const mysql = require('mysql');
-const private = require('../../../private/privatekey_Tuk');
+const private = require('../private/privatekey_Tuk');
 const private_db = private.db_private;
 
 const user = private_db.db_user;

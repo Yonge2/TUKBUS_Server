@@ -7,7 +7,7 @@ const getChatlist = async(req, res)=>{
     const sql = "SELECT * FROM chatInfo WHERE isLive = true;";
     connection.query(sql, async(err, result)=>{
         if(err) {
-            res.status(401).json({
+            res.status(501).json({
                 success: false,
                 message: err
             });
@@ -58,7 +58,7 @@ const createChatRoom = async(req, res) => {
     let sql = "INSERT INTO chatInfo set ?;";
     connection.query(sql, createChatObj, (err)=>{
         if(err){
-            res.status(200).json({
+            res.status(501).json({
                 success: false,
                 message: err
             });

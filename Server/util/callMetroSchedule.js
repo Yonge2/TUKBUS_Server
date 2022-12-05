@@ -1,6 +1,6 @@
 const request = require('request');
 
-const privateinfo = require('../../../private/privatekey_Tuk');
+const privateinfo = require('../private/privatekey_Tuk');
 
 const station_name = encodeURI('정왕');
 const url = privateinfo.getMetroURL(station_name);

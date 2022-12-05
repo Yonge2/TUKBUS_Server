@@ -21,7 +21,7 @@ router.get('/login/tokentest', jwt_middleWare, (req, res)=>{
 })
 
 //헤더에 authorization, refresh 실어서 보내셈
-router.get('/login/refreshtest', refresh_token);
+router.get('/login/refresh', refresh_token);
 
 
 //회원가입, 필요한 req 객체 : req.body.{userID, userPW, userNAME, userPHON_NUM, userEmail}
@@ -35,6 +35,9 @@ router.post('/register/authmail', register_util.sendmail);
 //인증통과 유효시간 5분 (5분 뒤 인증내역 사라지니까 5분안에 가입완료 해야함)
 
 router.post('/register/authmail/check', register_util.mail_auth_check);
+
+//id 중복확인
+router.post('/register/idcheck', register_util.idCheck);
 
 
 module.exports = router;

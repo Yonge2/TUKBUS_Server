@@ -1,5 +1,5 @@
-const connection = require('../db/test_db');
-const {saveMessage} = require('./chat_util');
+const connection = require('../db/conMysql');
+const {saveMessage} = require('./socketUtil');
 const {redisGetScard, redisGetSmembers, redisSrem} = require('../../util/redisUtil');
 
 
@@ -41,6 +41,9 @@ const chatting = (io) =>{
         })
     
         socket.on('disconnect', async()=>{
+            //퇴장이벤트
+            chat.to(socket.roomID).emit('out', socket.userID);
+            
             console.log('dis');
 
             const sremResult = await redisSrem(`${socket.roomID}_IN`, `${socket.userID}`);

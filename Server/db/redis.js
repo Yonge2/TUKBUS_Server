@@ -1,5 +1,5 @@
 const redis = require('redis');
-const redis_private = require('../../../private/privatekey_Tuk').redis_private;
+const redis_private = require('../private/privatekey_Tuk').redis_private;
 
 //cloud redis connection (Redislabs)
 const redisClient = redis.createClient({

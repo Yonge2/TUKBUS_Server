@@ -24,7 +24,7 @@ const refresh = async (req, res) => {
     if (authResult.success === false && authResult.message === 'jwt expired') {
       // 1. access token, refresh token are expired => login
       if (!refreshResult) {
-        res.status(401).json({
+        res.status(204).json({
             success:false, 
             message: 'Refresh token expired too. Please login'
         });
@@ -41,7 +41,7 @@ const refresh = async (req, res) => {
       }
     } else {
       // 3. access token is not expired
-      res.status(400).json({
+      res.status(204).json({
         success:false, 
         message: 'Check the Acess token'
       });
@@ -49,7 +49,7 @@ const refresh = async (req, res) => {
     }
 
   } else { // access token or refresh token is not exist in header
-    res.status(400).json({
+    res.status(204).json({
         success:false, 
         message: 'Access token and refresh token are need for refresh!'
     });
