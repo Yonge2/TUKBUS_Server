@@ -7,6 +7,7 @@ const redisGetScard = (key) => {
             if(err) reject(err);
             else resolve(data);
         });
+
     })
 }
 

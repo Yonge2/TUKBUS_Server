@@ -1,14 +1,15 @@
 const scheduler = require('node-schedule');
 const sub_request = require('./callMetroSchedule');
 const holiday = require('./holiday');
+const dayjs = require('dayjs');
 
 module.exports = {
 
     holiday_schedulerJob : (Get_Option_Obj)=> {
         console.log('holiday check (1시)');
-        const todayObj = holiday.getTodayObj();
+        const today = new dayjs();
 
-        holiday.getHolidays(todayObj.year, todayObj.month)
+        holiday.getHolidays(today.format('YYYY'), today.format('MM'))
         .then((holiday_arr)=>{
             //check holiday
            if(holiday_arr.indexOf(todayObj.today) === -1) {
