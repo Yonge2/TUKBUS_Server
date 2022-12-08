@@ -5,6 +5,11 @@ const secret = require('../../../private/privatekey_Tuk').jwt_sec;
 
 
 module.exports = {
+  /**
+   * sign jwt
+   * @param {{userID, userNAME}} user 
+   * @returns {String} token
+   */
   sign: (user) => { // sign access token
     const payload = {
       userID: user.userID,
@@ -17,6 +22,11 @@ module.exports = {
     });
   },
 
+  /**
+   * verify token
+   * @param {} token 
+   * @returns 
+   */
   verify: (token) => { // access token 검증
     let decoded = null;
     try {

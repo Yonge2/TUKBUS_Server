@@ -19,7 +19,7 @@ module.exports = {
                 else {
                     try {
                         const xml2json = xmlParser.parse(body);
-                        const holidays = xml2json.response.body.items.item;
+                        const holidays = xml2json.response.body.items?.item;
                         if(holidays){
                             if(holidays.length){
                                 holidays.forEach((element, index) => {

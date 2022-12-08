@@ -1,3 +1,8 @@
+/**
+ * create random number with digits
+ * @param {Integer} digits 
+ * @returns {String} random number
+ */
 const makeRandomNum = (digits) =>{
     let multip = 0;
     switch(digits){

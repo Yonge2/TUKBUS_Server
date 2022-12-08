@@ -1,6 +1,10 @@
 const redisClient = require('../db/redis');
 
-//get array length
+/**
+ * get length of SET
+ * @param {String} key 
+ * @returns {Promise<Integer>} length
+ */
 const redisGetScard = (key) => {
     return new Promise((resolve, reject)=>{
         redisClient.sCard(key, (err, data)=>{
@@ -11,7 +15,11 @@ const redisGetScard = (key) => {
     })
 }
 
-//get array data
+/**
+ * get array inChatroomMembers
+ * @param {String} key 
+ * @returns {Promise<String[]>} inChatroomMembers
+ */
 const redisGetSmembers = (key) => {
     return new Promise((resolve, reject)=>{
         redisClient.sMembers(key, (err, data)=>{
@@ -21,7 +29,11 @@ const redisGetSmembers = (key) => {
     })
 }
 
-//delete val in key, success : return 1, fail : return 0
+/**
+ * delete key
+ * @param {String} key 
+ * @returns {Promise<Integer>} success_1 fail_0
+ */
 const redisSrem = (key, val) => {
     return new Promise((resolve, reject)=>{
         redisClient.sRem(key, val, (err,data)=>{
