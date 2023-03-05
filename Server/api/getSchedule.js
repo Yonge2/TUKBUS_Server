@@ -1,178 +1,137 @@
+const kakaoDuration = require('../util/kakaoDuration');
+const dayjs = require('dayjs');
 const connection = require('../db/conMysql');
-const dayFilter = require('../util/dayfilter');
-const schedulerJobs = require('../util/nodeSchedulerJobs');
+const getOptionOBJ = require('./taskScheduler');
 
-const express = require('express');
-const router = express.Router();
-const scheduler = require('node-schedule');
 
-let Get_Option_Obj = {
-   holiday_CODE : null, //if today is not holiday, code = 1, else code = 0
-   operation_CODE : null, //on : code = 1 / off : code = 0
-   sub_INFO : null,
-   intervalID : null
+const getScheduleData = async(req, res, direction)=>{
+    //holiday
+    if( getOptionOBJ.holiday_CODE) res.status(200).json({success:true, Bus_schedule:[], 
+        Subway_schedule:getOptionOBJ.sub_INFO, message:'공휴일'});
+
+    else{
+        //operating time
+        if( getOptionOBJ.operation_CODE) res.status(200).json({success:true, Bus_schedule:[], 
+            Subway_schedule:getOptionOBJ.sub_INFO, message:'운행종료'});
+
+        else{
+            const busdata = await BusData(direction).catch((e)=>{
+                console.log('busData err: ', e);
+                res.status(200).json({success: false, message: e});
+
+            });
+            res.status(200).json({success: true, Bus_schedule: busdata, Subway_schedule: info.sub_INFO});
+        }
+    }
 }
 
-//check holiday
-scheduler.scheduleJob('00 00 01 * * *', ()=>{
-   schedulerJobs.holiday_schedulerJob(Get_Option_Obj);
-   setTimeout(()=>{
-      console.log('not holiday? : ', Get_Option_Obj.holiday_CODE, '\noperation? : ', Get_Option_Obj.operation_CODE);
-   },1000);
-});
-//service start
-scheduler.scheduleJob('00 00 08 * * *', ()=>{
-   schedulerJobs.operation_Start_schedulerJob(Get_Option_Obj);
-   setTimeout(()=>{
-      console.log('\noperation? : ', Get_Option_Obj.operation_CODE);
-   },1000);
-});
-//service stop
-scheduler.scheduleJob('00 00 23 * * *', ()=>{
-   schedulerJobs.operation_Stop_schedulerJob(Get_Option_Obj);
-   setTimeout(()=>{
-      console.log('\noperation? : ', Get_Option_Obj.operation_CODE);
-   },1000);
-});
-
-
-//to Station, 4set of Bus schedules
-router.get('/toStation', (req, res) => {
-   if(Get_Option_Obj.holiday_CODE){ //not holiday
-      dayFilter.dayFilter(Get_Option_Obj.operation_CODE)
-      .then((nowTime) => {
-         const getsql_toStation = getSQL("Station", nowTime);
-      
-         connection.query(getsql_toStation.sql, getsql_toStation.param, function(err, result){
-            if(err){
-               res.status(500).json({success:false, message:err});
-               console.log(err);
-            }
-            else{
-               res.status(200).json({success:true, Bus_schedule:result,
-                  Subway_schedule:Get_Option_Obj.sub_INFO});
-               console.log('Success Get');
-            }
-         });
-      })
-      .catch((err) => {
-         res.status(200).json({success:true, Bus_schedule:[],
-            Subway_schedule:Get_Option_Obj.sub_INFO, message:err});
-      });      
-   }
-
-   else{
-      res.status(200).json({success:true, Bus_schedule:[], 
-         Subway_schedule:Get_Option_Obj.sub_INFO, message:'공휴일'});
-   }
-});
-
-//to TUK, 4set of Bus schedules 
-router.get('/toTuk', (req, res) =>{
-   if(Get_Option_Obj.holiday_CODE){ //not holiday
-      dayFilter.dayFilter(Get_Option_Obj.operation_CODE)
-      .then((nowTime) => {
-         const getsql_toTUK = getSQL("TUK", nowTime);
-      
-         connection.query(getsql_toTUK.sql, getsql_toTUK.param, function(err, result){
-            if(err){
-               res.status(500).json({success:false, message:err});
-               console.log(err);
-            }
-            else{
-               res.status(200).json({success:true, Bus_schedule:result,
-                  Subway_schedule:Get_Option_Obj.sub_INFO});
-               console.log('Success Get');
-            }
-         });
-      })
-      .catch((err) => {
-         res.status(200).json({success:true, Bus_schedule:[],
-            Subway_schedule:Get_Option_Obj.sub_INFO, message:err});
-      });
-   }
-   else{
-      res.status(200).json({success:true, Bus_schedule:[],
-         Subway_schedule:Get_Option_Obj.sub_INFO, message:'공휴일'}); 
-   }
-});
-
-
-//All schedules
-router.get('/all', (req, res) => {
-   new Promise((resolve, reject) => {
-      let getsql = '';
-      switch(req.query.day){
-         case 'sunday' : 
-         getsql = 'SELECT * FROM Bus_Sch_Weekend WHERE day = "sat&sun" ORDER BY destination, hour, min;';
-         resolve(getsql);
-         break;
-
-         case 'saturday' : 
-         getsql = 'SELECT * FROM Bus_Sch_Weekend ORDER BY destination, hour, min;';
-         resolve(getsql);
-         break;
-
-         case 'weekday' : 
-         getsql = 'SELECT * FROM Bus_Sch_Weekday WHERE continuity != "y" ORDER BY destination, hour, min;';
-         resolve(getsql);
-         break;
-
-         default:
-            reject('query err')
-            break;
-      }
-   })
-   .then((getsql) => {
-      connection.query(getsql, function(err, result) {
-         if (err) 
-         {
-            res.status(500).json({success:false, message:err});
-            console.log(err);
-         }
-         else{
-            res.status(200).json({success:true, Bus_schedule:result});
-            console.log('Success Get');
-         }
-      });
-   })
-   .catch((err) => {
-      res.send(err);
-   })
-});
-
-module.exports = router;
-
-
-
-function getSQL(destination, nowTime){
-
-   let getsql = '';
-   let param = [];
-   const getsqlobj = {};
-
-   switch(nowTime.day){
-      case 0 : //sunday 
-      getsql = 'SELECT * FROM Bus_Sch_Weekend WHERE destination = ? AND day = ? AND(hour >= ? AND min > ? OR hour > ?) ORDER BY hour LIMIT 4 ;';
-      param = [destination, "sat&sun", nowTime.hour, nowTime.min, nowTime.hour];
-      getsqlobj.sql = getsql;
-      getsqlobj.param = param;
-      break;
-
-      case 1 : //saturday
-      getsql = 'SELECT * FROM Bus_Sch_Weekend WHERE destination = ? AND(hour >= ? AND min > ? OR hour > ?) ORDER BY hour LIMIT 4 ;';
-      param = [destination, nowTime.hour, nowTime.min, nowTime.hour];
-      getsqlobj.sql = getsql;
-      getsqlobj.param = param;
-      break;
-
-      case 2 : //weekday
-      getsql = 'SELECT * FROM Bus_Sch_Weekday WHERE destination = ? AND(hour >= ? AND min > ? OR hour > ?) ORDER BY hour LIMIT 4 ;';
-      param = [destination, nowTime.hour, nowTime.min, nowTime.hour];
-      getsqlobj.sql = getsql;
-      getsqlobj.param = param;
-      break;
-   }
-
-   return getsqlobj;
+const getAllOfScheduleData = async(req, res) =>{
+    const query = allOfScheduleQuery(req);
+    const data = await getSchedule(query).catch((e)=>{
+        console.log('allOfSchedule get err: ',e);
+        res.status(204).json({success: false, message: e});
+    });
+    res.status(200).json({
+        success:true, Bus_schedule: data
+    })
 }
+
+module.exports = {getScheduleData, getAllOfScheduleData};
+
+
+
+
+const BusData = async(direction)=>{
+    const query = getScheduleQuery(direction);
+    try{
+        const originSchedule = await getSchedule(query);
+        const busSchedule = await addDurationSchedule(originSchedule, direction);
+        return busSchedule;
+    }
+    catch(e){
+        console.log(e);
+    }
+}
+
+const addDurationSchedule = (originSchedule, direction) => {
+    return new Promise((resolve, reject)=>{
+
+        let busSchedule = [];
+        originSchedule.forEach(async(element) => {
+
+            const schTime = dayjs().set('hour', element.hour).set('minute', element.min);
+            const hour = schTime.format('HH');
+            const min = schTime.format('mm');
+            try{
+                const duration = await kakaoDuration(direction, hour, min);
+                const data = {
+                    seq: element.seq,
+                    time: schTime.format('HH:mm'),
+                    destination: element.destination,
+                    duration : schTime.add(duration, 'second').format('HH:mm')
+                };
+               
+                busSchedule.push(data);
+            }
+            catch(e){
+                reject(e);
+                console.log('kakao Api err : ', e);
+            }
+            if(busSchedule.length===originSchedule.length){
+                resolve(busSchedule);
+            }
+        });
+    })
+}
+
+
+const getSchedule = (query) => {
+    return new Promise((resolve, reject)=>{
+       connection.query(query, (err, result)=>{
+          if(err) {
+             console.log("getSchedule err : ", err);
+             reject(err);
+          }
+          else{
+            resolve(result);
+          }
+        })
+    })
+}
+
+const allOfScheduleQuery = (req)=>{
+    const query =(day)=>{
+        return `SELECT * FROM ${day} ORDER BY destination, hour, min;`;
+    }
+    switch(req.query.day){
+        case 'sunday': 
+            return query('Bus_Sch_Weekend WHERE day = "sat&sun"');
+        case 'saturday':
+            return query('Bus_Sch_Weekend');
+        case 'weekday':
+            return query('Bus_Sch_Weekday WHERE continuity != "y"');
+    }
+}
+
+const getScheduleQuery = (destination) => {
+
+    const query = (table, destination, hour, min) =>{
+        retrun `SELECT * FROM ${table} WHERE destination = "${destination}" AND(hour >= ${hour} 
+            AND ${min} > ? OR ${hour} > ?) ORDER BY hour LIMIT 4 ;`;
+    }
+
+    const now = new dayjs();
+    const hour = now.get('h');
+    const min = now.get('m');
+
+    switch(now.format('ddd')){
+       case 'Sun' : //sunday 
+       return query('Bus_Sch_Weekend', destination+'AND day = "sat&sun"', hour, min);
+ 
+       case 'Sat' : //saturday
+       return query('Bus_Sch_Weekend', destination, hour, min);
+       
+       default : //weekday
+       return query('Bus_Sch_Weekday', destination, hour, min);
+    }
+ }
