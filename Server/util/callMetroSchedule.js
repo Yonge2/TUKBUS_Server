@@ -5,36 +5,39 @@ const privateinfo = require('../private/privatekey_Tuk');
 const station_name = encodeURI('정왕');
 const url = privateinfo.getMetroURL(station_name);
 
-module.exports.getMetro = function getmetro() {
-    let info_arr = [];
-
-    request(url,function(err,res){
-        if(err) {
-            info_arr = err;
-            console.log(err);
-        }
-        else {
-            let tempbody = JSON.parse(res.body);
-            let bodyList = tempbody.realtimeArrivalList;
-
-            if(bodyList === undefined){ //amount of api request over
-                console.log(tempbody);
+const getMetro = () => {
+    return new Promise((resolve, reject)=>{
+        let info_arr = [];
+        request(url,function(err,res){
+            if(err) {
+                info_arr = err;
+                console.log(err);
             }
-            else{
-                bodyList.forEach((element, index) => {
-                    let subinfo = {};
-                    subinfo.statnNm = bodyList[index].statnNm;
-                    subinfo.barvlDt = bodyList[index].barvlDt;
-                    subinfo.bstatnNm = bodyList[index].bstatnNm + "행";
-                    subinfo.arvlMsg2 = bodyList[index].arvlMsg2;
-                    subinfo.arvlMsg3 = bodyList[index].arvlMsg3;
-                    info_arr.push(subinfo);
-                });
+            else {
+                let tempbody = JSON.parse(res.body);
+                let bodyList = tempbody.realtimeArrivalList;
+    
+                if(bodyList === undefined){ //amount of api request over
+                    console.log(tempbody);
+                }
+                else{
+                    bodyList.forEach((element) => {
+                        let subinfo = {};
+                        subinfo.statnNm = element.statnNm;
+                        subinfo.barvlDt = element.barvlDt;
+                        subinfo.bstatnNm = element.bstatnNm + "행";
+                        subinfo.arvlMsg2 = element.arvlMsg2;
+                        subinfo.arvlMsg3 = element.arvlMsg3;
+                        info_arr.push(subinfo);
+                        
+                        if(bodyList.length === info_arr.length) resolve(info_arr);
+                    });
+                }
             }
-        }
-    });
-    return info_arr;
+        });
+    })
 }
+module.exports = getMetro;
 /*
 statnNm : 검색한역
 barvlDt : 도착예정시간

@@ -9,8 +9,8 @@ module.exports = {
         const today = new dayjs();
 
         try{
-            const holiday_result = await  holiday.getHolidays(today.format('YYYY'), today.format('MM'));
-            if(holiday_result.indexOf(dayjs.format('YYYYMMDD')) === -1){
+            const holiday_result = await holiday.getHolidays(today.format('YYYY'), today.format('MM'));
+            if(holiday_result.indexOf(today.format('YYYYMMDD')) === -1){
                 Get_Option_Obj.holiday_CODE = 1;
                 console.log('Today is not holiday');
                }
@@ -37,8 +37,8 @@ module.exports = {
         console.log('subway service start(8시)');
         if(Get_Option_Obj.holiday_CODE){
             Get_Option_Obj.operation_CODE = 1;
-            Get_Option_Obj.intervalID = setInterval(()=>{
-                Get_Option_Obj.sub_INFO = sub_request.getMetro();
+            Get_Option_Obj.intervalID = setInterval(async()=>{
+                Get_Option_Obj.sub_INFO = await sub_request();
             }, 60*1000);
         }
         else {
