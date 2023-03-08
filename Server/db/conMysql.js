@@ -2,17 +2,32 @@ const mysql = require('mysql');
 const private = require('../private/privatekey_Tuk');
 const private_db = private.db_private;
 
-const user = private_db.db_user;
-const pw = private_db.db_pw;
-const dbName = private_db.db_name;
-
 //Database configuration
 const connection = mysql.createPool({
     host: "127.0.0.1",
-    user: user,
-    database: dbName, 
-    password: pw,
+    user: private_db.db_user,
+    database: private_db.db_name, 
+    password: private_db.db_pw,
     port: 3306
 });
 
-module.exports = connection;
+
+/**
+   * Input: query => Output: data
+   * @param {String} query 
+   * @returns {Promise} data
+   */
+const getMySQL = (query) => {
+    return new Promise((resolve, reject)=>{
+       connection.query(query, (err, result)=>{
+          if(err) {
+             reject(err);
+          }
+          else{
+            resolve(result);
+          }
+        })
+    })
+}
+
+module.exports = {connection, getMySQL};

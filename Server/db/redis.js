@@ -7,7 +7,7 @@ const redisClient = redis.createClient({
    legacyMode: true, // v3포함
 });
 
-redisClient.connect().then();
+//redisClient.connect().then();
 
 redisClient.on('connect', () => {
    console.info('Redis connected!');
