@@ -11,7 +11,7 @@ app.use(bodyParser.json());
 
 
 app.use('/api/getSchedule', require('./api/scheduleApi/scheduleRouter'));
-app.use('/api/manage', require('./api/editSchedule'));
+//app.use('/api/manage', require('./api/editSchedule'));
 app.use('/api/user', require('./api/userApi/userRouter'));
 app.use('/api/chatting', require('./api/chatApi/chatRouter'));
 
