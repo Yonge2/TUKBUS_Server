@@ -1,10 +1,44 @@
 const {makeRandomNum} = require('../../util/utilFunc');
 const {redisGetScard} = require('../../util/redisUtil');
-const connection = require('../../db/conMysql');
+const {connection, getMySQL} = require('../../db/conMysql');
 const dayjs = require('dayjs');
 
 const getChatlist = async(req, res)=>{
-    const sql = "SELECT * FROM chatInfo WHERE isLive = true;";
+    const query = "SELECT * FROM chatInfo WHERE isLive = true;";
+
+    const liveChatRoomData = await getMySQL(query).catch((e)=>{
+        console.log('getChatList err: ', e);
+        res.status(500).json({
+            success: false,
+            message: e
+        })
+    });
+
+    if(liveChatRoomData.length){
+
+        let addInUserRoom = [];
+        liveChatRoomData.forEach(async(element, index)=>{
+            const roomInPeople = await redisGetScard(liveChatRoomData[index].roomID+'_IN');
+            if(roomInPeople){
+                addInUserRoom = liveChatRoomData[index];
+                addInUserRoom.userCount = roomInPeople;
+
+                if(addInUserRoom.length === liveChatRoomData.length){
+                    res.status(200).json({
+                        success:true,
+                        message:addInUserRoom,
+                    });
+                }
+            }
+        })
+    }
+    else{
+        res.status(200).json({
+            success: true,
+            message: "No exist chatRoomList"
+        });
+    }
+/*
     connection.query(sql, async(err, result)=>{
         if(err) {
             res.status(501).json({
@@ -39,7 +73,7 @@ const getChatlist = async(req, res)=>{
                 });
             });
         }
-    });
+    });*/
 }
 
 const createChatRoom = async(req, res) => {
