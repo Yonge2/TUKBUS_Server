@@ -1,4 +1,4 @@
-const connection = require('../db/conMysql');
+const {connection} = require('../../db/conMysql');
 const {saveMessage} = require('./socketUtil');
 const {redisGetScard, redisGetSmembers, redisSrem} = require('../../util/redisUtil');
 

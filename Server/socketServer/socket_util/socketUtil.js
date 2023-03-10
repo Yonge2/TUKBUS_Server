@@ -1,6 +1,6 @@
 const connection = require('../../db/conMysql');
 const redisClient = require('../../db/redis');
-const {verify} = require('../../api/user/user_util/jwt_util');
+const {verify} = require('../../api/userApi/user_util/jwt_util');
 const dayjs = require('dayjs');
 
 const receiverCheck = (receiver) =>{
