@@ -6,12 +6,12 @@ const getOptionOBJ = require('./taskScheduler');
 
 const getScheduleData = async(req, res, direction)=>{
     //holiday
-    if( getOptionOBJ.holiday_CODE) res.status(200).json({success:true, Bus_schedule:[], 
+    if( !getOptionOBJ.holiday_CODE) res.status(200).json({success:true, Bus_schedule:[], 
         Subway_schedule:getOptionOBJ.sub_INFO, message:'공휴일'});
 
     else{
         //operating time
-        if( getOptionOBJ.operation_CODE) res.status(200).json({success:true, Bus_schedule:[], 
+        if( !getOptionOBJ.operation_CODE) res.status(200).json({success:true, Bus_schedule:[], 
             Subway_schedule:getOptionOBJ.sub_INFO, message:'운행종료'});
 
         else{
@@ -20,7 +20,7 @@ const getScheduleData = async(req, res, direction)=>{
                 res.status(200).json({success: false, message: e});
 
             });
-            res.status(200).json({success: true, Bus_schedule: busdata, Subway_schedule: info.sub_INFO});
+            res.status(200).json({success: true, Bus_schedule: busdata, Subway_schedule: getOptionOBJ.sub_INFO});
         }
     }
 }
@@ -102,8 +102,7 @@ const allOfScheduleQuery = (req)=>{
 const getScheduleQuery = (destination) => {
 
     const query = (table, destination, hour, min) =>{
-        retrun `SELECT * FROM ${table} WHERE destination = "${destination}" AND(hour >= ${hour} 
-            AND ${min} > ? OR ${hour} > ?) ORDER BY hour LIMIT 4 ;`;
+        return `SELECT * FROM ${table} WHERE destination = "${destination}" AND(hour >= ${hour} AND min > ${min} OR hour > ${hour}) ORDER BY hour LIMIT 4 ;`;
     }
 
     const now = new dayjs();

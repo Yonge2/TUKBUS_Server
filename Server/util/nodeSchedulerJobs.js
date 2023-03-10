@@ -9,7 +9,7 @@ module.exports = {
         const today = new dayjs();
 
         try{
-            const holiday_result = await holiday.getHolidays(today.format('YYYY'), today.format('MM'));
+            const holiday_result = await holiday(today.format('YYYY'), today.format('MM'));
             if(holiday_result.indexOf(today.format('YYYYMMDD')) === -1){
                 Get_Option_Obj.holiday_CODE = 1;
                 console.log('Today is not holiday');
