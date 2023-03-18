@@ -1,4 +1,4 @@
-const connection = require('../../db/conMysql');
+const {connection} = require('../../db/conMysql');
 const redisClient = require('../../db/redis');
 const {verify} = require('../../api/userApi/user_util/jwt_util');
 const dayjs = require('dayjs');
@@ -36,8 +36,8 @@ const saveMessage = async(obj) =>{
 const socketJWTMiddleware = async(socket, next) => {
     //check socket auth
     if (socket.handshake.auth.token && socket.handshake.auth.roomID) {
-        const token = socket.handshake.auth.token;
-        const result = verify(token);
+        const result = verify(socket.handshake.auth.token);
+
         if(result.success){
             const userID = socket.userID = result.userID;
             socket.roomID = socket.handshake.auth.roomID;
