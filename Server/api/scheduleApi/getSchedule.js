@@ -15,12 +15,11 @@ const getScheduleData = async(req, res, direction)=>{
             Subway_schedule:getOptionOBJ.sub_INFO, message:'운행종료'});
 
         else{
-            const busdata = await BusData(direction).catch((e)=>{
-                console.log('busData err: ', e);
+            const shuttledata = await shuttleData(direction).catch((e)=>{
+                console.log('shuttleData err: ', e);
                 res.status(200).json({success: false, message: e});
-
             });
-            res.status(200).json({success: true, Bus_schedule: busdata, Subway_schedule: getOptionOBJ.sub_INFO});
+            res.status(200).json({success: true, Bus_schedule: shuttledata, Subway_schedule: getOptionOBJ.sub_INFO});
         }
     }
 }
@@ -41,46 +40,46 @@ module.exports = {getScheduleData, getAllOfScheduleData};
 
 
 
-const BusData = async(direction)=>{
+const shuttleData = async(direction)=>{
     const query = getScheduleQuery(direction);
     try{
         const originSchedule = await getMySQL(query);
-        const busSchedule = await addDurationSchedule(originSchedule, direction);
-        return busSchedule;
+
+        if(originSchedule.length){
+            //promise 병렬처리
+            const promises = originSchedule.map((ele)=>{
+                return addDuration(ele, direction);
+            })
+            const busSchedule = await Promise.all(promises);
+            return busSchedule;
+        }
+
+        else return originSchedule;
     }
     catch(e){
         console.log(e);
     }
 }
 
-const addDurationSchedule = (originSchedule, direction) => {
-    return new Promise((resolve, reject)=>{
+const addDuration = (element, direction) => {
+    return new Promise(async(resolve, reject)=>{
 
-        let busSchedule = [];
-        originSchedule.forEach(async(element) => {
-
-            const schTime = dayjs().set('hour', element.hour).set('minute', element.min);
-            const hour = schTime.format('HH');
-            const min = schTime.format('mm');
-            try{
-                const duration = await kakaoDuration(direction, hour, min);
-                const data = {
-                    seq: element.seq,
-                    time: schTime.format('HH:mm'),
-                    destination: element.destination,
-                    duration : schTime.add(duration, 'second').format('HH:mm')
-                };
-               
-                busSchedule.push(data);
-            }
-            catch(e){
-                reject(e);
-                console.log('kakao Api err : ', e);
-            }
-            if(busSchedule.length===originSchedule.length){
-                resolve(busSchedule);
-            }
-        });
+        const schTime = dayjs().set('hour', element.hour).set('minute', element.min);
+        const hour = schTime.format('HH');
+        const min = schTime.format('mm');
+        try{
+            const duration = await kakaoDuration(direction, hour, min);
+            resolve({
+                seq: element.seq,
+                time: schTime.format('HH:mm'),
+                destination: element.destination,
+                duration : schTime.add(duration, 'second').format('HH:mm')
+            });
+        }
+        catch(e){
+            reject(e);
+            console.log('kakao Api err : ', e);
+        }
     })
 }
 
@@ -102,7 +101,7 @@ const allOfScheduleQuery = (req)=>{
 const getScheduleQuery = (destination) => {
 
     const query = (table, destination, hour, min) =>{
-        return `SELECT * FROM ${table} WHERE destination = "${destination}" AND(hour >= ${hour} AND min > ${min} OR hour > ${hour}) ORDER BY hour LIMIT 4 ;`;
+        return `SELECT * FROM ${table} WHERE destination = ${destination} AND(hour >= ${hour} AND min > ${min} OR hour > ${hour}) ORDER BY hour, min LIMIT 4 ;`;
     }
 
     const now = new dayjs();
@@ -111,12 +110,12 @@ const getScheduleQuery = (destination) => {
 
     switch(now.format('ddd')){
        case 'Sun' : //sunday 
-       return query('Bus_Sch_Weekend', destination+'AND day = "sat&sun"', hour, min);
+       return query('Bus_Sch_Weekend', `"${destination}" AND day = "sat&sun"`, hour, min);
  
        case 'Sat' : //saturday
-       return query('Bus_Sch_Weekend', destination, hour, min);
+       return query('Bus_Sch_Weekend', `"${destination}"`, hour, min);
        
        default : //weekday
-       return query('Bus_Sch_Weekday', destination, hour, min);
+       return query('Bus_Sch_Weekday', `"${destination}"`, hour, min);
     }
  }

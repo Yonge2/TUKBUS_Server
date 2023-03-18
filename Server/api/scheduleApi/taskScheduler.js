@@ -2,8 +2,8 @@ const schedulerJobs = require('../../util/nodeSchedulerJobs');
 const scheduler = require('node-schedule');
 
 let Get_Option_Obj = {
-    holiday_CODE : null, //if today is not holiday, code = 1, else code = 0
-    operation_CODE : null, //on : code = 1 / off : code = 0
+    holiday_CODE : 1, //if today is not holiday, code = 1, else code = 0
+    operation_CODE : 1, //on : code = 1 / off : code = 0
     sub_INFO : null,
     intervalID : null
  }
