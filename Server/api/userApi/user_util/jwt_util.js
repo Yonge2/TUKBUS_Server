@@ -13,9 +13,9 @@ const sign = (user) => { // sign access token
     userNAME: user.userNAME,
   };
 
-  return jwt.sign(payload, secret, {
+  return jwt.sign(payload, secret.sec, {
     algorithm: 'HS256', 
-    expiresIn: '1d', 	  // 유효기간
+    expiresIn: secret.accessTokenExpire, 	  // 유효기간
   });
 }
 
@@ -27,7 +27,7 @@ const sign = (user) => { // sign access token
 const verify = (token) => { // access token 검증
   let decoded = null;
   try {
-    decoded = jwt.verify(token, secret);
+    decoded = jwt.verify(token, secret.sec);
     console.log('access verify : ', decoded);
     return {
       success: true,
@@ -43,9 +43,9 @@ const verify = (token) => { // access token 검증
 }
 
 const refresh = () => { // sign refresh token
-  return jwt.sign({}, secret, { // not payload
+  return jwt.sign({}, secret.sec, { // not payload
     algorithm: 'HS256',
-    expiresIn: '30d',
+    expiresIn: secret.refreshTokenExpire,
   });
 }
 

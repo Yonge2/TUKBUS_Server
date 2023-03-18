@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const dayjs = require('dayjs');
 
-const connection = require('../../../db/conMysql');
+const {connection} = require('../../../db/conMysql');
 const redisClient = require('../../../db/redis');
 const auth_private = require('../../../private/privatekey_Tuk').nodemailer_private;
 const {makeRandomNum} = require('../../../util/utilFunc');
