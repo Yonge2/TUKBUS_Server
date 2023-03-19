@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 
 const app = express();
 
-const port = require('./private/privatekey_Tuk').PORT;
+const port = require('./private/privatekey_Tuk').PORT.appPort;
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
