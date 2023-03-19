@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const redisClient = require('../../../db/redis');
-const secret = require('../../../private/privatekey_Tuk').ect;
+const privateJwt = require('../../../private/privatekey_Tuk').jwt;
 
 /**
   * sign jwt
@@ -13,9 +13,9 @@ const sign = (user) => { // sign access token
     userNAME: user.userNAME,
   };
 
-  return jwt.sign(payload, secret.sec, {
+  return jwt.sign(payload, privateJwt.secret, {
     algorithm: 'HS256', 
-    expiresIn: secret.accessTokenExpire, 	  // 유효기간
+    expiresIn: privateJwt.accessTokenExpire, 	  // 유효기간
   });
 }
 
@@ -27,7 +27,7 @@ const sign = (user) => { // sign access token
 const verify = (token) => { // access token 검증
   let decoded = null;
   try {
-    decoded = jwt.verify(token, secret.sec);
+    decoded = jwt.verify(token, privateJwt.secret);
     console.log('access verify : ', decoded);
     return {
       success: true,
@@ -43,9 +43,9 @@ const verify = (token) => { // access token 검증
 }
 
 const refresh = () => { // sign refresh token
-  return jwt.sign({}, secret.sec, { // not payload
+  return jwt.sign({}, privateJwt.secret, { // not payload
     algorithm: 'HS256',
-    expiresIn: secret.refreshTokenExpire,
+    expiresIn: privateJwt.refreshTokenExpire,
   });
 }
 
@@ -56,7 +56,7 @@ const refreshVerify = async (token, userID) => { // refresh token 검증
 
     if (token === data) { //req.refresh_token
       try {
-        jwt.verify(token, secret); //sucess verify
+        jwt.verify(token, privateJwt.secret); //sucess verify
         return true;
       }
       catch (err) {
