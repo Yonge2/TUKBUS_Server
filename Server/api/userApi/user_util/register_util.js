@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const dayjs = require('dayjs');
 
-const {connection} = require('../../../db/conMysql');
+const {setMySQL} = require('../../../db/conMysql');
 const redisClient = require('../../../db/redis');
 const auth_private = require('../../../private/privatekey_Tuk').nodemailer_private;
 const {makeRandomNum} = require('../../../util/utilFunc');
@@ -14,19 +14,16 @@ const register = async(req, res)=>{
     if(await redisClient.v4.get(req.body.userEmail+"_registerAuth")){
 
         const registerSet = await reqInfo(req);
+        const insertQuery = 'insert into user set ?'
 
-        const insertsql = 'insert into user set ?'
-        connection.query(insertsql, registerSet, (err, result)=>{
-            if(err) {
-                console.log(err);
-            }
-            else{
-                res.status(200).send('ok');
-                console.log('insert ok')
-            }
-        });
+        const result = await setMySQL(insertQuery, registerSet)
+        .catch((e)=>{
+            console.log(e);
+            res.status(200).json({success: false, message: e});
+        })
+        if(result) res.status(200).json({success: true});
     }
-    else res.status(204).json({success: false, message: "메일이 인증되지 않았음."})
+    else res.status(200).json({success: false, message: "메일이 인증되지 않았음."})
 }
 
 //-----------------------------------send to auth mail-------------------------------------//
@@ -38,7 +35,7 @@ const sendmail = async(req, res)=>{
         console.log('mail Auth redis set for 3 min to ', req.body.userEmail);
     });
     
-    const mailOBJ = await mailObj(mail_authNum, req.body.userEmail);
+    const mailOBJ = mailObj(mail_authNum, req.body.userEmail);
 
     const mailTransport = nodemailer.createTransport(mailOBJ.createMailObj);
 
@@ -100,32 +97,25 @@ module.exports = {register, sendmail, mail_auth_check, userIdCheck}
 
 
 //---------------------------------------for clean code -------------------------// 
-async function mailObj(authnum, userEmail){
-    
-    const createMailObj = {
-        service: "Gmail",
-        auth: auth_private.auth,
-        tls: {
-            rejectUnauthorized: false
+const mailObj = (authnum, userEmail) => {
+    return {createMailObj: {
+            service: "Gmail",
+            auth: auth_private.auth,
+            tls: {
+                rejectUnauthorized: false
+            }
+        },
+        mailOptions: {
+            from: auth_private.email,
+            to: userEmail,
+            subject: "TUK BUS 가입을 위한 인증번호 입니다.",
+            text: "인증번호는 " + authnum + " 입니다."
         }
-    }
-
-    const mailOptions = {
-        from: auth_private.email,
-        to: userEmail,
-        subject: "TUK BUS 가입을 위한 인증번호 입니다.",
-        text: "인증번호는 " + authnum + " 입니다."
-    };
-
-    return {
-        createMailObj: createMailObj,
-        mailOptions: mailOptions
     }
 }
 
 
-async function reqInfo(req){
-
+const reqInfo = async(req) => {
     return {
         userID: req.body.userID,
         userPW: await bcrypt.hash(req.body.userPW, auth_private.salt),

@@ -1,4 +1,4 @@
-const {connection} = require('../../db/conMysql');
+const {setMySQL} = require('../../db/conMysql');
 const redisClient = require('../../db/redis');
 const {verify} = require('../../api/userApi/user_util/jwt_util');
 const dayjs = require('dayjs');
@@ -25,12 +25,10 @@ const saveMessage = async(obj) =>{
         sendTime: obj.sendTime,
         sendDate: date.format('YYYY-MM-DD'),
     }
-    console.log('insert message:', message);
-    let sql = "INSERT INTO chatmessage set ?;";
-    connection.query(sql, message, (err)=>{
-        if(err) console.log("ChatMessage DB err : ", err);
+    const Insertquery = "INSERT INTO chatmessage set ?;";
+    const result = await setMySQL(Insertquery, message).catch((e)=>{
+        console.log("Insert message to DB err : ", e);
     });
-    return message;
 }
 
 const socketJWTMiddleware = async(socket, next) => {
@@ -51,11 +49,11 @@ const socketJWTMiddleware = async(socket, next) => {
                 else console.log("socket middleware err: ", err);      
             });
         }
-        else console.log(result, token);
+        else console.log("socketJWT err: ", result);
     }
     else {
-        //에러 추가해야함.
         console.log("no exist header!");
+        socket.errMessage = "no exist auth"
         next();
     }
 }
