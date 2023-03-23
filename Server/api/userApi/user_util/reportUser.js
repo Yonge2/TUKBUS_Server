@@ -22,12 +22,14 @@ const reportUser = async(req, res)=>{
 }
 
 const blockUser = async(req, res)=>{
+    console.log("in");
     const blockQuery = 'INSERT INTO blocked SET ?'
     const blockSet = blockObj(req);
     const result = await setMySQL(blockQuery, blockSet).catch((e)=>{
         console.log("inserting blocked err: ",e);
         res.status(200).json({success: false, message: e});
     });
+    console.log(result);
     if(result) res.status(200).json({success: true, message: "차단완료"});
 }
 
