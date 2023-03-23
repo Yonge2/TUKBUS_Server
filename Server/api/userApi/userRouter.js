@@ -6,9 +6,10 @@ const login = require('./user_util/login_util');
 const jwt_middleWare = require('./user_util/authMiddleware');
 const refresh_token = require('./user_util/refresh_token');
 const {checkPW, changingPW} = require('./user_util/changePW');
+const {reportUser, blockUser, blockedUserList} = require('./user_util/reportUser');
 
 
-//로그인, 필요 req객체 : req.body.{userID, userPW}
+//로그인
 router.post('/login', login);
 
 //헤더에 authorization, refresh 실어서 보내셈
@@ -32,6 +33,10 @@ router.post('/register/idcheck', userIdCheck);
 //checking password -> changing password
 router.post('/settings/checkPW', jwt_middleWare, checkPW);
 router.post('/settings/changingpw', jwt_middleWare, changingPW);
+
+router.post('/settings/blcok', jwt_middleWare, blockUser);
+router.get('/settings/blockeduserlist', blockedUserList);
+router.post('/settings/report', jwt_middleWare, reportUser);
 
 
 module.exports = router;
