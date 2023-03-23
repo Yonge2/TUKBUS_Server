@@ -36,7 +36,7 @@ const blockedUserList = async(req, res)=>{
     const result = await getBlockedUserList(req.userID).catch((e)=>{
         res.status(200).json({success: false, message: e});
     });
-    if(list.length){
+    if(result.length){
         res.status(200).json({
             success: true,
             message: {
@@ -51,7 +51,7 @@ module.exports = {reportUser, blockUser, blockedUserList};
 
 const getBlockedUserList = async(userID)=>{
     return new Promise(async(resolve, reject)=>{
-        const getBlockedQuery = `SELECT blockedUserID FROM blocked WHERE userID = ${userID};`
+        const getBlockedQuery = `SELECT blockedUserID FROM blocked WHERE userID = "${userID}";`
         const result = await getMySQL(getBlockedQuery).catch((e)=>{
             console.log('getting "reported" err:', e);
             reject(e);
