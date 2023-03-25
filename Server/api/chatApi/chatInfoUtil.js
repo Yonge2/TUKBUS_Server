@@ -1,11 +1,11 @@
 const {makeRandomNum} = require('../../util/utilFunc');
-const {redisGetScard} = require('../../util/redisUtil');
-const {connection, getMySQL} = require('../../db/conMysql');
+const {redisGetScard, redisGetSmembers} = require('../../util/redisUtil');
+const {setMySQL, getMySQL} = require('../../db/conMysql');
 const dayjs = require('dayjs');
 
 const getChatlist = async(req, res)=>{
-    const query = "SELECT * FROM chatInfo WHERE isLive = true;";
-
+    const query = `SELECT * FROM chatinfo WHERE hostID NOT IN
+        (select blockedUserID FROM blocked WHERE userID = '${req.userID}') AND isLive=true;`
     const liveChatRoomData = await getMySQL(query).catch((e)=>{
         console.log('getChatList err: ', e);
         res.status(500).json({
@@ -15,11 +15,19 @@ const getChatlist = async(req, res)=>{
     });
 
     if(liveChatRoomData.length){
-        const promises = liveChatRoomData.map((element)=>{
-            return addUserCount(element);
+        const query = `SELECT blockedUserID FROM blocked WHERE userID='${req.userID}';`
+        const blockedUserID = await getMySQL(query);
+
+        const promises = liveChatRoomData.map(async(element)=>{
+                return addInUserInfo(element, blockedUserID);
         })
-        const addUserCountRoom = await Promise.all(promises);
-        res.status(200).json({
+        const allPromises = await Promise.allSettled(promises);
+        //null값 제거 하기{status : 'rejected', reason: 'Blocked user In'}
+        const addUserCountRoom = allPromises.map((element)=>{
+            return element.value;
+        })
+
+        await res.status(200).json({
             success:true,
             message:addUserCountRoom
         })
@@ -32,22 +40,39 @@ const getChatlist = async(req, res)=>{
     }
 }
 
-const addUserCount = async(element)=>{
+const addInUserInfo = async(element, blockedUserID)=>{
     return new Promise(async(resolve, reject)=>{
-        const roomInPeople = await redisGetScard(element.roomID+'_IN');
-        if(roomInPeople){
-            resolve({
-                hostID : element.hostID,
-                startingTime : element.startingTime,
-                startingPoint : element.startingPoint,
-                arrivalPoint : element.arrivalPoint,
-                createTime : element.createTime,
-                isLive : element.isLive,
-                roomID : element.roomID,
-                userCount : roomInPeople 
-            })
+        const userCount = await redisGetScard(element.roomID+'_IN');
+        const roomInPeople = await redisGetSmembers(element.roomID+'_IN');
+        if(blockedUserID.length){
+            blockedUserID.forEach((ele) => {
+                if(roomInPeople.includes(ele.blockedUserID)) {
+                    reject("Blocked user In");
+                }
+                else resolve(roomObj(element, userCount, roomInPeople));
+            });
+        }
+        else{
+            if(userCount){
+                resolve(roomObj(element, userCount, roomInPeople));
+            }
+            else reject("chatRoom userCounting arr");
         }
     })
+}
+
+const roomObj = (origin, userCount, inUser) =>{
+    return {
+        hostID : origin.hostID,
+        startingTime : origin.startingTime,
+        startingPoint : origin.startingPoint,
+        arrivalPoint : origin.arrivalPoint,
+        createTime : origin.createTime,
+        isLive : origin.isLive,
+        roomID : origin.roomID,
+        userCount : userCount,
+        inUser: inUser
+    }
 }
 
 const createChatRoom = async(req, res) => {
@@ -64,6 +89,9 @@ const createChatRoom = async(req, res) => {
     };
     
     let sql = "INSERT INTO chatInfo set ?;";
+    const result = await setMySQL(insertQuery, createChatObj);
+    if(result.pro)
+
     connection.query(sql, createChatObj, (err)=>{
         if(err){
             res.status(501).json({
