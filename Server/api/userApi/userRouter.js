@@ -34,7 +34,7 @@ router.post('/register/idcheck', userIdCheck);
 router.post('/settings/checkPW', jwt_middleWare, checkPW);
 router.post('/settings/changingpw', jwt_middleWare, changingPW);
 
-router.post('/settings/blcok', jwt_middleWare, blockUser);
+router.post('/settings/block', jwt_middleWare, blockUser);
 router.get('/settings/blockeduserlist', jwt_middleWare, blockedUserList);
 router.post('/settings/report', jwt_middleWare, reportUser);
 
