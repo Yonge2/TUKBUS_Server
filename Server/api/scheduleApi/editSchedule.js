@@ -1,113 +1,31 @@
-const connection = require("../db/conMysql");
-const update_schedule = require("../util/editcsv");
-const express = require('express');
-
-const router = express.Router();
-
-let sch = [];
+const {getMySQL, setMySQL} = require("../../db/conMysql");
+const {schWeekdayJson} = require("../../util/editcsv");
 
 //insert data
-router.post('/insertWeekday', function(req, res){
-    const postsql = 'insert into Bus_Sch_Weekday set ?';
-    let resultMs = [];
-    let errMs = [];
-    sch = update_schedule.sch_weekday_json();
+const insertSchedule = async(req, res) => {
+    const inserQuery = 'INSERT INTO Bus_Sch_Weekday SET ?';
+    const newSchedule = await schWeekdayJson();
 
-    new Promise((resolve, reject) => {
-
-        for(const i in sch){
-            connection.query(postsql, sch[i], function(err, result){
-                if(err) {
-                    errMs.push(err);
-                    reject();
-                }
-                else{
-                    resultMs.push(result);
-                    if(i == sch.length-1) resolve();
-                }
-            });
-        }
-        
+    const pormises = newSchedule.map(async(ele)=>{
+        return setMySQL(inserQuery, ele).catch((e)=>{
+            console.log("inserting schedule err: ",e);
+        });
     })
-    .then(() => {
-        res.status(200);
-        res.json({success:true, message:resultMs});
+
+    const insertingResult = await Promise.allSettled(pormises);
+    if(insertingResult.length === newSchedule.length) res.status(200).json({success: true})
+    else res.status(200).json({success: false})
+
+}
+
+const deleteSchedule = async(req, res) => {
+    const delQuery = 'delete from Bus_Sch_Weekday';
+    const result = await getMySQL(delQuery).catch((e)=>{
+        console.log("del mysql err: ", e);
     })
-    .catch(() => {
-        res.status(500);
-        res.json({success:false, message:errMs});
-    })
-});
+    console.log(result);
+    if(result.affectedRows) res.status(200).json({success: true});
+    else res.status(200).json({success:false});
+}
 
-router.post('/insertWeekend', function(req, res){
-    const postsql = 'insert into Bus_Sch_Weekend set ?';
-    let resultMs = [];
-    let errMs = [];
-    sch = update_schedule.sch_weekend_json();
-
-    new Promise((resolve, reject) => {
-
-        for(const i in sch){
-            connection.query(postsql, sch[i], function(err, result){
-                if(err) {
-                    errMs.push(err);
-                    reject();
-                }
-                else{
-                    resultMs.push(result);
-                    if(i == sch.length-1) resolve();
-                }
-            });
-        }
-        
-    })
-    .then(() => {
-        res.status(200);
-        res.json({success:true, message:resultMs});
-    })
-    .catch(() => {
-        res.status(500);
-        res.json({success:false, message:errMs});
-    })
-});
-
-
-
-//delete data
-router.post('/deleteWeekday', function(req, res){
-
-    let delsql = 'delete from Bus_Sch_Weekday';
-
-    connection.query(delsql, function(err, result){
-        if(err) {
-            res.status(500);
-            res.json({success:false, message:err});
-            console.log(err);
-        }
-        else {
-            res.status(200);
-            res.json({success:true, message:result});
-        }
-    });
-
-});
-
-router.post('/deleteWeekend', function(req, res){
-
-    let delsql = 'delete from Bus_Sch_Weekend';
-
-    connection.query(delsql, function(err, result){
-        if(err) {
-            res.status(500);
-            res.json({success:false, message:err});
-            console.log(err);
-        }
-        else {
-            res.status(200);
-            res.json({success:true, message:result});
-        }
-    });
-
-});
-
-module.exports = router;
+module.exports = {insertSchedule, deleteSchedule}

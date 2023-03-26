@@ -2,103 +2,48 @@ const fs = require("fs");
 const path = require("path");
 
 
-module.exports.sch_weekday_json = function sch_weekday_json(){
+const schWeekdayJson = () => {
 
-    const WeekDay_csv = "Bus_sch_weekday.csv";
-    const csvPath_weekday = path.join(__dirname, '..', 'csvdir', WeekDay_csv);
-    const csv_weekday = fs.readFileSync(csvPath_weekday, "UTF-8");
-    const schedule_weekday = csv2json_sch(csv_weekday);
+    const fileName = "Bus_sch_weekday.csv";
+    const csvPath = path.join(__dirname, '..', 'csvdir', fileName);
+    const csv_weekday = fs.readFileSync(csvPath, "UTF-8");
+    const schedule_weekday = scheduleCsvToJson(csv_weekday);
 
     return schedule_weekday;
 }
 
-module.exports.sch_weekend_json = function sch_weekend_json(){
+module.exports = {schWeekdayJson}
 
-    const Weekend_csv = "Bus_sch_weekend.csv";
-    const csvPath_weekend = path.join(__dirname, '..', 'csvdir', Weekend_csv);
-    const csv_weekend = fs.readFileSync(csvPath_weekend, "UTF-8");
-    const schedule_weekend = csv2json_sch(csv_weekend);
-
-    return schedule_weekend;
-}
-
-
-function csv2json_sch(csv){
-
+const scheduleCsvToJson = async(csv) =>{
     const rows = csv.split("\r\n");
+    console.log(rows.length);
 
-    let toTUK_data = [];
-    let toStation_data = [];
-    let title = [];
-    let detail = [];
-    
-    if(rows[rows.length-1] == ''){
-        rows.pop();
-    }
-    console.log(rows);
-        //to able to korean, Add "\uFEFF" + data 
-    for (const i in rows){
-    
-        const data = rows[i].split(",")
-        
-        if(i==="0") title = data;
-                    
-        else {
-            detail = data;
-            let toTUK_row = {};
-            let toStation_row = {};
+    let destination1 = [];
+    let destination2 = [];
 
-            switch(title[3])
-            {
-                case "day" : 
-                for(const k in detail){
-                    if(detail[0] == "TUK"){
-                        toTUK_row.seq = "T"+i;
-                        toTUK_row.hour = Number(detail[1]);  
-                        toTUK_row.min = Number(detail[2]);
-                        toTUK_row.destination = detail[0];
-                        toTUK_row.day = detail[3];
-                    }
-                    if(detail[4] == "Station"){
-                        toStation_row.seq = "S"+i;
-                        toStation_row.hour = Number(detail[5]);
-                    toStation_row.min = Number(detail[6]);
-                        toStation_row.destination = detail[4];
-                        toStation_row.day = detail[7];
-                    }
-                }
-                break;
+    if(rows[rows.length-1] === '') rows.pop();
+    rows.shift();
 
-                case "continuity" :
-                for(const j in detail){
-                    if(detail[0] == "TUK"){
-                        toTUK_row.seq = "T"+i;
-                        toTUK_row.hour = Number(detail[1]);
-                        toTUK_row.min = Number(detail[2]);
-                        toTUK_row.destination = detail[0];
-                        toTUK_row.continuity = detail[3];
-                    }
-                    if(detail[4] == "Station"){
-                        toStation_row.seq = "S"+i;
-                        toStation_row.hour = Number(detail[5]);
-                        toStation_row.min = Number(detail[6]);
-                        toStation_row.destination = detail[4];
-                        toStation_row.continuity = detail[7];
-                    }
-                }
-                break;
+    rows.map((ele)=>{
+        const data = ele.split(",");
+        const destination1_row = {
+            destination: data[0],
+            hour: parseInt(data[1]),
+            min: parseInt(data[2]),
+            continuity: (!!parseInt(data[3]))
+        };
+        const destination2_row = {
+            destination: data[4],
+            hour: parseInt(data[5]),
+            min: parseInt(data[6]),
+            continuity: (!!parseInt(data[7]))
+        };
+        if(destination1_row.destination != '') destination1.push(destination1_row);
+        if(destination2_row.destination != '') destination2.push(destination2_row);
+    })
 
-                default : 
-                console.log("csv parse err")
-                break;
-            }
-            if(Object.keys(toTUK_row).length !== 0) toTUK_data.push(toTUK_row);
-            if(Object.keys(toStation_row).length !== 0) toStation_data.push(toStation_row);
-        }
-    }
-    let bus_sch = [];
-    bus_sch.push(...toTUK_data);
-    bus_sch.push(...toStation_data);
-    
-    return bus_sch;
+    let busSch = [];
+    busSch.push(...destination1);
+    busSch.push(...destination2);
+    return busSch;
 }
