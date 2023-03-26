@@ -37,28 +37,43 @@ const getAllOfScheduleData = async(req, res) =>{
 
 module.exports = {getScheduleData, getAllOfScheduleData};
 
-
-
-
 const shuttleData = async(direction)=>{
     const query = getScheduleQuery(direction);
-    try{
-        const originSchedule = await getMySQL(query);
+    const originSchedule = await getMySQL(query).catch((e)=>{
+        console.log("get Schedule err: ",e);
+    });
 
-        if(originSchedule.length){
-            //promise 병렬처리
-            const promises = originSchedule.map((ele)=>{
-                return addDuration(ele, direction);
-            })
-            const busSchedule = await Promise.all(promises);
-            return busSchedule;
-        }
+    if(originSchedule.length){
+        const promises = originSchedule.map((ele)=>{
+            return addDuration(ele, direction);
+        })
+        const busSchedule = await Promise.all(promises);
+        return busSchedule;
+    }
+    //after 17:00
+    else if(!originSchedule.length && direction==="TUK"){
+        const toStationSchedule = await shuttleData("Station");
 
-        else return originSchedule;
+        const promises = toStationSchedule.map((ele)=>{
+            const hour = parseInt(ele.duration.substring(0,2));
+            const min = parseInt(ele.duration.substring(3,5));
+            const tempSchTime = dayjs().set('hour', hour).set('minute', min).subtract(10, 'minute');
+            const tempSchHour = tempSchTime.get('h');
+            const tempSchMin = tempSchTime.get('m');
+            
+            const tempSch = {
+                hour: tempSchHour,
+                min: tempSchMin,
+                destination: 'after17',
+                continuity: false
+            }
+            return addDuration(tempSch, 'after17');
+        })
+
+        const busSchedule = await Promise.all(promises);
+        return busSchedule;
     }
-    catch(e){
-        console.log(e);
-    }
+    else return originSchedule;
 }
 
 const addDuration = (element, direction) => {
@@ -70,10 +85,10 @@ const addDuration = (element, direction) => {
         try{
             const duration = await kakaoDuration(direction, hour, min);
             resolve({
-                seq: element.seq,
-                time: schTime.format('HH:mm'),
                 destination: element.destination,
-                duration : schTime.add(duration, 'second').format('HH:mm')
+                time: schTime.format('HH:mm'),
+                duration : schTime.add(duration, 'second').format('HH:mm'),
+                continuity: element.continuity
             });
         }
         catch(e){
