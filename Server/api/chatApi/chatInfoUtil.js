@@ -88,7 +88,7 @@ const createChatRoom = async(req, res) => {
         makeRandomNum(2),
     };
     
-    let sql = "INSERT INTO chatInfo set ?;";
+    let insertQuery = "INSERT INTO chatInfo set ?;";
     const result = await setMySQL(insertQuery, createChatObj);
     if(result.pro)
 
