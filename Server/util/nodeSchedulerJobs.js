@@ -55,10 +55,10 @@ const operation_Start_schedulerJob = (Get_Option_Obj)=> {
             Get_Option_Obj.TUK_Schedule = TUK_Schedule();
         }, TUK_intervalGap)
 
-        Get_Option_Obj.GTEC_IntervalID = setInterval(async()=>{
+        /*Get_Option_Obj.GTEC_IntervalID = setInterval(async()=>{
             if(dayjs().get('h')>=11||(dayjs().get('h')===10&&dayjs().get('m')>58)) GTEC_intervalGap = 5*60*1000;
             Get_Option_Obj.GTEC_Schedule = GTEC_Schedule();
-        }, GTEC_intervalGap)
+        }, GTEC_intervalGap)*/
     }
     else {
         Get_Option_Obj.operation_CODE = 0;
@@ -74,7 +74,7 @@ const operation_Stop_schedulerJob = (Get_Option_Obj)=> {
     Get_Option_Obj.operation_CODE = 0;
     clearInterval(Get_Option_Obj.subwayIntervalID);
     clearInterval(Get_Option_Obj.TUK_IntervalID);
-    clearInterval(Get_Option_Obj.GTEC_IntervalID);
+    //clearInterval(Get_Option_Obj.GTEC_IntervalID);
     Get_Option_Obj.sub_INFO = [];
     Get_Option_Obj.TUK_Schedule = {};
     Get_Option_Obj.GTEC_Schedule = {};
