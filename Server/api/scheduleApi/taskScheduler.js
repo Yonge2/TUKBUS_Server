@@ -8,10 +8,10 @@ let Get_Option_Obj = {
     sub_INFO : null,
     subwayIntervalID : null,
 
-    TUK_Schedule : null,
+    TUK_Schedule : {toTUK: [], toStation: []},
     TUK_ScheduleIntervalID : null,
 
-    GTEC_Schedule : null,
+    GTEC_Schedule : {toGTEC: [], toStation: []},
     GTEC_ScheduleIntervalID : null
  }
 
