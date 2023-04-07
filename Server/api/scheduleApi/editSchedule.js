@@ -15,7 +15,6 @@ const insertSchedule = async(req, res) => {
     const insertingResult = await Promise.allSettled(pormises);
     if(insertingResult.length === newSchedule.length) res.status(200).json({success: true})
     else res.status(200).json({success: false})
-
 }
 
 const deleteSchedule = async(req, res) => {

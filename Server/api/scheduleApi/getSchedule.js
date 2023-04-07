@@ -4,7 +4,7 @@ const {getMySQL} = require('../../db/conMysql');
 const getOptionOBJ = require('./taskScheduler');
 
 
-const getScheduleData = async(req, res, direction)=>{
+const getScheduleData = async(req, res, univName, direction)=>{
     //holiday
     if( !getOptionOBJ.holiday_CODE) res.status(200).json({success:true, Bus_schedule:[], 
         Subway_schedule:getOptionOBJ.sub_INFO, message:'공휴일'});
@@ -15,13 +15,32 @@ const getScheduleData = async(req, res, direction)=>{
             Subway_schedule:getOptionOBJ.sub_INFO, message:'운행종료'});
 
         else{
-            const shuttledata = await shuttleData(direction).catch((e)=>{
-                console.log('shuttleData err: ', e);
-                res.status(200).json({success: false, message: e});
-            });
-            res.status(200).json({success: true, Bus_schedule: shuttledata, Subway_schedule: getOptionOBJ.sub_INFO});
+            const Bus_schedule = await schClassification(univName, direction, getOptionOBJ);
+            res.status(200).json({success: true, Bus_schedule: Bus_schedule,
+                 Subway_schedule: getOptionOBJ.sub_INFO});
         }
     }
+}
+
+const schClassification = (univName, direction, obj) =>{
+    return new Promise((resolve, reject)=>{
+        const destination = 
+        (univName==="GTEC"&&direction==="Station") ? "GTEC_Station" : direction;
+        switch(destination){
+            case 'TUK':
+                resolve(obj.TUK_Schedule.toTUK);
+                break;
+            case 'Station':
+                resolve(obj.TUK_Schedule.toStation);
+                break;
+            case 'GTEC_Station':
+                resolve(obj.GTEC_Schedule.toStation);
+                break;
+            case 'GTEC':
+                resolve(obj.GTEC_Schedule.toGTEC);
+                break;
+        }
+    })
 }
 
 const getAllOfScheduleData = async(req, res) =>{
@@ -37,7 +56,7 @@ const getAllOfScheduleData = async(req, res) =>{
 
 module.exports = {getScheduleData, getAllOfScheduleData};
 
-const shuttleData = async(direction)=>{
+/*const shuttleData = async(direction)=>{
     const query = getScheduleQuery(direction);
     const originSchedule = await getMySQL(query).catch((e)=>{
         console.log("get Schedule err: ",e);
@@ -62,8 +81,8 @@ const shuttleData = async(direction)=>{
             const tempSchMin = tempSchTime.get('m');
             
             const tempSch = {
-                hour: tempSchHour,
-                min: tempSchMin,
+                hour: hour,
+                min: min,
                 destination: 'after17',
                 continuity: false
             }
@@ -134,3 +153,4 @@ const getScheduleQuery = (destination) => {
        return query('Bus_Sch_Weekday', `"${destination}"`, hour, min);
     }
  }
+*/

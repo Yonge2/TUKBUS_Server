@@ -4,8 +4,15 @@ const scheduler = require('node-schedule');
 let Get_Option_Obj = {
     holiday_CODE : 1, //if today is not holiday, code = 1, else code = 0
     operation_CODE : 1, //on : code = 1 / off : code = 0
+
     sub_INFO : null,
-    intervalID : null
+    subwayIntervalID : null,
+
+    TUK_Schedule : null,
+    TUK_ScheduleIntervalID : null,
+
+    GTEC_Schedule : null,
+    GTEC_ScheduleIntervalID : null
  }
 
  module.exports = Get_Option_Obj;
@@ -19,7 +26,7 @@ scheduler.scheduleJob('00 00 01 * * *', ()=>{
  });
 
  //service start
- scheduler.scheduleJob('00 00 07 * * *', ()=>{
+ scheduler.scheduleJob('00 54 07 * * *', ()=>{
     schedulerJobs.operation_Start_schedulerJob(Get_Option_Obj);
     setTimeout(()=>{
        console.log('\noperation? : ', Get_Option_Obj.operation_CODE);
