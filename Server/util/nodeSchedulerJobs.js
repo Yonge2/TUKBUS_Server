@@ -52,7 +52,7 @@ const operation_Start_schedulerJob = (Get_Option_Obj)=> {
         //schedule
         Get_Option_Obj.TUK_IntervalID = setInterval(async()=>{
             if(dayjs().get('h')>=17) TUK_intervalGap = 1*60*1000;
-            Get_Option_Obj.TUK_Schedule = TUK_Schedule();
+            Get_Option_Obj.TUK_Schedule = await TUK_Schedule();
             console.log("sch:",Get_Option_Obj.TUK_Schedule)
         }, TUK_intervalGap)
 
