@@ -3,7 +3,7 @@ const kakaoDuration = require('./kakaoDuration');
 const {getMySQL} = require('../db/conMysql');
 
 //duration 구분
-let tempScheduleToTUK = "16:59";
+let tempScheduleToTUK = "16:58";
 
 const TUK_Schedule = async()=>{
     const now = new dayjs();
@@ -13,6 +13,7 @@ const TUK_Schedule = async()=>{
     const tempMin = parseInt(tempScheduleToTUK.substring(3,5));
 
     const toStationSch = await shuttleData("TUK", "Station", hour, min);
+    console.log('getScheduleTask, station : ', toStationSch);
 
     //17시 이후
     if(hour>=17){
@@ -21,6 +22,7 @@ const TUK_Schedule = async()=>{
             const toTUKsch = await shuttleData("TUK", "TUK", hour, min);
             tempScheduleToTUK = toStationSch[0].duration;
             console.log("duration2:", tempScheduleToTUK);
+            console.log('getScheduleTask, TUK : ', toTUKsch);
 
             return {toTUK: toTUKsch, toStation: toStationSch};
         }
@@ -49,14 +51,11 @@ module.exports = {TUK_Schedule, GTEC_Schedule}
 
 const shuttleData = async(univName, destination, hour, min)=>{
     let direction = (univName==="GTEC"&&destination==="Station")? "GTEC_Station" : destination;
-    console.log("direction: ", direction);
 
     const query = getScheduleQuery(univName, destination, hour, min);
     const originSchedule = await getMySQL(query).catch((e)=>{
         console.log("get Schedule err: ",e);
     });
-
-    console.log("originschedule : ", originSchedule);
 
     if(originSchedule.length){
         const promises = originSchedule.map((ele)=>{
@@ -114,6 +113,7 @@ const addDuration = (element, direction) => {
 
 const getScheduleQuery = (univName, destination, hour, min) => {
     const now = new dayjs();
+    console.log('getScheduleTask, query : ', destination, hour, min);
     //const tableName = univName==="TUK" ? "TUK_Sch" : "GTEC_Sch" ;
 
     const query = (table, destination, hour, min) =>{
