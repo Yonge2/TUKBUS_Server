@@ -2,8 +2,8 @@ const schedulerJobs = require('../../util/nodeSchedulerJobs');
 const scheduler = require('node-schedule');
 
 let Get_Option_Obj = {
-    holiday_CODE : 1, //if today is not holiday, code = 1, else code = 0
-    operation_CODE : 1, //on : code = 1 / off : code = 0
+    holiday_CODE : null, //if today is not holiday, code = 1, else code = 0
+    operation_CODE : null, //on : code = 1 / off : code = 0
 
     sub_INFO : null,
     subwayIntervalID : null,
@@ -26,7 +26,7 @@ scheduler.scheduleJob('00 00 01 * * *', ()=>{
  });
 
  //service start
- scheduler.scheduleJob('00 52 17 * * *', ()=>{
+ scheduler.scheduleJob('00 5 18 * * *', ()=>{
     schedulerJobs.operation_Start_schedulerJob(Get_Option_Obj);
     setTimeout(()=>{
        console.log('\noperation? : ', Get_Option_Obj.operation_CODE);

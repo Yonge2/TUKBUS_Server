@@ -22,13 +22,16 @@ const TUK_Schedule = async()=>{
             tempScheduleToTUK = toStationSch[0].duration;
 
             const toTUKsch = await after17_TUK_ShuttleData(toStationSch);
-            
+
             console.log("duration2:", tempScheduleToTUK);
             console.log('getScheduleTask, TUK : ', toTUKsch);
 
             return {toTUK: toTUKsch, toStation: toStationSch};
         }
-        else return {toStation: toStationSch};
+        else {
+            console.log("temptime 안지남");
+            return {toStation: toStationSch};
+        }
     }
     else{
         const toTUKsch = await shuttleData("TUK", "TUK", hour, min);
