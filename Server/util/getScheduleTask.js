@@ -17,7 +17,7 @@ const TUK_Schedule = async()=>{
 
     //17시 이후
     if(hour>=17){
-        if(tempHour<=hour && tempMin<=min){
+        if(tempHour<=hour && tempMin<=min || tempHour<hour){
             console.log("duration1:", tempScheduleToTUK);
             const toTUKsch = await shuttleData("TUK", "TUK", hour, min);
             tempScheduleToTUK = toStationSch[0].duration;
