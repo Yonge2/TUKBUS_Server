@@ -19,8 +19,10 @@ const TUK_Schedule = async()=>{
     if(hour>=17){
         if(tempHour<=hour && tempMin<=min || tempHour<hour){
             console.log("duration1:", tempScheduleToTUK);
-            const toTUKsch = await shuttleData("TUK", "TUK", hour, min);
             tempScheduleToTUK = toStationSch[0].duration;
+
+            const toTUKsch = await after17_TUK_ShuttleData(toStationSch);
+            
             console.log("duration2:", tempScheduleToTUK);
             console.log('getScheduleTask, TUK : ', toTUKsch);
 
@@ -48,6 +50,24 @@ module.exports = {TUK_Schedule, GTEC_Schedule}
 
 //---------------------------------------------------------------//
 
+const after17_TUK_ShuttleData = async(stationSchedule) =>{
+    const promises = stationSchedule.map((ele)=>{
+        const tempHour = parseInt(ele.duration.substring(0,2));
+        const tempMin = parseInt(ele.duration.substring(3,5));
+        
+        const tempSch = {
+            hour: tempHour,
+            min: tempMin,
+            destination: 'after17',
+            continuity: false
+        }
+        return addDuration(tempSch, 'after17');
+    })
+
+    const busSchedule = await Promise.all(promises);
+    return busSchedule;
+}
+
 
 const shuttleData = async(univName, destination, hour, min)=>{
     let direction = (univName==="GTEC"&&destination==="Station")? "GTEC_Station" : destination;
@@ -61,26 +81,6 @@ const shuttleData = async(univName, destination, hour, min)=>{
         const promises = originSchedule.map((ele)=>{
             return addDuration(ele, direction);
         })
-        const busSchedule = await Promise.all(promises);
-        return busSchedule;
-    }
-
-    else if(!originSchedule.length && destination==="TUK"){
-        const toStationSchedule = await shuttleData("Station");
-
-        const promises = toStationSchedule.map((ele)=>{
-            const tempHour = parseInt(ele.duration.substring(0,2));
-            const tempMin = parseInt(ele.duration.substring(3,5));
-            
-            const tempSch = {
-                hour: tempHour,
-                min: tempMin,
-                destination: 'after17',
-                continuity: false
-            }
-            return addDuration(tempSch, 'after17');
-        })
-
         const busSchedule = await Promise.all(promises);
         return busSchedule;
     }
