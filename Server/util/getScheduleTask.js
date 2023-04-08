@@ -12,7 +12,7 @@ const TUK_Schedule = async()=>{
     const tempHour = parseInt(tempScheduleToTUK.substring(0,2));
     const tempMin = parseInt(tempScheduleToTUK.substring(3,5));
 
-    const toStationSch = await shuttleData("TUK", "TUK_Station", hour, min);
+    const toStationSch = await shuttleData("TUK", "Station", hour, min);
 
     //17시 이후
     if(hour>=17){
@@ -49,11 +49,14 @@ module.exports = {TUK_Schedule, GTEC_Schedule}
 
 const shuttleData = async(univName, destination, hour, min)=>{
     let direction = (univName==="GTEC"&&destination==="Station")? "GTEC_Station" : destination;
+    console.log("direction: ", direction);
 
     const query = getScheduleQuery(univName, destination, hour, min);
     const originSchedule = await getMySQL(query).catch((e)=>{
         console.log("get Schedule err: ",e);
     });
+
+    console.log("originschedule : ", originSchedule);
 
     if(originSchedule.length){
         const promises = originSchedule.map((ele)=>{
@@ -110,8 +113,8 @@ const addDuration = (element, direction) => {
 
 
 const getScheduleQuery = (univName, destination, hour, min) => {
-
-    const tableName = univName==="TUK" ? "TUK_Sch" : "GTEC_Sch" ;
+    const now = new dayjs();
+    //const tableName = univName==="TUK" ? "TUK_Sch" : "GTEC_Sch" ;
 
     const query = (table, destination, hour, min) =>{
         return `SELECT * FROM ${table} WHERE destination = ${destination} AND(hour >= ${hour} AND min > ${min} OR hour > ${hour}) ORDER BY hour, min LIMIT 4 ;`;
@@ -125,6 +128,6 @@ const getScheduleQuery = (univName, destination, hour, min) => {
        return query('Bus_Sch_Weekend', `"${destination}"`, hour, min);*/
        
        default : //weekday
-       return query(tableName, `"${destination}"`, hour, min);
+       return query("Bus_Sch_Weekday", `"${destination}"`, hour, min);
     }
  }
