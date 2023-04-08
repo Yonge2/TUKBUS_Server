@@ -36,7 +36,7 @@ const holiday_schedulerJob = async(Get_Option_Obj)=> {
 const operation_Start_schedulerJob = (Get_Option_Obj)=> {
     console.log('service start(8시)');
     const SUBWAY_intervalGap = 1*60*1000;
-    let TUK_intervalGap = 5*60*1000; //5min
+    let TUK_intervalGap = 1*60*1000; //5min
     let GTEC_intervalGap = 1*60*1000; //1min
 
     if(Get_Option_Obj.holiday_CODE){
