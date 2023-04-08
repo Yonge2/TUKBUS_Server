@@ -1,9 +1,17 @@
 const dayjs = require('dayjs');
+const scheduler = require('node-schedule');
 const kakaoDuration = require('./kakaoDuration');
 const {getMySQL} = require('../db/conMysql');
 
 //duration 구분
-let tempScheduleToTUK = "16:58";
+let tempScheduleToTUK = "";
+let toTUKsch = [];
+scheduler.scheduleJob('00 00 01 * * *', ()=>{
+    tempScheduleToTUK = "16:58";
+    toTUKsch = [];
+})
+
+
 
 const TUK_Schedule = async()=>{
     const now = new dayjs();
@@ -13,28 +21,22 @@ const TUK_Schedule = async()=>{
     const tempMin = parseInt(tempScheduleToTUK.substring(3,5));
 
     const toStationSch = await shuttleData("TUK", "Station", hour, min);
-    console.log('getScheduleTask, station : ', toStationSch);
+
 
     //17시 이후
     if(hour>=17){
+        
         if(tempHour<=hour && tempMin<=min || tempHour<hour){
-            console.log("duration1:", tempScheduleToTUK);
             tempScheduleToTUK = toStationSch[0].duration;
-
-            const toTUKsch = await after17_TUK_ShuttleData(toStationSch);
-
-            console.log("duration2:", tempScheduleToTUK);
-            console.log('getScheduleTask, TUK : ', toTUKsch);
-
+            toTUKsch = await after17_TUK_ShuttleData(toStationSch);
             return {toTUK: toTUKsch, toStation: toStationSch};
         }
         else {
-            console.log("temptime 안지남");
-            return {toStation: toStationSch};
+            return {toTUK: toTUKsch, toStation: toStationSch};
         }
     }
     else{
-        const toTUKsch = await shuttleData("TUK", "TUK", hour, min);
+        toTUKsch = await shuttleData("TUK", "TUK", hour, min);
         return {toTUK: toTUKsch, toStation: toStationSch};
     }
 }
@@ -116,7 +118,6 @@ const addDuration = (element, direction) => {
 
 const getScheduleQuery = (univName, destination, hour, min) => {
     const now = new dayjs();
-    console.log('getScheduleTask, query : ', destination, hour, min);
     //const tableName = univName==="TUK" ? "TUK_Sch" : "GTEC_Sch" ;
 
     const query = (table, destination, hour, min) =>{

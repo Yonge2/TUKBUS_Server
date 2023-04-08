@@ -16,7 +16,6 @@ const getScheduleData = async(req, res, univName, direction)=>{
 
         else{
             const Bus_schedule = await schClassification(univName, direction, getOptionOBJ);
-            console.log('res : ', Bus_schedule);
             res.status(200).json({success: true, Bus_schedule: Bus_schedule,
                  Subway_schedule: getOptionOBJ.sub_INFO});
         }
@@ -25,7 +24,6 @@ const getScheduleData = async(req, res, univName, direction)=>{
 
 const schClassification = (univName, direction, obj) =>{
     return new Promise((resolve, reject)=>{
-        console.log("res destination :", direction);
         const destination = 
         (univName==="GTEC"&&direction==="Station") ? "GTEC_Station" : direction;
         switch(destination){
