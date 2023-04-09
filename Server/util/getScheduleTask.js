@@ -48,7 +48,7 @@ const GTEC_Schedule = async()=>{
     const hour = now.get('h');
     const min = now.get('m');
     const toGTECsch = await shuttleData("GTEC", "GTEC", hour, min);
-    const GTEC_toStationSch = await shuttleData("GTEC", "GTEC_Station", hour, min);
+    const GTEC_toStationSch = await shuttleData("GTEC", "Station", hour, min);
 
     return {toGTEC: toGTECsch, GTEC_toStation: GTEC_toStationSch};
 }
@@ -120,7 +120,7 @@ const addDuration = (element, direction) => {
 
 const getScheduleQuery = (univName, destination, hour, min) => {
     const now = new dayjs();
-    //const tableName = univName==="TUK" ? "TUK_Sch" : "GTEC_Sch" ;
+    const tableName = univName==="TUK" ? "Bus_Sch_Weekday" : "gtec_sch" ;
 
     const query = (table, destination, hour, min) =>{
         return `SELECT * FROM ${table} WHERE destination = ${destination} AND(hour >= ${hour} AND min > ${min} OR hour > ${hour}) ORDER BY hour, min LIMIT 4 ;`;
@@ -134,6 +134,6 @@ const getScheduleQuery = (univName, destination, hour, min) => {
        return query('Bus_Sch_Weekend', `"${destination}"`, hour, min);*/
        
        default : //weekday
-       return query("Bus_Sch_Weekday", `"${destination}"`, hour, min);
+       return query(tableName, `"${destination}"`, hour, min);
     }
  }
