@@ -2,7 +2,8 @@ const {getMySQL, setMySQL} = require("../../db/conMysql");
 const {TUK_schWeekdayJson, GTEC_schJson} = require("../../util/editcsv");
 
 //insert data
-const insertSchedule = async(req, res, univName) => {
+const insertSchedule = async(req, res) => {
+    const univName = req.body.univName;
     const tableNmae = (univName==="TUK")?"Bus_Sch_Weekday" : "gtec_sch";
 
     const inserQuery = `INSERT INTO ${tableNmae} SET ?`;
