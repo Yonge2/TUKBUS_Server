@@ -4,7 +4,7 @@ const kakaoDuration = require('./kakaoDuration');
 const {getMySQL} = require('../db/conMysql');
 
 //duration 구분
-let tempScheduleToTUK = "";
+let tempScheduleToTUK = "16:58";
 let toTUKsch = [];
 let toStationSch = [];
 scheduler.scheduleJob('00 00 01 * * *', ()=>{

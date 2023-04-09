@@ -1,5 +1,3 @@
-const kakaoDuration = require('../../util/kakaoDuration');
-const dayjs = require('dayjs');
 const {getMySQL} = require('../../db/conMysql');
 const getOptionOBJ = require('./taskScheduler');
 
@@ -55,8 +53,8 @@ const getAllOfScheduleData = async(req, res) =>{
 }
 
 module.exports = {getScheduleData, getAllOfScheduleData};
-
-/*const shuttleData = async(direction)=>{
+/*
+const shuttleData = async(direction)=>{
     const query = getScheduleQuery(direction);
     const originSchedule = await getMySQL(query).catch((e)=>{
         console.log("get Schedule err: ",e);
