@@ -6,8 +6,10 @@ const {getMySQL} = require('../db/conMysql');
 //duration 구분
 let tempScheduleToTUK = "";
 let toTUKsch = [];
+let toStationSch = [];
 scheduler.scheduleJob('00 00 01 * * *', ()=>{
     tempScheduleToTUK = "16:58";
+    toStationSch = [];
     toTUKsch = [];
 })
 

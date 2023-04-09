@@ -2,9 +2,9 @@ const fs = require("fs");
 const path = require("path");
 
 
-const schWeekdayJson = () => {
+const TUK_schWeekdayJson = () => {
 
-    const fileName = "Bus_sch_weekday.csv";
+    const fileName = "TUK_weekday.csv";
     const csvPath = path.join(__dirname, '..', 'csvdir', fileName);
     const csv_weekday = fs.readFileSync(csvPath, "UTF-8");
     const schedule_weekday = scheduleCsvToJson(csv_weekday);
@@ -12,7 +12,16 @@ const schWeekdayJson = () => {
     return schedule_weekday;
 }
 
-module.exports = {schWeekdayJson}
+const GTEC_schJson = () =>{
+    const fileName = "GTEC_weekday.csv";
+    const csvPath = path.join(__dirname, '..', 'csvdir', fileName);
+    const csv_weekday = fs.readFileSync(csvPath, "UTF-8");
+    const schedule_weekday = scheduleCsvToJson(csv_weekday);
+
+    return schedule_weekday;
+}
+
+module.exports = {TUK_schWeekdayJson, GTEC_schJson}
 
 const scheduleCsvToJson = async(csv) =>{
     const rows = csv.split("\r\n");

@@ -1,10 +1,13 @@
 const {getMySQL, setMySQL} = require("../../db/conMysql");
-const {schWeekdayJson} = require("../../util/editcsv");
+const {TUK_schWeekdayJson, GTEC_schJson} = require("../../util/editcsv");
 
 //insert data
-const insertSchedule = async(req, res) => {
-    const inserQuery = 'INSERT INTO Bus_Sch_Weekday SET ?';
-    const newSchedule = await schWeekdayJson();
+const insertSchedule = async(req, res, univName) => {
+    const tableNmae = (univName==="TUK")?"Bus_Sch_Weekday" : "gtec_sch";
+
+    const inserQuery = `INSERT INTO ${tableNmae} SET ?`;
+
+    const newSchedule = (univName==="TUK")? await TUK_schWeekdayJson() : await GTEC_schJson();
 
     const pormises = newSchedule.map(async(ele)=>{
         return setMySQL(inserQuery, ele).catch((e)=>{
