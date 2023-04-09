@@ -36,7 +36,7 @@ const holiday_schedulerJob = async(Get_Option_Obj)=> {
 const operation_Start_schedulerJob = (Get_Option_Obj)=> {
     console.log('service start(8시)');
     const SUBWAY_intervalGap = 1*60*1000;
-    let TUK_intervalGap = 5*60*1000; //5min
+    let TUK_intervalGap = 1*60*1000; //5min
     let GTEC_intervalGap = 1*60*1000; //1min
 
     if(Get_Option_Obj.holiday_CODE){
@@ -55,10 +55,10 @@ const operation_Start_schedulerJob = (Get_Option_Obj)=> {
             Get_Option_Obj.TUK_Schedule = await TUK_Schedule();
         }, TUK_intervalGap)
 
-        /*Get_Option_Obj.GTEC_IntervalID = setInterval(async()=>{
-            if(dayjs().get('h')>=11||(dayjs().get('h')===10&&dayjs().get('m')>58)) GTEC_intervalGap = 5*60*1000;
+        Get_Option_Obj.GTEC_IntervalID = setInterval(async()=>{
+            //if(dayjs().get('h')>=11||(dayjs().get('h')===10&&dayjs().get('m')>58)) GTEC_intervalGap = 5*60*1000;
             Get_Option_Obj.GTEC_Schedule = GTEC_Schedule();
-        }, GTEC_intervalGap)*/
+        }, GTEC_intervalGap)
     }
     else {
         Get_Option_Obj.operation_CODE = 0;
