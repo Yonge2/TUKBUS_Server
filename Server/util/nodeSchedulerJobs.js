@@ -57,7 +57,7 @@ const operation_Start_schedulerJob = (Get_Option_Obj)=> {
 
         Get_Option_Obj.GTEC_IntervalID = setInterval(async()=>{
             //if(dayjs().get('h')>=11||(dayjs().get('h')===10&&dayjs().get('m')>58)) GTEC_intervalGap = 5*60*1000;
-            Get_Option_Obj.GTEC_Schedule = GTEC_Schedule();
+            Get_Option_Obj.GTEC_Schedule = await GTEC_Schedule();
         }, GTEC_intervalGap)
     }
     else {

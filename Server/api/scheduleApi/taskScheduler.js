@@ -26,7 +26,7 @@ scheduler.scheduleJob('00 00 01 * * *', ()=>{
  });
 
  //service start
- scheduler.scheduleJob('00 47 16 * * *', ()=>{
+ scheduler.scheduleJob('00 52 16 * * *', ()=>{
     schedulerJobs.operation_Start_schedulerJob(Get_Option_Obj);
     setTimeout(()=>{
        console.log('\noperation? : ', Get_Option_Obj.operation_CODE);
