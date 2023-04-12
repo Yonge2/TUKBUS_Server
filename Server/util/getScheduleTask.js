@@ -3,43 +3,36 @@ const scheduler = require('node-schedule');
 const kakaoDuration = require('./kakaoDuration');
 const {getMySQL} = require('../db/conMysql');
 
-//duration 구분
-let tempScheduleToTUK = "16:58";
 let toTUKsch = [];
-let toStationSch = [];
+let TUK_toStationSch = [];
+let toGTECsch = [];
+let GTEC_toStationSch = [];
+
 scheduler.scheduleJob('00 00 01 * * *', ()=>{
-    tempScheduleToTUK = "16:58";
-    toStationSch = [];
+    TUK_toStationSch = [];
     toTUKsch = [];
-})
-
-
+    toGTECsch = [];
+    GTEC_toStationSch = [];
+});
 
 const TUK_Schedule = async()=>{
     const now = new dayjs();
     const hour = now.get('h');
     const min = now.get('m');
-    const tempHour = parseInt(tempScheduleToTUK.substring(0,2));
-    const tempMin = parseInt(tempScheduleToTUK.substring(3,5));
+    
+    const isStation = await checkSchdule("TUK", "Station", TUK_toStationSch, hour, min);
+    const isTUK = await checkSchdule("TUK", "TUK", toTUKsch, hour, min);
 
-    const toStationSch = await shuttleData("TUK", "Station", hour, min);
-
+    if(isStation) TUK_toStationSch = await shuttleData("TUK", "Station", hour, min);
 
     //17시 이후
-    if(hour>=17){
-        
-        if(tempHour<=hour && tempMin<=min || tempHour<hour){
-            tempScheduleToTUK = toStationSch[0].duration;
-            toTUKsch = await after17_TUK_ShuttleData(toStationSch);
-            return {toTUK: toTUKsch, toStation: toStationSch};
-        }
-        else {
-            return {toTUK: toTUKsch, toStation: toStationSch};
-        }
+    if(hour>=17 || (hour===16&&min>50)){
+        if(isTUK) toTUKsch = await after17_TUK_ShuttleData(TUK_toStationSch);
+        return {toTUK: toTUKsch, toStation: TUK_toStationSch};
     }
-    else{
-        toTUKsch = await shuttleData("TUK", "TUK", hour, min);
-        return {toTUK: toTUKsch, toStation: toStationSch};
+    else{ //17시 이전
+        if(isTUK) toTUKsch = await shuttleData("TUK", "TUK", hour, min);
+        return {toTUK: toTUKsch, toStation: TUK_toStationSch};
     }
 }
 
@@ -47,15 +40,38 @@ const GTEC_Schedule = async()=>{
     const now = new dayjs();
     const hour = now.get('h');
     const min = now.get('m');
-    const toGTECsch = await shuttleData("GTEC", "GTEC", hour, min);
-    const GTEC_toStationSch = await shuttleData("GTEC", "Station", hour, min);
 
-    return {toGTEC: toGTECsch, GTEC_toStation: GTEC_toStationSch};
+    const isGTEC = await checkSchdule("GTEC", "GTEC", toGTECsch, hour, min);
+    const isStation = await checkSchdule("GTEC", "Station", GTEC_toStationSch, hour, min);
+
+    if(isGTEC) toGTECsch = await shuttleData("GTEC", "GTEC", hour, min); 
+    if(isStation) GTEC_toStationSch = await shuttleData("GTEC", "Station", hour, min);
+
+    return {toGTEC: toGTECsch, toStation: GTEC_toStationSch};
 }
 
 module.exports = {TUK_Schedule, GTEC_Schedule}
 
 //---------------------------------------------------------------//
+
+const checkSchdule = async(univName, destination, schArray, nowHour, nowMin) =>{
+    let schTime = "00:00";
+    
+    if(schArray.length&&univName==="TUK"){
+        schTime = (destination==="TUK") ? schArray[0].time : schArray[0].time ;
+    }
+    else if(schArray.length&&univName==="GTEC"){
+        schTime = (destination==="GTEC") ? schArray[0].time : schArray[0].time ;
+    }
+    const schHour = parseInt(schTime.substring(0,2));
+    const schMin = parseInt(schTime.substring(3,5));
+
+    if(nowHour>schHour || (nowHour>=schHour&&nowMin>schMin)) {
+        console.log("바뀜", schTime);
+        return true;
+    }
+    else return false;
+}
 
 const after17_TUK_ShuttleData = async(stationSchedule) =>{
     const promises = stationSchedule.map((ele)=>{
@@ -112,8 +128,6 @@ const addDuration = (element, direction) => {
             duration : schTime.add(duration, 'second').format('HH:mm'),
             continuity: element.continuity
         });
-        
-
     })
 }
 
