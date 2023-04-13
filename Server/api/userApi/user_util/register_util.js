@@ -31,8 +31,8 @@ const sendmail = async(req, res)=>{
     const mail_authNum = makeRandomNum(4);
 
     //example("email_mailAuth" : "1234", expire after 5min)
-    redisClient.set(req.body.userEmail+"_mailAuth", mail_authNum, 'EX', 300, ()=>{
-        console.log('mail Auth redis set for 3 min to ', req.body.userEmail);
+    redisClient.set(req.body.userEmail+"_mailAuth", mail_authNum, 'EX', 600, ()=>{
+        console.log('mail Auth redis set for 10 min to ', req.body.userEmail);
     });
     
     const mailOBJ = mailObj(mail_authNum, req.body.userEmail);
@@ -119,8 +119,8 @@ const reqInfo = async(req) => {
     return {
         userID: req.body.userID,
         userPW: await bcrypt.hash(req.body.userPW, auth_private.salt),
-        userNAME: req.body.userNAME,
+        univNAME: req.body.userNAME,
         userEmail: req.body.userEmail,
-        dayOfRegister: new dayjs().format('YYYY-MM-DD')
+        dayOfRegister: new dayjs().format('YYYY-MM-DD-HH:mm')
     };
 }
