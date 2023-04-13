@@ -4,9 +4,9 @@ const {TUK_schWeekdayJson, GTEC_schJson} = require("../../util/editcsv");
 //insert data
 const insertSchedule = async(req, res) => {
     const univName = req.body.univName;
-    const tableNmae = (univName==="TUK")?"Bus_Sch_Weekday" : "gtec_sch";
+    const tableName = (univName==="TUK")?"TUK1_Sch_Weekday" : "GTEC_Sch";
 
-    const inserQuery = `INSERT INTO ${tableNmae} SET ?`;
+    const inserQuery = `INSERT INTO ${tableName} SET ?`;
 
     const newSchedule = (univName==="TUK")? await TUK_schWeekdayJson() : await GTEC_schJson();
 
@@ -22,7 +22,11 @@ const insertSchedule = async(req, res) => {
 }
 
 const deleteSchedule = async(req, res) => {
-    const delQuery = 'delete from Bus_Sch_Weekday';
+    const univName = req.body.univName;
+    const tableName = (univName==="TUK")?"TUK1_Sch_Weekday" : "GTEC_Sch";
+
+    const delQuery = `DELETE FROM ${tableName}`;
+
     const result = await getMySQL(delQuery).catch((e)=>{
         console.log("del mysql err: ", e);
     })

@@ -134,10 +134,10 @@ const addDuration = (element, direction) => {
 
 const getScheduleQuery = (univName, destination, hour, min) => {
     const now = new dayjs();
-    const tableName = univName==="TUK" ? "Bus_Sch_Weekday" : "gtec_sch" ;
+    const tableName = univName==="TUK" ? "TUK1_Sch_Weekday" : "GTEC_Sch" ;
 
-    const query = (table, destination, hour, min) =>{
-        return `SELECT * FROM ${table} WHERE destination = ${destination} AND(hour >= ${hour} AND min > ${min} OR hour > ${hour}) ORDER BY hour, min LIMIT 4 ;`;
+    const query = (tableName, destination, hour, min) =>{
+        return `SELECT * FROM ${tableName} WHERE destination = ${destination} AND(hour >= ${hour} AND min > ${min} OR hour > ${hour}) ORDER BY hour, min LIMIT 4 ;`;
     }
 
     switch(now.format('ddd')){
