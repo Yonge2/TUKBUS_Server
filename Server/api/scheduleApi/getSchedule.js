@@ -3,7 +3,7 @@ const getOptionOBJ = require('./taskScheduler');
 const {TUK_Schedule, GTEC_Schedule} = require('../../util/getScheduleTask')
 
 
-const getScheduleData = async(req, res, univName, direction)=>{
+const getScheduleData = async(req, res, univNAME, direction)=>{
     //holiday
     if( !getOptionOBJ.holiday_CODE) res.status(200).json({success:true, Bus_schedule:[], 
         Subway_schedule:getOptionOBJ.sub_INFO, message:'공휴일'});
@@ -14,7 +14,7 @@ const getScheduleData = async(req, res, univName, direction)=>{
             Subway_schedule:getOptionOBJ.sub_INFO, message:'운행종료'});
 
         else{
-            const Bus_schedule = await schClassification(univName, direction);
+            const Bus_schedule = await schClassification(univNAME, direction);
             res.status(200).json({success: true, Bus_schedule: Bus_schedule,
                  Subway_schedule: getOptionOBJ.sub_INFO});
         }
@@ -37,11 +37,11 @@ const getAllOfScheduleData = async(req, res) =>{
 module.exports = {getScheduleData, getAllOfScheduleData};
 
 
-const schClassification = (univName, direction) =>{
+const schClassification = (univNAME, direction) =>{
     return new Promise(async(resolve, reject)=>{
-        const sch = (univName==="TUK")? await TUK_Schedule() : await GTEC_Schedule();
+        const sch = (univNAME==="TUK")? await TUK_Schedule() : await GTEC_Schedule();
         const destination = 
-        (univName==="GTEC"&&direction==="Station") ? "GTEC_Station" : direction;
+        (univNAME==="GTEC"&&direction==="Station") ? "GTEC_Station" : direction;
         switch(destination){
             case 'TUK':
                 resolve(sch.toTUK);
@@ -61,9 +61,10 @@ const schClassification = (univName, direction) =>{
 
 
 const allOfScheduleQuery = (req)=>{
-    const query =(day)=>{
-        return `SELECT * FROM ${day} ORDER BY destination, hour, min;`;
+    const query =(table)=>{
+        return `SELECT * FROM ${table} ORDER BY destination, hour, min;`;
     }
-    if(req.query.univName==="TUK") return query('Bus_Sch_Weekday');
-    else if(req.query.univName==="GTEC") return query('GTEC_Sch');
+    if(req.query.univNAME==="TUK") return query('TUK1_Sch_Weekday');
+    else if(req.query.univNAME==="GTEC") return query('GTEC_Sch');
+    else if(req.query.univNAME==="TUKweekend") return query('TUK1_Sch_Weekend');
 }
