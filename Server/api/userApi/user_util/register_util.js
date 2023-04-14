@@ -119,7 +119,7 @@ const reqInfo = async(req) => {
     return {
         userID: req.body.userID,
         userPW: await bcrypt.hash(req.body.userPW, auth_private.salt),
-        univNAME: req.body.userNAME,
+        univNAME: req.body.univNAME,
         userEmail: req.body.userEmail,
         dayOfRegister: new dayjs().format('YYYY-MM-DD-HH:mm')
     };

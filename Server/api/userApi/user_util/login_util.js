@@ -6,7 +6,7 @@ const jwt = require('./jwt_util');
 
 
 const loginPass = async(req, res) => {
-    const loginQuery = `select userID, userPW, userNAME from user where userID = "${req.body.userID}";`
+    const loginQuery = `select userID, userPW, univNAME from user where userID = "${req.body.userID}";`
     
     const userOBJ = await getMySQL(loginQuery);
 
@@ -21,21 +21,19 @@ const loginPass = async(req, res) => {
                     success: true,
                     token:{
                         accessToken: accessToken,
-                        refreshToken: refreshToken,
-                        userNAME: userOBJ[0].userNAME,
+                        refreshToken: refreshToken
                     }
                 })
                 return ;
             }
             catch(err) {
-                console.log(userOBJ[0].userNAME, ' 토큰실패\n err: ',err);
+                console.log(userOBJ[0].userID, ' 토큰실패\n err: ',err);
                 res.status(200).json({success:false, message:'token sign failed'});
                 return ;
             }
         }
         else { //비번틀림
-            console.log(userOBJ[0].userNAME, '비번틀림');
-            res.status(200).json({success:false, message:'PW is incorrect'});
+            res.status(200).json({success:false, message:'Incorrected PW'});
             return ;
         }
     }

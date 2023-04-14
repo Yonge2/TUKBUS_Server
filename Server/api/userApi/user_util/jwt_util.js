@@ -4,13 +4,13 @@ const privateJwt = require('../../../private/privatekey_Tuk').jwt;
 
 /**
   * sign jwt
-  * @param {{userID, userNAME}} user 
+  * @param {{userID, univNAME}} user 
   * @returns {String} token
   */
 const sign = (user) => { // sign access token
   const payload = {
     userID: user.userID,
-    userNAME: user.userNAME,
+    univNAME: user.univNAME
   };
 
   return jwt.sign(payload, privateJwt.secret, {
@@ -32,7 +32,7 @@ const verify = (token) => { // access token 검증
     return {
       success: true,
       userID: decoded.userID,
-      userNAME: decoded.userNAME
+      univNAME: decoded.univNAME
     };
   } catch (err) {
     return {

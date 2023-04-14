@@ -5,7 +5,6 @@ const redisClient = require('../../../db/redis');
 
 const changingPW = async(req, res)=>{
     const authCheck = await redisClient.v4.get(req.userID+"_PwAuth");
-    console.log(authCheck);
 
     if(authCheck){
         const chagedPW = await bcrypt.hash(req.body.userPW, salt);
