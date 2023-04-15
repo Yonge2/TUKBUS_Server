@@ -1,8 +1,6 @@
 const {getMySQL, setMySQL} = require('../../db/conMysql');
 const dayjs = require('dayjs');
 
-module.exports = {outChatroom, saveMessage}
-
 const outChatroom = async(req, res)=>{
     const roomID = req.body.roomID;
     const logQuery = 'INSERT INTO chatroom_log SET'
@@ -76,3 +74,5 @@ const loadMessage = async(req, res) => {
     const result = await getMySQL(getQuery);
     res.status(200).json({success: true, message: result});
 }
+
+module.exports = {outChatroom, saveMessage}
