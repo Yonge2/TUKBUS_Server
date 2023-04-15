@@ -3,7 +3,7 @@ const app = express();
 const port = require('../private/privatekey_Tuk').PORT.socketPort;
 
 
-const server = app.listen(port.socketPort, function(){
+const server = app.listen(port, function(){
     console.log("Socket server has started")
 })
 
