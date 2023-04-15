@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const port = require('../private/privatekey_Tuk').PORT.socketPort;
 
-app.get('/', ()=>{res.send('go')});
+
 const server = app.listen(port.socketPort, function(){
     console.log("Socket server has started")
 })
@@ -10,6 +10,8 @@ const server = app.listen(port.socketPort, function(){
 const chat = require('./socket_util/socketIO');
 const {socketJWTMiddleware} = require('./socket_util/socketUtil');
 const io = require('socket.io')(server);
+
+app.get('/', (req, res)=>{res.send('go')});
 
 
 io.of('/chat').use(socketJWTMiddleware);
