@@ -1,4 +1,5 @@
 const {getMySQL, setMySQL} = require('../../db/conMysql');
+const {redisSrem, redisGetScard, redisGetSmembers} = require('../../util/redisUtil');
 const dayjs = require('dayjs');
 
 const outChatroom = async(req, res)=>{
