@@ -3,33 +3,6 @@ const redisClient = require('../../db/redis');
 const {verify} = require('../../api/userApi/user_util/jwt_util');
 const dayjs = require('dayjs');
 
-const receiverCheck = (receiver) =>{
-    switch(receiver.length){
-        case 2:
-            return JSON.stringify({receiver1: receiver[0],
-                receiver2: receiver[1]});
-        case 1:
-            return JSON.stringify({receiver1: receiver[0]})
-        case 0:
-            return null;    
-    }
-}
-
-const saveMessage = async(obj) =>{
-    const date = new dayjs();
-    const message = {
-        roomID: obj.roomID,
-        sender: obj.userID,
-        message: obj.msg,
-        receiver: receiverCheck(obj.receiver),
-        sendTime: obj.sendTime,
-        sendDate: date.format('YYYY-MM-DD'),
-    }
-    const Insertquery = "INSERT INTO chatmessage set ?;";
-    const result = await setMySQL(Insertquery, message).catch((e)=>{
-        console.log("Insert message to DB err : ", e);
-    });
-}
 
 const socketJWTMiddleware = async(socket, next) => {
     //check socket auth
@@ -38,12 +11,19 @@ const socketJWTMiddleware = async(socket, next) => {
 
         if(result.success){
             const userID = socket.userID = result.userID;
-            socket.roomID = socket.handshake.auth.roomID;
+            const univNAME = result.univNAME;
+            const roomID = socket.roomID = socket.handshake.auth.roomID;
             console.log(userID);
             //insertion to redis user in room set
-            await redisClient.sAdd(`${socket.handshake.auth.roomID}_IN`, `${userID}`, (err, data)=>{
+            await redisClient.sAdd(`${socket.handshake.auth.roomID}_IN`, `${userID}`, async(err, data)=>{
                 if(!err) {
-                    console.log("sAdd 결과 : ",data);
+                    const insertLogQuery = 'INSERT INTO chatroom_log SET'
+                    await setMySQL(insertLogQuery, {
+                        userID: userID, 
+                        univNAME: univNAME, 
+                        roomID: roomID, 
+                        status: "in", 
+                        time: dayjs().format('YYYY-MM-DD HH:mm')});
                     next();
                 }
                 else console.log("socket middleware err: ", err);      
@@ -60,4 +40,4 @@ const socketJWTMiddleware = async(socket, next) => {
 
 
 
-module.exports = {saveMessage, socketJWTMiddleware};
+module.exports = {socketJWTMiddleware};
