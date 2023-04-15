@@ -8,10 +8,7 @@ const getChatlist = async(req, res)=>{
         (select blockedUserID FROM blocked WHERE userID = '${req.userID}') AND isLive=true;`
     const liveChatRoomData = await getMySQL(query).catch((e)=>{
         console.log('getChatList err: ', e);
-        res.status(500).json({
-            success: false,
-            message: e
-        })
+        res.status(500).json({ success: false, message: e});
     });
 
     if(liveChatRoomData.length){
@@ -34,11 +31,40 @@ const getChatlist = async(req, res)=>{
     }
     else{
         res.status(200).json({
-            success: true,
-            message: "No exist chatRoomList"
+            success: true
         });
     }
 }
+
+const createChatRoom = async(req, res) => {
+    const today = new dayjs();
+    const createChatObj = {
+        hostID : req.body.userID,
+        startingTime : req.body.startingTime,
+        startingPoint : req.body.startingPoint,
+        arrivalPoint : req.body.arrivalPoint,
+        createTime : today.format("YYYY-MM-DD-HH:mm"),
+        isLive : true,
+        roomID : today.format("MMDD_HHmm_") + req.body.userID + "_"+
+        makeRandomNum(2),
+    };
+    
+    const insertQuery = "INSERT INTO chatInfo set ?;";
+    const result = await setMySQL(insertQuery, createChatObj).catch((e)=>{
+        res.status(200).json({success: false, message: e});
+        console.log("CreateChatRoom err : ", e);
+    });
+
+    if(result.affectedRows){
+        res.status(200).json({
+            success: true, message: {roomID : createChatObj.roomID, message : "CreateChatRoom OK"}});
+    }
+    else res.status(200).json({success: false, message: "CreateChatRoom err"});
+}
+
+
+
+module.exports = {getChatlist, createChatRoom};
 
 const addInUserInfo = async(element, blockedUserID)=>{
     return new Promise(async(resolve, reject)=>{
@@ -74,43 +100,3 @@ const roomObj = (origin, userCount, inUser) =>{
         inUser: inUser
     }
 }
-
-const createChatRoom = async(req, res) => {
-    const today = new dayjs();
-    const createChatObj = {
-        hostID : req.body.userID,
-        startingTime : req.body.startingTime,
-        startingPoint : req.body.startingPoint,
-        arrivalPoint : req.body.arrivalPoint,
-        createTime : today.format("YYYY-MM-DD HH:mm"),
-        isLive : true,
-        roomID : today.format("MMDD") + req.body.userID + "_"+
-        makeRandomNum(2),
-    };
-    
-    let insertQuery = "INSERT INTO chatInfo set ?;";
-    const result = await setMySQL(insertQuery, createChatObj);
-    if(result.pro)
-
-    connection.query(sql, createChatObj, (err)=>{
-        if(err){
-            res.status(501).json({
-                success: false,
-                message: err
-            });
-            console.log("CreateChatRoom err : ", err);
-        }
-        else{
-            res.status(200).json({
-                success: true,
-                message: {roomID : createChatObj.roomID,
-                    message : "CreateChatRoom OK"}
-            });
-        }
-    });
-    return createChatObj;
-}
-
-
-
-module.exports = {getChatlist, createChatRoom};
