@@ -15,9 +15,9 @@ const socketJWTMiddleware = async(socket, next) => {
             const roomID = socket.roomID = socket.handshake.auth.roomID;
             console.log(userID);
             //insertion to redis user in room set
-            await redisClient.sAdd(`${socket.handshake.auth.roomID}_IN`, `${userID}`, async(err, data)=>{
+            await redisClient.sAdd(`${roomID}_IN`, `${userID}`, async(err, data)=>{
                 if(!err) {
-                    const insertLogQuery = 'INSERT INTO chatroom_log SET'
+                    const insertLogQuery = 'INSERT INTO chatroom_log SET ?'
                     await setMySQL(insertLogQuery, {
                         userID: userID, 
                         univNAME: univNAME, 
