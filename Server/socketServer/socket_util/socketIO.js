@@ -16,6 +16,7 @@ const chatting = (io) =>{
         socket.on('chat message', async(data)=>{
             data.roomID = socket.roomID;
             data.userID = socket.userID;
+            console.log(data);
 
             chat.to(socket.roomID).emit('chat message', {
                 userID : data.userID,

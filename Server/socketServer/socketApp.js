@@ -1,8 +1,8 @@
 const express = require('express');
 const app = express();
 const port = require('../private/privatekey_Tuk').PORT.socketPort;
-const router = express.Router();
 
+app.get('/', ()=>{res.send('go')});
 const server = app.listen(port.socketPort, function(){
     console.log("Socket server has started")
 })

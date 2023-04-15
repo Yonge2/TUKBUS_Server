@@ -4,7 +4,7 @@ const dayjs = require('dayjs');
 
 const outChatroom = async(req, res)=>{
     const roomID = req.body.roomID;
-    const logQuery = 'INSERT INTO chatroom_log SET'
+    const logQuery = 'INSERT INTO chatroom_log SET ?'
     //edit redis
     const sremResult = await redisSrem(`${roomID}_IN`, req.userID);
     //edit db
