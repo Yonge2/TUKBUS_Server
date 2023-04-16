@@ -45,8 +45,7 @@ const createChatRoom = async(req, res) => {
         arrivalPoint : req.body.arrivalPoint,
         createTime : today.format("YYYY-MM-DD-HH:mm"),
         isLive : true,
-        roomID : today.format("MMDD_HHmm_") + req.body.userID + "_"+
-        makeRandomNum(2),
+        roomID : today.format("MMDDHHmm_") + req.body.userID + makeRandomNum(2)
     };
     
     const insertQuery = "INSERT INTO chatInfo set ?;";
