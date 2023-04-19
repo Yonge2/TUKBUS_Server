@@ -31,15 +31,24 @@ const chatting = (io) =>{
         socket.on('disconnect', async()=>{
             const isOutQuery = 
             `SELECT * FROM chatroom_log WHERE roomID='${socket.roomID}' AND userID='${socket.userID}' AND status='out';`
-            
-            const isOut = await getMySQL(isOutQuery);
+
+             const isOut = await getMySQL(isOutQuery);
+
+             const updateInQuery = `UPDADTE chatrrom_log SET status = ? WHERE userID='${socket.userID}'
+             AND roomID='${socket.roomID}';`
+
+             await setMySQL(updateInQuery, 'in').catch((err)=>{
+                console.log('update into chatroom_log status err : ', err);
+             });
+
             if(isOut[0]) chat.to(socket.roomID).emit('out', socket.userID);
             else {
                 const lastMsgSeqQuery = 
                 `SELECT seqMessage FROM chatmessage WHERE roomID='${socket.roomID}' ORDER BY seqMessage DESC LIMIT 1;`
                 const lastMsg = await getMySQL(lastMsgSeqQuery);
 
-                const updateLogQuery = `UPDATE chatroom_log SET lastMsgSeq = ? ;`
+                const updateLogQuery = `UPDATE chatroom_log SET lastMsgSeq = ? WHERE userID='${socket.userID}' 
+                AND roomID='${socket.roomID}' AND status='ing';`
                 await setMySQL(updateLogQuery, lastMsg[0]).catch((err)=>{
                     console.log('update into chatroom_log last msg err : ', err);
                 });
@@ -47,7 +56,7 @@ const chatting = (io) =>{
         })
     })
 }
- 
+
 
 module.exports = chatting;
 

@@ -20,7 +20,7 @@ const socketJWTMiddleware = async(socket, next) => {
                             userID: userID, 
                             univNAME: result.univNAME, 
                             roomID: roomID, 
-                            status: "in", 
+                            status: "ing",
                             time: dayjs().format('YYYY-MM-DD HH:mm')
                         });
                         socket.firstIn = true;

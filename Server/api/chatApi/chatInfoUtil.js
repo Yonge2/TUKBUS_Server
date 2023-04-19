@@ -6,7 +6,7 @@ const dayjs = require('dayjs');
 const getChatlist = async(req, res)=>{
     const query = `SELECT * FROM chatInfo WHERE (hostID NOT IN
         select blockedUserID FROM blocked WHERE userID = '${req.userID}') OR 
-        (hostID NOT IN SELECT userID FROM blocked WHERE blockedUserID = '${req.userID}'))
+        (hostID NOT IN SELECT userID FROM blocked WHERE blockedUserID = '${req.userID}')
         AND isLive=true;`
     const liveChatRoomData = await getMySQL(query).catch((e)=>{
         console.log('getChatList err: ', e);
