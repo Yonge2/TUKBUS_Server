@@ -29,10 +29,12 @@ const chatting = (io) =>{
         })
     
         socket.on('disconnect', async()=>{
+            console.log('dis');
             const isOutQuery = 
             `SELECT * FROM chatroom_log WHERE roomID='${socket.roomID}' AND userID='${socket.userID}' AND status='out';`
 
              const isOut = await getMySQL(isOutQuery);
+             console.log(isOut);
 
              const updateInQuery = `UPDATE chatrrom_log SET status = ? WHERE userID='${socket.userID}'
              AND roomID='${socket.roomID}';`
