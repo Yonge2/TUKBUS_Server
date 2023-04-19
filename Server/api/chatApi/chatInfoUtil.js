@@ -7,8 +7,9 @@ const dayjs = require('dayjs');
 const ingChat = async(req, res)=>{
     const isIngQuery = `SELECT roomID FROM chatroom_log WHERE userID='${req.userID}' AND status='ing';`
     const isIng = await getMySQL(isIngQuery);
+    console.log("참여중인 방", isIng);
     if(isIng[0]){
-        const chatroomQuery = `SELECT * FROM chatInfo WHERE roomID = ${isIng[0]}`;
+        const chatroomQuery = `SELECT * FROM chatInfo WHERE roomID = ${isIng[0].roomID}`;
         const chatroom = await getMySQL(chatroomQuery).catch((err)=>{
             console.log('get ING chat room err : ', err);
         });
