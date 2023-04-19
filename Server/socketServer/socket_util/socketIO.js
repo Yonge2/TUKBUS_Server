@@ -34,7 +34,7 @@ const chatting = (io) =>{
 
              const isOut = await getMySQL(isOutQuery);
 
-             const updateInQuery = `UPDADTE chatrrom_log SET status = ? WHERE userID='${socket.userID}'
+             const updateInQuery = `UPDATE chatrrom_log SET status = ? WHERE userID='${socket.userID}'
              AND roomID='${socket.roomID}';`
 
              await setMySQL(updateInQuery, 'in').catch((err)=>{
