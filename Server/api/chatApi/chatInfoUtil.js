@@ -15,19 +15,24 @@ const getChatlist = async(req, res)=>{
         const query = `SELECT blockedUserID FROM blocked WHERE userID='${req.userID}';`
         const blockedUserID = await getMySQL(query);
 
-        const promises = liveChatRoomData.map(async(element)=>{
+        const promises = liveChatRoomData.map((element)=>{
                 return addInUserInfo(element, blockedUserID);
         })
-        const allPromises = await Promise.allSettled(promises);
-        //null값 제거 하기{status : 'rejected', reason: 'Blocked user In'}
-        const addUserCountRoom = allPromises.map((element)=>{
-            return element.value;
-        })
-
-        await res.status(200).json({
-            success:true,
-            message:addUserCountRoom
-        })
+        if(promises.length===0){
+            res.status(200).json({
+                success: true
+            });
+        }
+        else{
+            const allPromises = await Promise.allSettled(promises);
+            const addUserCountRoom = allPromises.map((element)=>{
+                if(element.status==='fulfilled') return element.value;
+            });
+            res.status(200).json({
+                success:true,
+                message:addUserCountRoom
+            })
+        }
     }
     else{
         res.status(200).json({
