@@ -62,9 +62,9 @@ const chatting = (io) =>{
 module.exports = chatting;
 
 const callMsg = async(userID, roomID)=>{
-    const lastMsgQuery = `SELECT lastMsqSeq FROM chatroom_log WHERE roomID='${roomID}'
+    /*const lastMsgQuery = `SELECT lastMsqSeq FROM chatroom_log WHERE roomID='${roomID}'
     AND userID=${userID};`
-    const lastMsgSeq = await getMySQL(lastMsgQuery); //int
+    const lastMsgSeq = await getMySQL(lastMsgQuery); //int*/
 
     const msgQuery = `SELECT sender, sendTime, message FROM chatmessage WHERE
     roomID='${roomID}' ORDER BY seqMEssage DESC LIMIT 20;`
