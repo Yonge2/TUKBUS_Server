@@ -7,10 +7,11 @@ const chatting = (io) =>{
         console.log(socket.roomID," / ", socket.userID);
 
         //추가돼서 테스트해바야행 커밋 아직 안할게
+        
         if(socket.firstIn) chat.to(socket.roomID).emit("in", socket.userID);
         else{
             const msg = await callMsg(socket.userID, socket.roomID);
-            chat.to(socket.userID).emit('callMsg', msg); //자기자신한테 채팅
+            chat.to(socket.roomID).emit('callMsg', msg); //자기자신한테 채팅
         }
         
         
