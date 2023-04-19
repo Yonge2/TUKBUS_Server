@@ -33,7 +33,7 @@ const saveMessage = async(req, res) =>{
     const roomID = req.body.roomID
     const userID = req.userID;
     const roomUser = await redisGetSmembers(`${roomID}_IN`);
-    const receiver = roomUser.filter((ele)=> ele !== sender);
+    const receiver = roomUser.filter((ele)=> ele !== userID);
 
     const message = {
         roomID: roomID,
