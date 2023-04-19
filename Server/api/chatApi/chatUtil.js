@@ -12,7 +12,7 @@ const outChatroom = async(req, res)=>{
         userID: req.userID, 
         univNAME: req.univNAME, 
         roomID: roomID,
-        status: 'out', 
+        status: 'out',
         time: new dayjs().format('YYYY-MM-DD HH:mm')
     })
     .catch((e)=>{ console.log('chatroom_log setsql err:', e);});
@@ -31,17 +31,17 @@ const outChatroom = async(req, res)=>{
 
 const saveMessage = async(req, res) =>{
     const roomID = req.body.roomID
-    const sender = req.userID;
+    const userID = req.userID;
     const roomUser = await redisGetSmembers(`${roomID}_IN`);
     const receiver = roomUser.filter((ele)=> ele !== sender);
 
     const message = {
         roomID: roomID,
-        sender: sender,
-        message: req.body.msg,
+        userID: userID,
+        msg: req.body.msg,
         receiver: receiverCheck(receiver),
-        sendTime: req.body.sendTime,
-        sendDate: new dayjs().format('YYYY-MM-DD'),
+        time: req.body.time,
+        Date: new dayjs().format('YYYY-MM-DD'),
     }
 
     const Insertquery = "INSERT INTO chatmessage set ?;";

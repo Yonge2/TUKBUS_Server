@@ -3,6 +3,22 @@ const {redisGetScard, redisGetSmembers} = require('../../util/redisUtil');
 const {setMySQL, getMySQL} = require('../../db/conMysql');
 const dayjs = require('dayjs');
 
+
+const ingChat = async(req, res)=>{
+    const isIngQuery = `SELECT roomID FROM chatroom_log WHERE userID=${req.userID} AND status='ing';`
+    const isIng = await getMySQL(isIngQuery);
+    if(isIng[0]){
+        const chatroomQuery = `SELECT * FROM chatInfo WHERE roomID = ${isIng[0]}`;
+        const chatroom = await getMySQL(chatroomQuery).catch((err)=>{
+            console.log('get ING chat room err : ', err);
+        });
+        res.status(200).json({success: true, message: chatroom});
+    }
+    else{
+        getChatlist(req, res);
+    }
+}
+
 const getChatlist = async(req, res)=>{
     const query = `SELECT * FROM chatInfo WHERE (hostID NOT IN (SELECT blockedUserID FROM blocked
          WHERE userID = '${req.userID}') AND
@@ -69,7 +85,7 @@ const createChatRoom = async(req, res) => {
 
 
 
-module.exports = {getChatlist, createChatRoom};
+module.exports = {ingChat, getChatlist, createChatRoom};
 
 const addInUserInfo = async(element, blockedUserID)=>{
     return new Promise(async(resolve, reject)=>{
@@ -105,3 +121,5 @@ const roomObj = (origin, userCount, inUser) =>{
         inUser: inUser
     }
 }
+
+

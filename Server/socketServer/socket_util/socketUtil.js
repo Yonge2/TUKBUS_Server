@@ -27,7 +27,6 @@ const socketJWTMiddleware = async(socket, next) => {
                         next();
                     }
                     else {
-                        console.log("두번째 입장");
                         socket.firstIn = false;
                         next();
                     }
