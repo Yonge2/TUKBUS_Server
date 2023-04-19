@@ -8,12 +8,11 @@ const chatting = (io) =>{
 
         //추가돼서 테스트해바야행 커밋 아직 안할게
         if(socket.firstIn) chat.to(socket.roomID).emit("in", socket.userID);
-
-        //이것두
-        socket.on('re_In', async()=>{
+        else{
             const msg = await callMsg(socket.userID, socket.roomID);
             chat.to(socket.userID).emit('callMsg', msg); //자기자신한테 채팅
-        })
+        }
+        
         
         //data{roomID, message, sender, sendTime}
         socket.on('chat message', async(data)=>{
@@ -67,8 +66,8 @@ const callMsg = async(userID, roomID)=>{
     AND userID=${userID};`
     const lastMsgSeq = await getMySQL(lastMsgQuery); //int
 
-    const msgQuery = `SELECT sender, receiver, sendTime, message FROM chatmessage WHERE
-    roomID='${roomID}' AND seqMessage>${lastMsgSeq[0]} ORDER BY seqMEssage DESC;`
+    const msgQuery = `SELECT sender, sendTime, message FROM chatmessage WHERE
+    roomID='${roomID}' ORDER BY seqMEssage DESC LIMIT 20;`
     //limit은 진영이랑 상의 후 진행
     const msgArr = await getMySQL(msgQuery);
 
