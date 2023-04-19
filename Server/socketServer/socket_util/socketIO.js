@@ -30,7 +30,7 @@ const chatting = (io) =>{
     
         socket.on('disconnect', async()=>{
             const isOutQuery = 
-            `SELECT * FROM chatroom_log WHERE roomID='${socket.roomID}' AND userID='${socket.userID} AND status='out';`
+            `SELECT * FROM chatroom_log WHERE roomID='${socket.roomID}' AND userID='${socket.userID}' AND status='out';`
             
             const isOut = await getMySQL(isOutQuery);
             if(isOut[0]) chat.to(socket.roomID).emit('out', socket.userID);
