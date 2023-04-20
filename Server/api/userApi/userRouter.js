@@ -6,7 +6,7 @@ const {loginPass, logOut} = require('./user_util/login_util');
 const jwt_middleWare = require('./user_util/authMiddleware');
 const refresh_token = require('./user_util/refresh_token');
 const {checkPW, changingPW} = require('./user_util/changePW');
-const {reportUser, blockUser, blockedUserList} = require('./user_util/reportUser');
+const {reportUser, blockUser, blockedUserList, submitOpnion} = require('./user_util/reportUser');
 
 
 //로그인
@@ -35,6 +35,7 @@ router.post('/register/idcheck', userIdCheck);
 router.post('/settings/checkPW', jwt_middleWare, checkPW);
 router.post('/settings/changingpw', jwt_middleWare, changingPW);
 
+router.post('/settings/submit', jwt_middleWare, submitOpnion);
 router.post('/settings/block', jwt_middleWare, blockUser);
 router.get('/settings/blockeduserlist', jwt_middleWare, blockedUserList);
 router.post('/settings/report', jwt_middleWare, reportUser);

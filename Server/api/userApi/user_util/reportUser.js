@@ -49,7 +49,6 @@ const blockedUserList = async(req, res)=>{
     else res.status(200).json({success: true, message: {blockUserList: []}});
 }
 
-module.exports = {reportUser, blockUser, blockedUserList};
 
 const getBlockedUserList = async(userID)=>{
     return new Promise(async(resolve, reject)=>{
@@ -61,6 +60,25 @@ const getBlockedUserList = async(userID)=>{
         resolve(result);
     })
 }
+
+
+
+const submitOpnion = async(req, res)=>{
+    const insertQuery = `INSERT INTO submitOpinion SET ?`
+    const insertSet = {userID: req.userID, detail: req.body.detail};
+    const result = await setMySQL(insertQuery, insertSet).catch((err)=>{
+        console.log('submitOpinion err: ', err);
+        res.status(200).json({success: false});
+    });
+    if(result.affectedRows){
+        res.status(200).json({success: true});
+    }
+    else res.status(200).json({success: false});
+}
+
+
+
+module.exports = {reportUser, blockUser, blockedUserList, submitOpnion};
 
 const blockObj = (req) =>{
     return {

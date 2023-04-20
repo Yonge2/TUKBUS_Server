@@ -13,7 +13,7 @@ const getChatRoomList = async(req, res)=>{
             console.log('get ING chat room err : ', err);
         });
         const chatRoom = [await addInUserInfo(ingChatRoom[0], [])];
-        res.status(200).json({success: true, message: chatRoom});
+        res.status(200).json({success: true, message: chatRoom, isIng: true});
     }
     else{
         ChatRoomList(req, res);
