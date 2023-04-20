@@ -1,11 +1,15 @@
 const {getMySQL, setMySQL} = require('../../db/conMysql');
+const dayjs = require('dayjs');
 
 const chatting = (io) =>{
 
     const chat = io.of('/chat').on('connection', async(socket)=>{
         socket.join(socket.roomID);
         
-        if(socket.firstIn) chat.to(socket.roomID).emit("in", socket.userID);
+        if(socket.firstIn) {
+            await setFirstMessageSeq(socket.userID, socket.roomID);
+            chat.to(socket.roomID).emit("in", socket.userID);
+        }
         else{
             const msg = await callMsg(socket.userID, socket.roomID);
             chat.to(socket.roomID).emit('callMsg', msg);
@@ -23,12 +27,12 @@ const chatting = (io) =>{
         })
     
         socket.on('disconnect', async()=>{
-            const isOutQuery = 
-            `SELECT * FROM chatroom_log WHERE roomID='${socket.roomID}' AND userID='${socket.userID}' AND status='out';`
+            const isOutQuery = `SELECT * FROM chatroom_log WHERE roomID='${socket.roomID}' AND 
+            userID='${socket.userID}' AND status='out';`
 
-             const isOut = await getMySQL(isOutQuery);
-             console.log('isout:',isOut);
+            const isOut = await getMySQL(isOutQuery);
 
+            //out
             if(isOut[0]) {
                 const updateInQuery = `UPDATE chatroom_log SET status = ? WHERE userID='${socket.userID}'
                 AND roomID='${socket.roomID}' AND status='ing';`
@@ -36,37 +40,45 @@ const chatting = (io) =>{
                 await setMySQL(updateInQuery, 'in').catch((err)=>{
                     console.log('update into chatroom_log status err : ', err);
                 });
+
                 chat.to(socket.roomID).emit('out', socket.userID);
             }
-            else {
-                const lastMsgSeqQuery = 
-                `SELECT seqMessage FROM chatmessage WHERE roomID='${socket.roomID}' ORDER BY seqMessage DESC LIMIT 1;`
-                const lastMsg = await getMySQL(lastMsgSeqQuery);
-
-                const updateLogQuery = `UPDATE chatroom_log SET lastMsgSeq = ? WHERE userID='${socket.userID}' 
-                AND roomID='${socket.roomID}' AND status='ing';`
-                await setMySQL(updateLogQuery, lastMsg[0].seqMessage).catch((err)=>{
-                    console.log('update into chatroom_log last msg err : ', err);
-                });
-            }
-        })
+        });
     })
 }
 
-
 module.exports = chatting;
 
-const callMsg = async(userID, roomID)=>{
-    const isLastMsgQuery = `SELECT lastMsgSeq FROM chatroom_log WHERE userID='${userID}'
+const callMsg = async(userID, roomID)=>{ //파라미터 page 추가 각
+    const now = dayjs().format('HH:mm');
+
+    const isLastMsgQuery = `SELECT FirstMsgSeq FROM chatroom_log WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing';`
     const isLastMsg = await getMySQL(isLastMsgQuery);
 
-    if(isLastMsg[0]){
-        const msgQuery = `SELECT userID, time, msg FROM chatmessage WHERE
-        roomID='${roomID}' AND seqMessage > ${isLastMsg[0].lastMsgSeq};`// ORDER BY seqMEssage ASC LIMIT 20;`
-        //limit은 진영이랑 상의 후 진행
-        const msgArr = await getMySQL(msgQuery);
-        return msgArr;
-    }
-    else return [];
+    const msgQuery = `SELECT userID, time, msg FROM chatmessage WHERE roomID='${roomID}' AND 
+    seqMessage > ${isLastMsg[0].firstMsgSeq} AND seqMessage < '${now}' ORDER BY seqMEssage;`//정렬 다시 LIMIT 20;`
+
+    const msgArr = await getMySQL(msgQuery);
+
+    return msgArr;
+}
+
+
+const setFirstMessageSeq = async(userID, roomID)=>{
+    const now = dayjs().format('HH:mm');
+    
+    const checkMessageQuery = `SELECT seqMessage FROM chatmessage WHERE roomID='${roomID}' 
+    AND time<'${now}' order by seqMessage desc limit 1;`
+    
+    const FirstMessage = await getMySQL(checkMessageQuery).catch((err)=>{
+        console.log('check last message err: ', err);
+    });
+
+    const updateFirstMsgQuery = `UPDATE chatroom_log SET firstMsgSeq = ? WHERE userID='${userID}'
+    AND roomID='${roomID}' AND status='ing'`
+
+    await setMySQL(updateFirstMsgQuery, FirstMessage[0].seqMessage).catch((err)=>{
+        console.log('update first message seq err: ', err);
+    });
 }

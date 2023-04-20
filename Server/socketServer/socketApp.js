@@ -9,6 +9,7 @@ const server = app.listen(port, function(){
 
 const chat = require('./socket_util/socketIO');
 const {socketJWTMiddleware} = require('./socket_util/socketUtil');
+
 const io = require('socket.io')(server);
 
 app.get('/', (req, res)=>{res.send('go')});
@@ -17,8 +18,3 @@ app.get('/', (req, res)=>{res.send('go')});
 io.of('/chat').use(socketJWTMiddleware);
 
 chat(io);
-
-
-
-
-
