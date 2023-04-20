@@ -19,12 +19,11 @@ const chatting = (io) =>{
         socket.on('chat message', async(data)=>{
             data.roomID = socket.roomID;
             data.userID = socket.userID;
-            console.log(data);
 
             chat.to(socket.roomID).emit('chat message', {
                 userID : data.userID,
                 msg : data.msg,
-                time : data.sendTime
+                time : data.time
             });
         })
     
@@ -45,7 +44,7 @@ const chatting = (io) =>{
             if(isOut[0]) chat.to(socket.roomID).emit('out', socket.userID);
             else {
                 const lastMsgSeqQuery = 
-                `SELECT seqMessage FROM chatmessage WHERE roomID='${socket.roomID}' ORDER BY seqMessage DESC LIMIT 1;`
+                `SELECT seqMessage FROM chatmessage WHERE roomID='${socket.roomID}' ORDER BY seqMessage ASC LIMIT 1;`
                 const lastMsg = await getMySQL(lastMsgSeqQuery);
 
                 const updateLogQuery = `UPDATE chatroom_log SET lastMsgSeq = ? WHERE userID='${socket.userID}' 
