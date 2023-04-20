@@ -7,12 +7,15 @@ const dayjs = require('dayjs');
 const getChatRoomList = async(req, res)=>{
     const isIngQuery = `SELECT roomID FROM chatroom_log WHERE userID='${req.userID}' AND status='ing';`
     const isIng = await getMySQL(isIngQuery);
+    console.log('isIng : ', isIng);
     if(isIng.length){
         const chatroomQuery = `SELECT * FROM chatInfo WHERE roomID = '${isIng[0].roomID}'`;
         const ingChatRoom = await getMySQL(chatroomQuery).catch((err)=>{
             console.log('get ING chat room err : ', err);
         });
+        console.log('ingchatroom', ingChatRoom);
         const chatRoom = await addInUserInfo(ingChatRoom, []);
+        console.log('chatroom', chatRoom);
         res.status(200).json({success: true, message: chatRoom});
     }
     else{
@@ -90,7 +93,7 @@ const ChatRoomList = async(req, res)=>{
 }
 
 
-const addInUserInfo = async(element, blockedUserID)=>{
+const addInUserInfo = (element, blockedUserID)=>{
     return new Promise(async(resolve, reject)=>{
         const userCount = await redisGetScard(element.roomID+'_IN');
         const roomInPeople = await redisGetSmembers(element.roomID+'_IN');
