@@ -29,16 +29,16 @@ const chatting = (io) =>{
              const isOut = await getMySQL(isOutQuery);
              console.log('isout:',isOut);
 
-             const updateInQuery = `UPDATE chatroom_log SET status = ? WHERE userID='${socket.userID}'
-             AND roomID='${socket.roomID}';`
+            if(isOut[0]) {
+                const updateInQuery = `UPDATE chatroom_log SET status = ? WHERE userID='${socket.userID}'
+                AND roomID='${socket.roomID}' AND status='ing';`
 
-             await setMySQL(updateInQuery, 'in').catch((err)=>{
-                console.log('update into chatroom_log status err : ', err);
-             });
-
-            if(isOut[0]) chat.to(socket.roomID).emit('out', socket.userID);
+                await setMySQL(updateInQuery, 'in').catch((err)=>{
+                    console.log('update into chatroom_log status err : ', err);
+                });
+                chat.to(socket.roomID).emit('out', socket.userID);
+            }
             else {
-                console.log('마지막 챗 저장');
                 const lastMsgSeqQuery = 
                 `SELECT seqMessage FROM chatmessage WHERE roomID='${socket.roomID}' ORDER BY seqMessage DESC LIMIT 1;`
                 const lastMsg = await getMySQL(lastMsgSeqQuery);
@@ -57,14 +57,16 @@ const chatting = (io) =>{
 module.exports = chatting;
 
 const callMsg = async(userID, roomID)=>{
-    /*const lastMsgQuery = `SELECT lastMsqSeq FROM chatroom_log WHERE roomID='${roomID}'
-    AND userID=${userID};`
-    const lastMsgSeq = await getMySQL(lastMsgQuery); //int*/
+    const isLastMsgQuery = `SELECT lastMsgSeq FROM chatroom_log WHERE userID='${userID}'
+    AND roomID='${roomID}' AND status='ing';`
+    const isLastMsg = await getMySQL(isLastMsgQuery);
 
-    const msgQuery = `SELECT userID, time, msg FROM chatmessage WHERE
-    roomID='${roomID}';`// ORDER BY seqMEssage ASC LIMIT 20;`
-    //limit은 진영이랑 상의 후 진행
-    const msgArr = await getMySQL(msgQuery);
-
-    return msgArr;
+    if(isLastMsg[0]){
+        const msgQuery = `SELECT userID, time, msg FROM chatmessage WHERE
+        roomID='${roomID}' AND seqMessage > ${isLastMsg[0].lastMsgSeq};`// ORDER BY seqMEssage ASC LIMIT 20;`
+        //limit은 진영이랑 상의 후 진행
+        const msgArr = await getMySQL(msgQuery);
+        return msgArr;
+    }
+    else return [];
 }
