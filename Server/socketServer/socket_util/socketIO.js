@@ -4,18 +4,13 @@ const chatting = (io) =>{
 
     const chat = io.of('/chat').on('connection', async(socket)=>{
         socket.join(socket.roomID);
-        console.log(socket.roomID," / ", socket.userID);
-
-        //추가돼서 테스트해바야행 커밋 아직 안할게
         
         if(socket.firstIn) chat.to(socket.roomID).emit("in", socket.userID);
         else{
             const msg = await callMsg(socket.userID, socket.roomID);
-            chat.to(socket.roomID).emit('callMsg', msg); //자기자신한테 채팅
+            chat.to(socket.roomID).emit('callMsg', msg);
         }
         
-        
-        //data{roomID, message, sender, sendTime}
         socket.on('chat message', async(data)=>{
             data.roomID = socket.roomID;
             data.userID = socket.userID;
@@ -49,7 +44,7 @@ const chatting = (io) =>{
 
                 const updateLogQuery = `UPDATE chatroom_log SET lastMsgSeq = ? WHERE userID='${socket.userID}' 
                 AND roomID='${socket.roomID}' AND status='ing';`
-                await setMySQL(updateLogQuery, lastMsg[0]).catch((err)=>{
+                await setMySQL(updateLogQuery, lastMsg[0].seqMessage).catch((err)=>{
                     console.log('update into chatroom_log last msg err : ', err);
                 });
             }
@@ -66,7 +61,7 @@ const callMsg = async(userID, roomID)=>{
     const lastMsgSeq = await getMySQL(lastMsgQuery); //int*/
 
     const msgQuery = `SELECT userID, time, msg FROM chatmessage WHERE
-    roomID='${roomID}' ORDER BY seqMEssage ASC LIMIT 20;`
+    roomID='${roomID}';`// ORDER BY seqMEssage ASC LIMIT 20;`
     //limit은 진영이랑 상의 후 진행
     const msgArr = await getMySQL(msgQuery);
 
