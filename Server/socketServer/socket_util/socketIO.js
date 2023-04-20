@@ -27,7 +27,7 @@ const chatting = (io) =>{
             `SELECT * FROM chatroom_log WHERE roomID='${socket.roomID}' AND userID='${socket.userID}' AND status='out';`
 
              const isOut = await getMySQL(isOutQuery);
-             console.log(isOut);
+             console.log('isout:',isOut);
 
              const updateInQuery = `UPDATE chatroom_log SET status = ? WHERE userID='${socket.userID}'
              AND roomID='${socket.roomID}';`
@@ -38,6 +38,7 @@ const chatting = (io) =>{
 
             if(isOut[0]) chat.to(socket.roomID).emit('out', socket.userID);
             else {
+                console.log('마지막 챗 저장');
                 const lastMsgSeqQuery = 
                 `SELECT seqMessage FROM chatmessage WHERE roomID='${socket.roomID}' ORDER BY seqMessage DESC LIMIT 1;`
                 const lastMsg = await getMySQL(lastMsgSeqQuery);
