@@ -28,7 +28,6 @@ const verify = (token) => { // access token 검증
   let decoded = null;
   try {
     decoded = jwt.verify(token, privateJwt.secret);
-    console.log('access verify : ', decoded);
     return {
       success: true,
       userID: decoded.userID,
