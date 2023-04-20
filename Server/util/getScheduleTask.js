@@ -67,7 +67,6 @@ const checkSchdule = async(univName, destination, schArray, nowHour, nowMin) =>{
     const schMin = parseInt(schTime.substring(3,5));
 
     if(nowHour>schHour || (nowHour>=schHour&&nowMin>schMin)) {
-        console.log("바뀜", schTime);
         return true;
     }
     else return false;
