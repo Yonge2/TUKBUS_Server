@@ -44,7 +44,7 @@ const chatting = (io) =>{
             if(isOut[0]) chat.to(socket.roomID).emit('out', socket.userID);
             else {
                 const lastMsgSeqQuery = 
-                `SELECT seqMessage FROM chatmessage WHERE roomID='${socket.roomID}' ORDER BY seqMessage ASC LIMIT 1;`
+                `SELECT seqMessage FROM chatmessage WHERE roomID='${socket.roomID}' ORDER BY seqMessage DESC LIMIT 1;`
                 const lastMsg = await getMySQL(lastMsgSeqQuery);
 
                 const updateLogQuery = `UPDATE chatroom_log SET lastMsgSeq = ? WHERE userID='${socket.userID}' 
@@ -66,7 +66,7 @@ const callMsg = async(userID, roomID)=>{
     const lastMsgSeq = await getMySQL(lastMsgQuery); //int*/
 
     const msgQuery = `SELECT userID, time, msg FROM chatmessage WHERE
-    roomID='${roomID}' ORDER BY seqMEssage DESC LIMIT 20;`
+    roomID='${roomID}' ORDER BY seqMEssage ASC LIMIT 20;`
     //limit은 진영이랑 상의 후 진행
     const msgArr = await getMySQL(msgQuery);
 
