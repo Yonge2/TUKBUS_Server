@@ -12,8 +12,8 @@ const getChatRoomList = async(req, res)=>{
         const ingChatRoom = await getMySQL(chatroomQuery).catch((err)=>{
             console.log('get ING chat room err : ', err);
         });
-        const chatRoom = [await addInUserInfo(ingChatRoom[0], [])];
-        res.status(200).json({success: true, message: chatRoom, isIng: true});
+        const chatRoom = await addInUserInfo(ingChatRoom[0], []);
+        res.status(200).json({success: true, message: [chatRoom], isIng: true});
     }
     else{
         ChatRoomList(req, res);
@@ -21,17 +21,7 @@ const getChatRoomList = async(req, res)=>{
 }
 
 const createChatRoom = async(req, res) => {
-    const today = new dayjs();
-    const createChatObj = {
-        hostID : req.body.userID,
-        startingTime : req.body.startingTime,
-        startingPoint : req.body.startingPoint,
-        arrivalPoint : req.body.arrivalPoint,
-        createTime : today.format("YYYY-MM-DD-HH:mm"),
-        isLive : true,
-        roomID : today.format("MMDDHHmm_") + req.body.userID + makeRandomNum(2)
-    };
-    
+    const createChatObj = createRoomObj(req);
     const insertQuery = "INSERT INTO chatInfo set ?;";
     const result = await setMySQL(insertQuery, createChatObj).catch((e)=>{
         res.status(200).json({success: false, message: e});
@@ -51,36 +41,29 @@ module.exports = {getChatRoomList, createChatRoom};
 
 
 const ChatRoomList = async(req, res)=>{
-    const query = `SELECT * FROM chatInfo WHERE (hostID NOT IN (SELECT blockedUserID FROM blocked
-         WHERE userID = '${req.userID}') AND
-         hostID NOT IN (SELECT userID FROM blocked WHERE blockedUserID = '${req.userID}')) AND isLive=true;`
+    const query = `SELECT * FROM chatInfo WHERE hostID NOT IN (SELECT blockedUserID FROM blocked
+         WHERE userID='${req.userID}' or blockedUserID='${req.userID}') AND isLive=true;`
     const liveChatRoomData = await getMySQL(query).catch((e)=>{
         console.log('getChatList err: ', e);
         res.status(500).json({ success: false, message: e});
     });
 
     if(liveChatRoomData.length){
-        const query = `SELECT blockedUserID FROM blocked WHERE userID='${req.userID}';`
+        const query = `SELECT blockedUserID FROM blocked WHERE userID='${req.userID}' or blockedUserID='${req.userID};`
         const blockedUserID = await getMySQL(query);
 
         const promises = liveChatRoomData.map((element)=>{
                 return addInUserInfo(element, blockedUserID);
         })
-        if(promises.length===0){
-            res.status(200).json({
-                success: true
-            });
-        }
-        else{
-            const allPromises = await Promise.allSettled(promises);
-            const addUserCountRoom = allPromises.map((element)=>{
-                if(element.status==='fulfilled') return element.value;
-            });
-            res.status(200).json({
-                success:true,
-                message:addUserCountRoom
-            })
-        }
+
+        const allPromises = await Promise.allSettled(promises);
+        const addUserCountRoom = allPromises.map((element)=>{
+            if(element.status==='fulfilled') return element.value;
+        });
+        res.status(200).json({
+            success:true,
+            message:addUserCountRoom
+        })
     }
     else{
         res.status(200).json({
@@ -125,4 +108,16 @@ const roomObj = (origin, userCount, inUser) =>{
     }
 }
 
+const createRoomObj = (req)=>{
+    const now = new dayjs();
+    return{
+        hostID : req.userID,
+        startingTime : req.body.startingTime,
+        startingPoint : req.body.startingPoint,
+        arrivalPoint : req.body.arrivalPoint,
+        createTime : now.format("YYYY-MM-DD-HH:mm"),
+        isLive : true,
+        roomID : now.format("MMDDHHmm_") + req.body.userID + makeRandomNum(2)
+    }
+}
 
