@@ -12,6 +12,7 @@ const getChatRoomList = async(req, res)=>{
         const ingChatRoom = await getMySQL(chatroomQuery).catch((err)=>{
             console.log('get ING chat room err : ', err);
         });
+
         const chatRoom = await addInUserInfo(ingChatRoom[0], []);
         res.status(200).json({success: true, message: [chatRoom], isIng: true});
     }
@@ -49,7 +50,7 @@ const ChatRoomList = async(req, res)=>{
     });
 
     if(liveChatRoomData.length){
-        const query = `SELECT blockedUserID FROM blocked WHERE userID='${req.userID}' or blockedUserID='${req.userID};`
+        const query = `SELECT blockedUserID FROM blocked WHERE userID='${req.userID}' or blockedUserID='${req.userID}';`
         const blockedUserID = await getMySQL(query);
 
         const promises = liveChatRoomData.map((element)=>{

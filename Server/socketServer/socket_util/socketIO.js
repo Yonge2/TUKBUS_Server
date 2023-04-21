@@ -71,10 +71,12 @@ const setFirstMessageSeq = async(userID, roomID)=>{
         console.log('check last message err: ', err);
     });
 
+    const firstMsgSeq = FirstMessage[0].seqMessage? FirstMessage[0].seqMessage : 0;
+
     const updateFirstMsgQuery = `UPDATE chatroom_log SET firstMsgSeq = ? WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing'`
 
-    await setMySQL(updateFirstMsgQuery, FirstMessage[0].seqMessage).catch((err)=>{
+    await setMySQL(updateFirstMsgQuery, firstMsgSeq).catch((err)=>{
         console.log('update first message seq err: ', err);
     });
 }
