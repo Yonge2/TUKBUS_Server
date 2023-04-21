@@ -102,7 +102,7 @@ const callMsg = async(userID, roomID, page)=>{
     const firstMsgSeq = (isFirstMsg.firstMsgSeq===null||isFirstMsg?.firstMsgSeq===undefined)? 0 : isFirstMsg[0].firstMsgSeq;
 
     const msgQuery = `SELECT userID, time, msg FROM chatmessage WHERE roomID='${roomID}' AND
-    seqMessage > ${firstMsgSeq} AND time < '${now}' ORDER BY seqMessage desc LIMIT 20 OFFSET ${offset};`
+    seqMessage > ${firstMsgSeq} AND time =< '${now}' ORDER BY seqMessage desc LIMIT 20 OFFSET ${offset};`
 
     const msgArr = await getMySQL(msgQuery);
     const reverseMsgArr = msgArr.reverse();
