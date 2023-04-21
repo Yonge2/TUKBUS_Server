@@ -31,16 +31,10 @@ const chatting = (io) =>{
             userID='${socket.userID}' AND status='out';`
 
             const isOut = await getMySQL(isOutQuery);
+            //이거 이전 아웃까지 계산하니까 이거 수정 ㄱㄱ
 
             //out
-            if(isOut[0]) {
-                const updateInQuery = `UPDATE chatroom_log SET status = ? WHERE userID='${socket.userID}'
-                AND roomID='${socket.roomID}' AND status='ing';`
-
-                await setMySQL(updateInQuery, 'in').catch((err)=>{
-                    console.log('update into chatroom_log status err : ', err);
-                });
-
+            if(isOut.length) {
                 chat.to(socket.roomID).emit('out', socket.userID);
             }
         });
@@ -54,10 +48,12 @@ const callMsg = async(userID, roomID)=>{ //파라미터 page 추가 각
 
     const isLastMsgQuery = `SELECT FirstMsgSeq FROM chatroom_log WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing';`
-    const isLastMsg = await getMySQL(isLastMsgQuery);
+    const isFirstMsg = await getMySQL(isLastMsgQuery);
+    const firstMsgSeq = isFirstMsg[0].firstMsgSeq? isFirstMsg[0].firstMsgSeq : 0;
 
-    const msgQuery = `SELECT userID, time, msg FROM chatmessage WHERE roomID='${roomID}' AND 
-    seqMessage > ${isLastMsg[0].firstMsgSeq} AND seqMessage < '${now}' ORDER BY seqMEssage;`//정렬 다시 LIMIT 20;`
+
+    const msgQuery = `SELECT userID, time, msg FROM chatmessage WHERE roomID='${roomID}' AND
+    seqMessage > ${firstMsgSeq} AND seqMessage < '${now}' ORDER BY seqMEssage;`//정렬 다시 LIMIT 20;`
 
     const msgArr = await getMySQL(msgQuery);
 
@@ -67,7 +63,7 @@ const callMsg = async(userID, roomID)=>{ //파라미터 page 추가 각
 
 const setFirstMessageSeq = async(userID, roomID)=>{
     const now = dayjs().format('HH:mm');
-    
+
     const checkMessageQuery = `SELECT seqMessage FROM chatmessage WHERE roomID='${roomID}' 
     AND time<'${now}' order by seqMessage desc limit 1;`
     

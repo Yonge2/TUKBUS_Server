@@ -17,6 +17,13 @@ const outChatroom = async(req, res)=>{
     })
     .catch((e)=>{ console.log('chatroom_log setsql err:', e);});
 
+    const updateInQuery = `UPDATE chatroom_log SET status = ? WHERE userID='${req.userID}'
+    AND roomID='${roomID}' AND status='ing';`
+
+    await setMySQL(updateInQuery, 'in').catch((err)=>{
+        console.log('update into chatroom_log status err : ', err);
+    });
+
     if(sremResult && sqlresult.affectedRows) res.status(200).json({success: true});
     else res.status(200).json({success:false, message: "chatroom out err"});
 
