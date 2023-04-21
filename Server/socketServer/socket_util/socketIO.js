@@ -56,9 +56,9 @@ const callMsg = async(userID, roomID)=>{ //파라미터 page 추가 각
     seqMessage > ${firstMsgSeq} AND time < '${now}' ORDER BY seqMessage;`//정렬 다시 LIMIT 20;`
 
     const msgArr = await getMySQL(msgQuery);
-    const reverseMsgArr = msgArr.reverse();
+    //const reverseMsgArr = msgArr.reverse();
 
-    return reverseMsgArr;
+    return msgArr;
 }
 
 
