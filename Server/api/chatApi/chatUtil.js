@@ -99,7 +99,7 @@ const callMsg = async(userID, roomID, page)=>{
     const isLastMsgQuery = `SELECT FirstMsgSeq FROM chatroom_log WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing';`
     const isFirstMsg = await getMySQL(isLastMsgQuery);
-    const firstMsgSeq = (isFirstMsg[0].firstMsgSeq===undefined)? 0 : isFirstMsg[0].firstMsgSeq;
+    const firstMsgSeq = (isFirstMsg.length===0)? 0 : isFirstMsg[0].firstMsgSeq;
 
     const msgQuery = `SELECT userID, time, msg FROM chatmessage WHERE roomID='${roomID}' AND
     seqMessage > ${firstMsgSeq} AND time < '${now}' ORDER BY seqMessage desc LIMIT 20 OFFSET ${offset};`

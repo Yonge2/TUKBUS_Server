@@ -45,7 +45,6 @@ const loginPass = async(req, res) => {
 const logOut = async(req, res)=>{
     const userID = req.userID;
     const delToken = await redisClient.v4.del(`${userID}_token`);
-    console.log('del token', delToken);
     if(delToken) res.status(200).json({success: true});
     else res.status(200).json({success: false, message: 'failed logout'});
 }
