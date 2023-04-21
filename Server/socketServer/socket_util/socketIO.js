@@ -71,7 +71,7 @@ const setFirstMessageSeq = async(userID, roomID)=>{
         console.log('check last message err: ', err);
     });
 
-    const firstMsgSeq = FirstMessage[0].seqMessage? FirstMessage[0].seqMessage : 0;
+    const firstMsgSeq = (FirstMessage[0].seqMessage===undefined)? 0 : FirstMessage[0].seqMessage;
 
     const updateFirstMsgQuery = `UPDATE chatroom_log SET firstMsgSeq = ? WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing'`
