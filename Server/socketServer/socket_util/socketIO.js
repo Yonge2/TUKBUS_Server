@@ -49,15 +49,16 @@ const callMsg = async(userID, roomID)=>{ //파라미터 page 추가 각
     const isLastMsgQuery = `SELECT FirstMsgSeq FROM chatroom_log WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing';`
     const isFirstMsg = await getMySQL(isLastMsgQuery);
-    const firstMsgSeq = isFirstMsg[0].firstMsgSeq? isFirstMsg[0].firstMsgSeq : 0;
+    const firstMsgSeq = (isFirstMsg[0].firstMsgSeq===undefined)? 0 : isFirstMsg[0].firstMsgSeq;
 
 
     const msgQuery = `SELECT userID, time, msg FROM chatmessage WHERE roomID='${roomID}' AND
-    seqMessage > ${firstMsgSeq} AND seqMessage < '${now}' ORDER BY seqMEssage;`//정렬 다시 LIMIT 20;`
+    seqMessage > ${firstMsgSeq} AND time < '${now}' ORDER BY seqMessage;`//정렬 다시 LIMIT 20;`
 
     const msgArr = await getMySQL(msgQuery);
+    const reverseMsgArr = msgArr.reverse();
 
-    return msgArr;
+    return reverseMsgArr;
 }
 
 
