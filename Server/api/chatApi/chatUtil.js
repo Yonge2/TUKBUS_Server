@@ -3,17 +3,17 @@ const {redisSrem, redisGetScard, redisGetSmembers} = require('../../util/redisUt
 const dayjs = require('dayjs');
 
 const outChatroom = async(req, res)=>{
+    const now = new dayjs();
     const roomID = req.body.roomID;
-    const logQuery = 'INSERT INTO chatroom_log SET ?'
-    //edit redis
     const sremResult = await redisSrem(`${roomID}_IN`, req.userID);
-    //edit db
+
+    const logQuery = 'INSERT INTO chatroom_log SET ?'
     const sqlresult = await setMySQL(logQuery, {
         userID: req.userID, 
         univNAME: req.univNAME, 
         roomID: roomID,
         status: 'out',
-        time: new dayjs().format('YYYY-MM-DD HH:mm')
+        time: now.format('YYYY-MM-DD HH:mm')
     })
     .catch((e)=>{ console.log('chatroom_log setsql err:', e);});
 
@@ -24,7 +24,10 @@ const outChatroom = async(req, res)=>{
         console.log('update into chatroom_log status err : ', err);
     });
 
-    if(sremResult && sqlresult.affectedRows) res.status(200).json({success: true});
+    if(sremResult && sqlresult.affectedRows) {
+        await recordOutMsg(req.userID, roomID, now);
+        res.status(200).json({success: true});
+    }
     else res.status(200).json({success:false, message: "chatroom out err"});
 
     if(!await redisGetScard(`${roomID}_IN`)){
@@ -76,11 +79,52 @@ const receiverCheck = (receiver) =>{
 }
 
 const loadMessage = async(req, res) => {
-    const roomID = req.body.roomID;
-    const getQuery = `SELECT * FROM chatmessage WHERE roomID='${roomID} ORDER BY seqMessage;`
+    const msg = await callMsg(req.userID, req.body.roomID, req.body.page).catch((err)=>{
+        console.log('load msg err: ', err);
+        res.status(200).json({success: false});
+    });
 
-    const result = await getMySQL(getQuery);
-    res.status(200).json({success: true, message: result});
+    if(msg.length){
+        res.status(200).json({success: true, message: msg});
+    }
+    else{
+        res.status(200).json({success: true, message: []});
+    }
 }
 
-module.exports = {outChatroom, saveMessage}
+const callMsg = async(userID, roomID, page)=>{
+    const now = dayjs().format('HH:mm');
+    const offset = 20+(page*20);
+
+    const isLastMsgQuery = `SELECT FirstMsgSeq FROM chatroom_log WHERE userID='${userID}'
+    AND roomID='${roomID}' AND status='ing';`
+    const isFirstMsg = await getMySQL(isLastMsgQuery);
+    const firstMsgSeq = (isFirstMsg[0].firstMsgSeq===undefined)? 0 : isFirstMsg[0].firstMsgSeq;
+
+    const msgQuery = `SELECT userID, time, msg FROM chatmessage WHERE roomID='${roomID}' AND
+    seqMessage > ${firstMsgSeq} AND time < '${now}' ORDER BY seqMessage desc LIMIT 20 OFFSET ${offset};`
+
+    const msgArr = await getMySQL(msgQuery);
+    const reverseMsgArr = msgArr.reverse();
+
+    return reverseMsgArr;
+}
+
+
+
+module.exports = {outChatroom, saveMessage, loadMessage}
+
+const recordOutMsg = async(userID, roomID, now)=>{
+    const outQuery = `INSERT INTO chatmessage SET ?`
+    await setMySQL(outQuery, {
+        roomID: roomID,
+        userID: null,
+        msg: `${userID}님이 퇴장했습니다.`,
+        receiver: null,
+        time: now.format('HH:mm'),
+        Date: now.format('YYYY-MM-DD')
+    })
+    .catch((err)=>{
+        console.log('record Out msg err : ', err);
+    })
+}

@@ -10,10 +10,6 @@ const chatting = (io) =>{
             await setFirstMessageSeq(socket.userID, socket.roomID);
             chat.to(socket.roomID).emit("in", socket.userID);
         }
-        else{
-            const msg = await callMsg(socket.userID, socket.roomID);
-            chat.to(socket.roomID).emit('callMsg', msg);
-        }
         
         socket.on('chat message', async(data)=>{
             data.roomID = socket.roomID;
@@ -43,30 +39,16 @@ const chatting = (io) =>{
 
 module.exports = chatting;
 
-const callMsg = async(userID, roomID)=>{ //파라미터 page 추가 각
-    const now = dayjs().format('HH:mm');
-
-    const isLastMsgQuery = `SELECT FirstMsgSeq FROM chatroom_log WHERE userID='${userID}'
-    AND roomID='${roomID}' AND status='ing';`
-    const isFirstMsg = await getMySQL(isLastMsgQuery);
-    const firstMsgSeq = (isFirstMsg[0].firstMsgSeq===undefined)? 0 : isFirstMsg[0].firstMsgSeq;
-
-
-    const msgQuery = `SELECT userID, time, msg FROM chatmessage WHERE roomID='${roomID}' AND
-    seqMessage > ${firstMsgSeq} AND time < '${now}' ORDER BY seqMessage;`//정렬 다시 LIMIT 20;`
-
-    const msgArr = await getMySQL(msgQuery);
-    //const reverseMsgArr = msgArr.reverse();
-
-    return msgArr;
-}
-
 
 const setFirstMessageSeq = async(userID, roomID)=>{
-    const now = dayjs().format('HH:mm');
+    const now = new dayjs();
+
+    await recordInMsg(userID, roomID, now).catch((err)=>{
+        console.log('record In msg err : ', err);
+    });
 
     const checkMessageQuery = `SELECT seqMessage FROM chatmessage WHERE roomID='${roomID}' 
-    AND time<'${now}' order by seqMessage desc limit 1;`
+    AND time<'${now.format('HH:mm')}' order by seqMessage desc limit 1;`
     
     const FirstMessage = await getMySQL(checkMessageQuery).catch((err)=>{
         console.log('check last message err: ', err);
@@ -80,4 +62,19 @@ const setFirstMessageSeq = async(userID, roomID)=>{
     await setMySQL(updateFirstMsgQuery, firstMsgSeq).catch((err)=>{
         console.log('update first message seq err: ', err);
     });
+}
+
+const recordInMsg = async(userID, roomID, now)=>{
+    const outQuery = `INSERT INTO chatmessage SET ?`
+    await setMySQL(outQuery, {
+        roomID: roomID,
+        userID: null,
+        msg: `${userID}님이 입장했습니다.`,
+        receiver: null,
+        time: now.format('HH:mm'),
+        Date: now.format('YYYY-MM-DD')
+    })
+    .catch((err)=>{
+        console.log('record Out msg err : ', err);
+    })
 }
