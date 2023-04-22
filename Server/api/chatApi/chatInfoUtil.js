@@ -65,6 +65,9 @@ const ChatRoomList = async(req, res)=>{
         const addUserCountRoom = allPromises.map((element)=>{
             if(element.status==='fulfilled') return element.value;
         });
+        const filtering = allPromises.filter((ele)=> ele.status === 'fulfilled');
+        console.log('filter', filtering);
+        console.log('promias2', addUserCountRoom);
         res.status(200).json({
             success:true,
             message:addUserCountRoom
