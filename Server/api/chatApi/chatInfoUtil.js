@@ -54,6 +54,7 @@ const ChatRoomList = async(req, res)=>{
         from blocked where userID='${req.userID}' or blockedUserID='${req.userID}';`
 
         const blockedUserID = await getMySQL(blockedUserQuery);
+        console.log('blockedUSer : ', blockedUserID);
 
         const promises = liveChatRoomData.map((element)=>{
                 return addInUserInfo(element, blockedUserID);
@@ -80,9 +81,12 @@ const addInUserInfo = (element, blockedUserID)=>{
     return new Promise(async(resolve, reject)=>{
         const userCount = await redisGetScard(element.roomID+'_IN');
         const roomInPeople = await redisGetSmembers(element.roomID+'_IN');
+        console.log("addInUserInfo blockedID : ", blockedUserID);
+        console.log("roomIn people : ", roomInPeople);
         if(blockedUserID.length){
             blockedUserID.forEach((ele) => {
                 if(roomInPeople.includes(ele.blockedUserID)) {
+                    console.log('yes');
                     reject("Blocked user In");
                 }
                 else resolve(roomObj(element, userCount, roomInPeople));
