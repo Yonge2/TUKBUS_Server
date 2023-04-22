@@ -62,10 +62,11 @@ const getBlockedUserList = async(userID)=>{
 }
 
 
-
+//요청 시간 추가, 테이블에 컬럼 추가 
 const submitOpnion = async(req, res)=>{
+    const date = new dayjs().format('YYYY-MM-DD HH:mm');
     const insertQuery = `INSERT INTO submitOpinion SET ?`
-    const insertSet = {userID: req.userID, detail: req.body.detail};
+    const insertSet = {userID: req.userID, detail: req.body.detail, date: date};
     const result = await setMySQL(insertQuery, insertSet).catch((err)=>{
         console.log('submitOpinion err: ', err);
         res.status(200).json({success: false});
