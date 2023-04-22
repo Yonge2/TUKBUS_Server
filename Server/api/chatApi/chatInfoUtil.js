@@ -50,7 +50,7 @@ const ChatRoomList = async(req, res)=>{
     });
 
     if(liveChatRoomData.length){
-        const blockedUserQuery = `select if(userID='${req.userID}', blockedUserID, userID) 
+        const blockedUserQuery = `select if(userID='${req.userID}', blockedUserID, userID) as isBlocked 
         from blocked where userID='${req.userID}' or blockedUserID='${req.userID}';`
 
         const blockedUserID = await getMySQL(blockedUserQuery);
@@ -85,7 +85,7 @@ const addInUserInfo = (element, blockedUserID)=>{
         console.log("roomIn people : ", roomInPeople);
         if(blockedUserID.length){
             blockedUserID.forEach((ele) => {
-                if(roomInPeople.includes(ele.blockedUserID)) {
+                if(roomInPeople.includes(ele.isBlocked)) {
                     console.log('yes');
                     reject("Blocked user In");
                 }
