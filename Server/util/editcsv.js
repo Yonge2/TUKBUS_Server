@@ -51,5 +51,5 @@ const setFileName = (univName, day) =>{
         if(day==='Sat') return "TUK_Sch_Saturday.csv";
         else "TUK_Sch_Weekday.csv";
     }
-    else if(univName==='GTEC') return "GTEC_Sch_Weekday.csv";
+    else if(univName==='GTEC') return "GTEC_Sch.csv";
 }
