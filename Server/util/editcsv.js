@@ -2,9 +2,8 @@ const fs = require("fs");
 const path = require("path");
 
 
-const TUK_schWeekdayJson = () => {
-
-    const fileName = "TUK_weekday.csv";
+const sch_Csv2Json = (univName , day) => {
+    const fileName = setFileName(univName, day);
     const csvPath = path.join(__dirname, '..', 'csvdir', fileName);
     const csv_weekday = fs.readFileSync(csvPath, "UTF-8");
     const schedule_weekday = scheduleCsvToJson(csv_weekday);
@@ -12,20 +11,10 @@ const TUK_schWeekdayJson = () => {
     return schedule_weekday;
 }
 
-const GTEC_schJson = () =>{
-    const fileName = "GTEC_weekday.csv";
-    const csvPath = path.join(__dirname, '..', 'csvdir', fileName);
-    const csv_weekday = fs.readFileSync(csvPath, "UTF-8");
-    const schedule_weekday = scheduleCsvToJson(csv_weekday);
-
-    return schedule_weekday;
-}
-
-module.exports = {TUK_schWeekdayJson, GTEC_schJson}
+module.exports = {sch_Csv2Json}
 
 const scheduleCsvToJson = async(csv) =>{
     const rows = csv.split("\r\n");
-    console.log(rows.length);
 
     let destination1 = [];
     let destination2 = [];
@@ -33,7 +22,7 @@ const scheduleCsvToJson = async(csv) =>{
     if(rows[rows.length-1] === '') rows.pop();
     rows.shift();
 
-    rows.map((ele)=>{
+    rows.forEach((ele)=>{
         const data = ele.split(",");
         const destination1_row = {
             destination: data[0],
@@ -55,4 +44,12 @@ const scheduleCsvToJson = async(csv) =>{
     busSch.push(...destination1);
     busSch.push(...destination2);
     return busSch;
+}
+
+const setFileName = (univName, day) =>{
+    if(univName==='TUK'){
+        if(day==='Sat') return "TUK_Sch_Saturday.csv";
+        else "TUK_Sch_Weekday.csv";
+    }
+    else if(univName==='GTEC') return "GTEC_Sch_Weekday.csv";
 }

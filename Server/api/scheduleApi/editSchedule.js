@@ -1,14 +1,16 @@
 const {getMySQL, setMySQL} = require("../../db/conMysql");
-const {TUK_schWeekdayJson, GTEC_schJson} = require("../../util/editcsv");
+const {sch_Csv2Json} = require("../../util/editcsv");
 
 //insert data
 const insertSchedule = async(req, res) => {
     const univName = req.body.univName;
-    const tableName = (univName==="TUK")?"TUK1_Sch_Weekday" : "GTEC_Sch";
+    const day = (req.body.day!=undefined)? req.body.day : null;
+
+    const tableName = (day===null)?(univName==="TUK")?"TUK_Sch_Weekday" : "GTEC_Sch": "TUK_Sch_Saturday";
 
     const inserQuery = `INSERT INTO ${tableName} SET ?`;
 
-    const newSchedule = (univName==="TUK")? await TUK_schWeekdayJson() : await GTEC_schJson();
+    const newSchedule = await sch_Csv2Json(univName, day);
 
     const pormises = newSchedule.map(async(ele)=>{
         return setMySQL(inserQuery, ele).catch((e)=>{
@@ -23,7 +25,9 @@ const insertSchedule = async(req, res) => {
 
 const deleteSchedule = async(req, res) => {
     const univName = req.body.univName;
-    const tableName = (univName==="TUK")?"TUK1_Sch_Weekday" : "GTEC_Sch";
+    const day = (req.body.day!=undefined)? req.body.day : null;
+
+    const tableName = (day===null)?(univName==="TUK")?"TUK_Sch_Weekday" : "GTEC_Sch": "TUK_Sch_Saturday";
 
     const delQuery = `DELETE FROM ${tableName}`;
 
