@@ -42,16 +42,18 @@ module.exports = {getChatRoomList, createChatRoom};
 
 
 const ChatRoomList = async(req, res)=>{
-    const query = `SELECT * FROM chatInfo WHERE hostID NOT IN (SELECT blockedUserID FROM blocked
+    const blocedkHostQuery = `SELECT * FROM chatInfo WHERE hostID NOT IN (SELECT blockedUserID FROM blocked
          WHERE userID='${req.userID}' or blockedUserID='${req.userID}') AND isLive=true;`
-    const liveChatRoomData = await getMySQL(query).catch((e)=>{
+    const liveChatRoomData = await getMySQL(blocedkHostQuery).catch((e)=>{
         console.log('getChatList err: ', e);
         res.status(500).json({ success: false, message: e});
     });
 
     if(liveChatRoomData.length){
-        const query = `SELECT blockedUserID FROM blocked WHERE userID='${req.userID}' or blockedUserID='${req.userID}';`
-        const blockedUserID = await getMySQL(query);
+        const blockedUserQuery = `select if(userID='${req.userID}', blockedUserID, userID) 
+        from blocked where userID='${req.userID}' or blockedUserID='${req.userID}';`
+
+        const blockedUserID = await getMySQL(blockedUserQuery);
 
         const promises = liveChatRoomData.map((element)=>{
                 return addInUserInfo(element, blockedUserID);
