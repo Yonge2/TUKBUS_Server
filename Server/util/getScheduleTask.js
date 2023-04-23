@@ -18,42 +18,50 @@ scheduler.scheduleJob('00 00 01 * * *', ()=>{
 const TUK_Schedule = async(now)=>{
     const hour = now.get('h');
     const min = now.get('m');
-
-    const isStation = await checkSchdule("TUK", "Station", TUK_toStationSch, hour, min);
-    const isTUK = await checkSchdule("TUK", "TUK", toTUKsch, hour, min);
-
-    if(now.format('ddd')==='Sun'){
-        if(isStation) TUK_toStationSch = await SaturdaySchedule("Station", hour, min);
-        if(isTUK) toTUKsch = await SaturdaySchedule("TUK", hour, min);
-        return {toTUK: toTUKsch, toStation: TUK_toStationSch};
-    }
+    const today = now.format('ddd');
+    if(today==='Sun') return {toTUK: toTUKsch, toStation: TUK_toStationSch};
     else{
-        if(isStation) TUK_toStationSch = await shuttleData("TUK", "Station", hour, min);
-
-        //17시 이후
-        if(hour>=17 || (hour===16&&min>50)){
-            if(isTUK) toTUKsch = await twice_Duration(TUK_toStationSch, 'after17');
+        const isStation = await checkSchdule("TUK", "Station", TUK_toStationSch, hour, min);
+        const isTUK = await checkSchdule("TUK", "TUK", toTUKsch, hour, min);
+        
+        if(today==='Sat'){
+            if(isStation) TUK_toStationSch = await SaturdaySchedule("Station", hour, min);
+            if(isTUK) toTUKsch = await SaturdaySchedule("TUK", hour, min);
             return {toTUK: toTUKsch, toStation: TUK_toStationSch};
         }
-        else{ //17시 이전
-            if(isTUK) toTUKsch = await shuttleData("TUK", "TUK", hour, min);
-            return {toTUK: toTUKsch, toStation: TUK_toStationSch};
+        else {
+            if(isStation) TUK_toStationSch = await shuttleData("TUK", "Station", hour, min);
+    
+            //17시 이후
+            if(hour>=17 || (hour===16&&min>50)){
+                if(isTUK) toTUKsch = await twice_Duration(TUK_toStationSch, 'after17');
+                return {toTUK: toTUKsch, toStation: TUK_toStationSch};
+            }
+            else{ //17시 이전
+                if(isTUK) toTUKsch = await shuttleData("TUK", "TUK", hour, min);
+                return {toTUK: toTUKsch, toStation: TUK_toStationSch};
+            }
         }
     }
-
 }
 
 const GTEC_Schedule = async(now)=>{
     const hour = now.get('h');
     const min = now.get('m');
+    const today = now.format('ddd');
 
-    const isGTEC = await checkSchdule("GTEC", "GTEC", toGTECsch, hour, min);
-    const isStation = await checkSchdule("GTEC", "Station", GTEC_toStationSch, hour, min);
-
-    if(isGTEC) toGTECsch = await shuttleData("GTEC", "GTEC", hour, min); 
-    if(isStation) GTEC_toStationSch = await shuttleData("GTEC", "Station", hour, min);
-
-    return {toGTEC: toGTECsch, toStation: GTEC_toStationSch};
+    if(today==='Sat'||today==='Sun'){
+        return {toGTEC: toGTECsch, toStation: GTEC_toStationSch};
+    }
+    else {
+        const isGTEC = await checkSchdule("GTEC", "GTEC", toGTECsch, hour, min);
+        const isStation = await checkSchdule("GTEC", "Station", GTEC_toStationSch, hour, min);
+    
+        if(isGTEC) toGTECsch = await shuttleData("GTEC", "GTEC", hour, min); 
+        if(isStation) GTEC_toStationSch = await shuttleData("GTEC", "Station", hour, min);
+    
+        return {toGTEC: toGTECsch, toStation: GTEC_toStationSch};
+    }
 }
 
 module.exports = {TUK_Schedule, GTEC_Schedule}
@@ -173,7 +181,7 @@ const getScheduleQuery = (univName, destination, hour, min) => {
         return `SELECT * FROM ${tableName} WHERE destination = ${destination} AND(hour >= ${hour} AND min > ${min} OR hour > ${hour}) ORDER BY hour, min LIMIT 4 ;`;
     }
 
-    if(now.format('ddd')==='Sun') {
+    if(now.format('ddd')==='Sat') {
         const tableName = 'TUK_Sch_Saturday';
         return query(tableName, `"${destination}"`, hour, min);
     }

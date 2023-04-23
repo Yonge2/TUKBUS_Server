@@ -47,19 +47,17 @@ const schClassification = (univNAME, direction) =>{
         const sch = (univNAME==="TUK")? await TUK_Schedule(now) : await GTEC_Schedule(now);
         const destination = 
         (univNAME==="GTEC"&&direction==="Station") ? "GTEC_Station" : direction;
-        switch(destination){
-            case 'TUK':
-                resolve(sch.toTUK);
-                break;
-            case 'Station':
-                resolve(sch.toStation);
-                break;
-            case 'GTEC_Station':
-                resolve(sch.toStation);
-                break;
-            case 'GTEC':
-                resolve(sch.toGTEC);
-                break;
+        if(destination==='TUK'){
+            resolve(sch.toTUK);
+        }
+        else if(destination==='Station'){
+            resolve(sch.toStation);
+        }
+        else if(destination==='GTEC_Station'){
+            resolve(sch.toStation);
+        }
+        else if(destination==='GTEC'){
+            resolve(sch.toGTEC);
         }
     })
 }
@@ -69,7 +67,7 @@ const allOfScheduleQuery = (req)=>{
     const query =(table)=>{
         return `SELECT * FROM ${table} ORDER BY destination, hour, min;`;
     }
-    if(req.query.univNAME==="TUK") return query('TUK1_Sch_Weekday');
+    if(req.query.univNAME==="TUK") return query('TUK_Sch_Weekday');
     else if(req.query.univNAME==="GTEC") return query('GTEC_Sch');
-    else if(req.query.univNAME==="TUKweekend") return query('TUK1_Sch_Weekend');
+    else if(req.query.univNAME==="TUKweekend") return query('TUK_Sch_Saturday');
 }
