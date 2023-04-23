@@ -15,29 +15,35 @@ scheduler.scheduleJob('00 00 01 * * *', ()=>{
     GTEC_toStationSch = [];
 });
 
-const TUK_Schedule = async()=>{
-    const now = new dayjs();
+const TUK_Schedule = async(now)=>{
     const hour = now.get('h');
     const min = now.get('m');
-    
+
     const isStation = await checkSchdule("TUK", "Station", TUK_toStationSch, hour, min);
     const isTUK = await checkSchdule("TUK", "TUK", toTUKsch, hour, min);
 
-    if(isStation) TUK_toStationSch = await shuttleData("TUK", "Station", hour, min);
+    if(now.format('ddd')==='Sat'){
+        if(isStation) TUK_toStationSch = await SaturdaySchedule("Station", hour, min);
+        if(isTUK) toTUKsch = await SaturdaySchedule("TUK", hour, min);
+        return {toTUK: toTUKsch, toStation: TUK_toStationSch};
+    }
+    else{
+        if(isStation) TUK_toStationSch = await shuttleData("TUK", "Station", hour, min);
 
-    //17시 이후
-    if(hour>=17 || (hour===16&&min>50)){
-        if(isTUK) toTUKsch = await after17_TUK_ShuttleData(TUK_toStationSch);
-        return {toTUK: toTUKsch, toStation: TUK_toStationSch};
+        //17시 이후
+        if(hour>=17 || (hour===16&&min>50)){
+            if(isTUK) toTUKsch = await twice_Duration(TUK_toStationSch, 'after17');
+            return {toTUK: toTUKsch, toStation: TUK_toStationSch};
+        }
+        else{ //17시 이전
+            if(isTUK) toTUKsch = await shuttleData("TUK", "TUK", hour, min);
+            return {toTUK: toTUKsch, toStation: TUK_toStationSch};
+        }
     }
-    else{ //17시 이전
-        if(isTUK) toTUKsch = await shuttleData("TUK", "TUK", hour, min);
-        return {toTUK: toTUKsch, toStation: TUK_toStationSch};
-    }
+
 }
 
-const GTEC_Schedule = async()=>{
-    const now = new dayjs();
+const GTEC_Schedule = async(now)=>{
     const hour = now.get('h');
     const min = now.get('m');
 
@@ -72,22 +78,33 @@ const checkSchdule = async(univName, destination, schArray, nowHour, nowMin) =>{
     else return false;
 }
 
-const after17_TUK_ShuttleData = async(stationSchedule) =>{
-    const promises = stationSchedule.map((ele)=>{
-        const tempHour = parseInt(ele.duration.substring(0,2));
-        const tempMin = parseInt(ele.duration.substring(3,5));
-        
-        const tempSch = {
-            hour: tempHour,
-            min: tempMin,
-            destination: 'after17',
-            continuity: false
-        }
-        return addDuration(tempSch, 'after17');
-    })
 
-    const busSchedule = await Promise.all(promises);
-    return busSchedule;
+const SaturdaySchedule = async(destination, hour, min)=>{
+    const saturdayQeury = getScheduleQuery("TUK", destination, hour, min);
+    const originSchedule = await getMySQL(saturdayQeury).catch((err)=>{
+        console.log('Saturday get sch orr : ', err);
+    })
+    if(destination==="TUK"){
+        //정왕 -> 학교
+        if(originSchedule.length){
+            const promises = originSchedule.map((ele)=>{
+                return addDuration(ele, destination);
+            })
+            const busSchedule = await Promise.all(promises);
+            return busSchedule;
+        }
+        else return originSchedule;
+    }
+    else{
+        if(originSchedule.length){
+            const promises = originSchedule.map((ele)=>{
+                return addDuration(ele, 'Sat_Station');
+            });
+            const cam2Tocam1 = await Promise.all(promises);
+            return await twice_Duration(cam2Tocam1, 'Station');
+        }
+        else return originSchedule;
+    }
 }
 
 
@@ -130,23 +147,38 @@ const addDuration = (element, direction) => {
     })
 }
 
+const twice_Duration = async(firstSchedule, destination) =>{
+    const promises = firstSchedule.map((ele)=>{
+        const tempHour = parseInt(ele.duration.substring(0,2));
+        const tempMin = parseInt(ele.duration.substring(3,5));
+        
+        const tempSch = {
+            hour: tempHour,
+            min: tempMin,
+            destination: destination,
+            continuity: false
+        }
+        return addDuration(tempSch, destination);
+    })
+
+    const busSchedule = await Promise.all(promises);
+    return busSchedule;
+}
+
 
 const getScheduleQuery = (univName, destination, hour, min) => {
     const now = new dayjs();
-    const tableName = univName==="TUK" ? "TUK1_Sch_Weekday" : "GTEC_Sch" ;
 
     const query = (tableName, destination, hour, min) =>{
         return `SELECT * FROM ${tableName} WHERE destination = ${destination} AND(hour >= ${hour} AND min > ${min} OR hour > ${hour}) ORDER BY hour, min LIMIT 4 ;`;
     }
 
-    switch(now.format('ddd')){
-       /*case 'Sun' : //sunday 
-       return query('Bus_Sch_Weekend', `"${destination}" AND day = "sat&sun"`, hour, min);
- 
-       case 'Sat' : //saturday
-       return query('Bus_Sch_Weekend', `"${destination}"`, hour, min);*/
-       
-       default : //weekday
-       return query(tableName, `"${destination}"`, hour, min);
+    if(now.format('ddd')==='Sat') {
+        const tableName = 'TUK1_Sch_Weekend';
+        return query(tableName, `"${destination}"`, hour, min);
     }
- }
+    else{
+        const tableName = univName==="TUK" ? "TUK1_Sch_Weekday" : "GTEC_Sch" ;
+        return query(tableName, `"${destination}"`, hour, min);
+    }
+}
