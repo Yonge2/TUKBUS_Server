@@ -22,7 +22,7 @@ const TUK_Schedule = async(now)=>{
     const isStation = await checkSchdule("TUK", "Station", TUK_toStationSch, hour, min);
     const isTUK = await checkSchdule("TUK", "TUK", toTUKsch, hour, min);
 
-    if(now.format('ddd')==='Sat'){
+    if(now.format('ddd')==='Sun'){
         if(isStation) TUK_toStationSch = await SaturdaySchedule("Station", hour, min);
         if(isTUK) toTUKsch = await SaturdaySchedule("TUK", hour, min);
         return {toTUK: toTUKsch, toStation: TUK_toStationSch};
