@@ -4,9 +4,9 @@ const {sch_Csv2Json} = require("../../util/editcsv");
 //insert data
 const insertSchedule = async(req, res) => {
     const univName = req.body.univName;
-    const day = (req.body.day!=undefined)? req.body.day : null;
+    const day = req.body.day;
 
-    const tableName = (day===null)?(univName==="TUK")?"TUK_Sch_Weekday" : "GTEC_Sch": "TUK_Sch_Saturday";
+    const tableName = (day===undefined)?(univName==="TUK")?"TUK_Sch_Weekday" : "GTEC_Sch": "TUK_Sch_Saturday";
 
     const inserQuery = `INSERT INTO ${tableName} SET ?`;
 
