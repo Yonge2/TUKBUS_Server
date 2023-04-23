@@ -174,11 +174,11 @@ const getScheduleQuery = (univName, destination, hour, min) => {
     }
 
     if(now.format('ddd')==='Sun') {
-        const tableName = 'TUK1_Sch_Weekend';
+        const tableName = 'TUK_Sch_Saturday';
         return query(tableName, `"${destination}"`, hour, min);
     }
     else{
-        const tableName = univName==="TUK" ? "TUK1_Sch_Weekday" : "GTEC_Sch" ;
+        const tableName = univName==="TUK" ? "TUK_Sch_Weekday" : "GTEC_Sch" ;
         return query(tableName, `"${destination}"`, hour, min);
     }
 }
