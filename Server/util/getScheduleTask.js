@@ -173,7 +173,7 @@ const getScheduleQuery = (univName, destination, hour, min) => {
         return `SELECT * FROM ${tableName} WHERE destination = ${destination} AND(hour >= ${hour} AND min > ${min} OR hour > ${hour}) ORDER BY hour, min LIMIT 4 ;`;
     }
 
-    if(now.format('ddd')==='Sat') {
+    if(now.format('ddd')==='Sun') {
         const tableName = 'TUK1_Sch_Weekend';
         return query(tableName, `"${destination}"`, hour, min);
     }
