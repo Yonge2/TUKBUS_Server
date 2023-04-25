@@ -30,11 +30,10 @@ const changingPW = async(req, res)=>{
 const checkPW = async(req, res)=>{
     const query = `select userID, userPW from user where userID = "${req.userID}";`
     const userOBJ = await getMySQL(query).catch((e)=>{console.log(e)});
-    console.log(userOBJ);
+    
     const resultPW = await bcrypt.compare(req.body.userPW, userOBJ[0].userPW).catch((e)=>{
         console.log("에러", e);
     });
-    console.log("결과",resultPW);
 
     if(resultPW){
         redisClient.set(req.userID+"_PwAuth", "OK", 'EX', 600, ()=>{
