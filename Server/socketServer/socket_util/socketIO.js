@@ -23,11 +23,11 @@ const chatting = (io) =>{
         })
     
         socket.on('disconnect', async()=>{
+            const now = new dayjs().subtract(1, "m").format('HH:mm');
             const isOutQuery = `SELECT * FROM chatroom_log WHERE roomID='${socket.roomID}' AND 
-            userID='${socket.userID}' AND status='out';`
+            userID='${socket.userID}' AND time>='${now}' AND status='out';`
 
             const isOut = await getMySQL(isOutQuery);
-            //이거 이전 아웃까지 계산하니까 이거 수정 ㄱㄱ
 
             //out
             if(isOut.length) {
@@ -48,14 +48,13 @@ const setFirstMessageSeq = async(userID, roomID)=>{
     });
 
     const checkMessageQuery = `SELECT seqMessage FROM chatmessage WHERE roomID='${roomID}' 
-    AND time<'${now.format('HH:mm')}' order by seqMessage desc limit 1;`
+    AND time='${now.format('HH:mm')}' AND msg='${userID}님이 입장했습니다.';`
     
     const FirstMessage = await getMySQL(checkMessageQuery).catch((err)=>{
         console.log('check last message err: ', err);
     });
-    console.log('first msg : ', FirstMessage[0].seqMessage);
 
-    const firstMsgSeq = (FirstMessage[0].seqMessage===null)? 0 : FirstMessage[0].seqMessage;
+    const firstMsgSeq = FirstMessage[0].seqMessage;
 
     const updateFirstMsgQuery = `UPDATE chatroom_log SET firstMsgSeq = ? WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing'`
@@ -66,8 +65,8 @@ const setFirstMessageSeq = async(userID, roomID)=>{
 }
 
 const recordInMsg = async(userID, roomID, now)=>{
-    const outQuery = `INSERT INTO chatmessage SET ?`
-    await setMySQL(outQuery, {
+    const inQuery = `INSERT INTO chatmessage SET ?`
+    await setMySQL(inQuery, {
         roomID: roomID,
         userID: null,
         msg: `${userID}님이 입장했습니다.`,
@@ -76,6 +75,6 @@ const recordInMsg = async(userID, roomID, now)=>{
         Date: now.format('YYYY-MM-DD')
     })
     .catch((err)=>{
-        console.log('record Out msg err : ', err);
+        console.log('record in msg err : ', err);
     })
 }

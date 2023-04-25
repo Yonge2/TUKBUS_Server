@@ -96,7 +96,7 @@ const callMsg = async(userID, roomID, page)=>{
     const now = dayjs().format('HH:mm');
     const offset = 0+(page*20);
 
-    const isLastMsgQuery = `SELECT FirstMsgSeq FROM chatroom_log WHERE userID='${userID}'
+    const isLastMsgQuery = `SELECT firstMsgSeq FROM chatroom_log WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing';`
     const isFirstMsg = await getMySQL(isLastMsgQuery);
     const firstMsgSeq = (isFirstMsg.firstMsgSeq[0]===null)? 0 : isFirstMsg[0].firstMsgSeq;
