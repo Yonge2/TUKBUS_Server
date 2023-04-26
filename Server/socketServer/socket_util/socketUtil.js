@@ -1,7 +1,8 @@
-const {setMySQL} = require('../../db/conMysql');
+const {getMySQL, setMySQL} = require('../../db/conMysql');
 const redisClient = require('../../db/redis');
 const {verify} = require('../../api/userApi/user_util/jwt_util');
 const dayjs = require('dayjs');
+const { redisGetSmembers } = require('../../util/redisUtil');
 
 
 const socketJWTMiddleware = async(socket, next) => {
@@ -12,6 +13,13 @@ const socketJWTMiddleware = async(socket, next) => {
         if(result.success){
             const userID = socket.userID = result.userID;
             const roomID = socket.roomID = socket.handshake.auth.roomID;
+            const isBlocked = await checkBlock(userID, roomID);
+            if(isBlocked){
+                socket.roomID = null;
+                socket.errMessage = '차단된 유저 있음';
+                next();
+            }
+            
             await redisClient.sAdd(`${roomID}_IN`, `${userID}`, async(err, data)=>{
                 if(!err) {
                     if(data){
@@ -31,14 +39,20 @@ const socketJWTMiddleware = async(socket, next) => {
                         next();
                     }
                 }
-                else console.log("socket middleware err: ", err);      
+                else {
+                    console.log("socket middleware err: ", err);
+                    socket.roomID = null;
+                }
             });
         }
-        else console.log("socketJWT err: ", result);
+        else {
+            console.log("socketJWT err: ", result);
+            socket.roomID = null;
+        }
     }
     else {
         console.log("socketJWT - No header!");
-        socket.errMsg = "No auth"
+        socket.roomID = null;
         next();
     }
 }
@@ -46,3 +60,26 @@ const socketJWTMiddleware = async(socket, next) => {
 
 
 module.exports = {socketJWTMiddleware};
+
+const checkBlock = async(userID, roomID)=>{
+    const blockedUserQuery = `select if(userID='${userID}', blockedUserID, userID) as isBlocked 
+        from blocked where userID='${userID}' or blockedUserID='${userID}';`
+
+    const blockedUserID = await getMySQL(blockedUserQuery);
+    console.log('차단유저 ', blockedUserID);
+    if(blockedUserID.isBlocked===undefined) return false;
+    else {
+        const inUser = await redisGetSmembers(`${roomID}_IN`);
+        
+        const isblock = blockedUserID.map((ele) => {
+            if(inUser.includes(ele.isBlocked)) {
+                console.log('차단 트루');
+                return true;
+            }
+            else return false;
+        });
+        
+        if(isblock.includes(true)) return true;
+        else return false;
+    }
+}
