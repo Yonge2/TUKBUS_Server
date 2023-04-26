@@ -48,7 +48,7 @@ const saveMessage = async(req, res) =>{
     const message = {
         roomID: roomID,
         userID: userID,
-        msg: req.body.msg,
+        message: req.body.message,
         receiver: receiverCheck(receiver),
         time: req.body.time,
         Date: new dayjs().format('YYYY-MM-DD'),
@@ -83,33 +83,28 @@ const loadMessage = async(req, res) => {
         console.log('load msg err: ', err);
         res.status(200).json({success: false});
     });
-    console.log('msg',msg);
 
-    if(msg.length){
-        res.status(200).json({success: true, message: msg});
-    }
-    else{
-        res.status(200).json({success: true, message: []});
-    }
+    res.status(200).json({success: true, message: msg});
 }
 
-const callMsg = async(userID, roomID, page)=>{
+const callMsg = async(userID, roomID, indexMessage)=>{
     const now = dayjs().format('HH:mm');
-    const offset = 0+(page*20);
 
-    const isLastMsgQuery = `SELECT firstMsgSeq FROM chatroom_log WHERE userID='${userID}'
+    const isLastMsgQuery = `SELECT firstMsgIndex FROM chatroom_log WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing';`
     const isFirstMsg = await getMySQL(isLastMsgQuery);
-    console.log('first msg',isFirstMsg);
-    const firstMsgSeq = isFirstMsg[0].firstMsgSeq;
+    if(isFirstMsg){
+        const firstMsgIndex = isFirstMsg[0].firstMsgIndex;
 
-    const msgQuery = `SELECT userID, time, msg FROM chatmessage WHERE roomID='${roomID}' AND
-    seqMessage > ${firstMsgSeq} AND time <= '${now}' ORDER BY seqMessage desc LIMIT 20 OFFSET ${offset};`
-
-    const msgArr = await getMySQL(msgQuery);
-    const reverseMsgArr = msgArr.reverse();
-
-    return reverseMsgArr;
+        const msgQuery = `SELECT indexMessage, userID, time, message FROM chatmessage WHERE roomID='${roomID}' AND
+        indexMessage >= ${firstMsgIndex} AND indexMessage <= '${indexMessage}' ORDER BY indexMessage desc LIMIT 20 OFFSET 20;`
+    
+        const msgArr = await getMySQL(msgQuery);
+        const reverseMsgArr = msgArr.reverse();
+    
+        return reverseMsgArr;
+    }
+    else return [];
 }
 
 
@@ -121,7 +116,7 @@ const recordOutMsg = async(userID, roomID, now)=>{
     await setMySQL(outQuery, {
         roomID: roomID,
         userID: null,
-        msg: `${userID}님이 퇴장했습니다.`,
+        message: `${userID}님이 퇴장했습니다.`,
         receiver: null,
         time: now.format('HH:mm'),
         Date: now.format('YYYY-MM-DD')

@@ -7,7 +7,7 @@ const chatting = (io) =>{
         socket.join(socket.roomID);
         
         if(socket.firstIn) {
-            await setFirstMessageSeq(socket.userID, socket.roomID);
+            await setFirstMessageIndex(socket.userID, socket.roomID);
             chat.to(socket.roomID).emit("in", socket.userID);
         }
         
@@ -17,7 +17,7 @@ const chatting = (io) =>{
 
             chat.to(socket.roomID).emit('chat message', {
                 userID : data.userID,
-                msg : data.msg,
+                message : data.message,
                 time : data.time
             });
         })
@@ -40,27 +40,27 @@ const chatting = (io) =>{
 module.exports = chatting;
 
 
-const setFirstMessageSeq = async(userID, roomID)=>{
+const setFirstMessageIndex = async(userID, roomID)=>{
     const now = new dayjs();
 
     await recordInMsg(userID, roomID, now).catch((err)=>{
         console.log('record In msg err : ', err);
     });
 
-    const checkMessageQuery = `SELECT seqMessage FROM chatmessage WHERE roomID='${roomID}' 
-    AND time='${now.format('HH:mm')}' AND msg='${userID}님이 입장했습니다.';`
+    const checkMessageQuery = `SELECT indexMessage FROM chatmessage WHERE roomID='${roomID}' 
+    AND time='${now.format('HH:mm')}' AND message='${userID}님이 입장했습니다.';`
     
     const FirstMessage = await getMySQL(checkMessageQuery).catch((err)=>{
         console.log('check last message err: ', err);
     });
 
-    const firstMsgSeq = FirstMessage[0].seqMessage;
+    const firstMsgIndex = FirstMessage[0].indexMessage;
 
-    const updateFirstMsgQuery = `UPDATE chatroom_log SET firstMsgSeq = ? WHERE userID='${userID}'
+    const updateFirstMsgQuery = `UPDATE chatroom_log SET indexMessage = ? WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing'`
 
-    await setMySQL(updateFirstMsgQuery, firstMsgSeq).catch((err)=>{
-        console.log('update first message seq err: ', err);
+    await setMySQL(updateFirstMsgQuery, firstMsgIndex).catch((err)=>{
+        console.log('update first message index err: ', err);
     });
 }
 
@@ -69,7 +69,7 @@ const recordInMsg = async(userID, roomID, now)=>{
     await setMySQL(inQuery, {
         roomID: roomID,
         userID: null,
-        msg: `${userID}님이 입장했습니다.`,
+        message: `${userID}님이 입장했습니다.`,
         receiver: null,
         time: now.format('HH:mm'),
         Date: now.format('YYYY-MM-DD')
