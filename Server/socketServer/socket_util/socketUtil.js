@@ -69,7 +69,7 @@ const checkBlock = async(userID, roomID)=>{
 
     const blockedUserID = await getMySQL(blockedUserQuery);
     console.log('차단유저 ', blockedUserID);
-    if(blockedUserID[0].isBlocked===undefined) return false;
+    if(blockedUserID.length===0) return false;
     else {
         const inUser = await redisGetSmembers(`${roomID}_IN`);
         console.log('안에 있는 유저', inUser);
