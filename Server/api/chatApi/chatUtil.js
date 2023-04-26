@@ -83,6 +83,7 @@ const loadMessage = async(req, res) => {
         console.log('load msg err: ', err);
         res.status(200).json({success: false});
     });
+    console.log('msg',msg);
 
     if(msg.length){
         res.status(200).json({success: true, message: msg});
@@ -99,7 +100,8 @@ const callMsg = async(userID, roomID, page)=>{
     const isLastMsgQuery = `SELECT firstMsgSeq FROM chatroom_log WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing';`
     const isFirstMsg = await getMySQL(isLastMsgQuery);
-    const firstMsgSeq = (isFirstMsg.firstMsgSeq[0]===null)? 0 : isFirstMsg[0].firstMsgSeq;
+    console.log('first msg',isFirstMsg);
+    const firstMsgSeq = isFirstMsg[0].firstMsgSeq;
 
     const msgQuery = `SELECT userID, time, msg FROM chatmessage WHERE roomID='${roomID}' AND
     seqMessage > ${firstMsgSeq} AND time <= '${now}' ORDER BY seqMessage desc LIMIT 20 OFFSET ${offset};`
