@@ -53,6 +53,7 @@ const setFirstMessageIndex = async(userID, roomID)=>{
     const FirstMessage = await getMySQL(checkMessageQuery).catch((err)=>{
         console.log('check last message err: ', err);
     });
+    console.log('firstIn, first message', FirstMessage);
 
     const firstMsgIndex = FirstMessage[0].indexMessage;
 
