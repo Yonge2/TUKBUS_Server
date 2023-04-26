@@ -90,7 +90,12 @@ const loadMessage = async(req, res) => {
 
 const callMsg = async(userID, roomID, indexMessage)=>{
     const now = dayjs().format('HH:mm');
-    const index = (indexMessage===0)?'':"AND indexMessage <= '${indexMessage}'";
+    let offset = 0;
+    let index = '';
+    if(indexMessage>0){
+        index="AND indexMessage <= '${indexMessage}'";
+        offset = 20;
+    }
 
     const isLastMsgQuery = `SELECT firstMsgIndex FROM chatroom_log WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing';`
@@ -100,7 +105,7 @@ const callMsg = async(userID, roomID, indexMessage)=>{
         const firstMsgIndex = isFirstMsg[0].firstMsgIndex;
 
         const msgQuery = `SELECT indexMessage, userID, time, message FROM chatmessage WHERE roomID='${roomID}' AND
-        indexMessage >= ${firstMsgIndex} ${index} ORDER BY indexMessage desc LIMIT 20 OFFSET 20;`
+        indexMessage >= ${firstMsgIndex} ${index} ORDER BY indexMessage desc LIMIT 20 OFFSET ${offset};`
 
         console.log(msgQuery);
     
