@@ -56,7 +56,7 @@ const setFirstMessageIndex = async(userID, roomID)=>{
 
     const firstMsgIndex = FirstMessage[0].indexMessage;
 
-    const updateFirstMsgQuery = `UPDATE chatroom_log SET indexMessage = ? WHERE userID='${userID}'
+    const updateFirstMsgQuery = `UPDATE chatroom_log SET firstMsgIndex = ? WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing'`
 
     await setMySQL(updateFirstMsgQuery, firstMsgIndex).catch((err)=>{
