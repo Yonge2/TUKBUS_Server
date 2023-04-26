@@ -42,7 +42,7 @@ const blockedUserList = async(req, res)=>{
         res.status(200).json({
             success: true,
             message: {
-                blockUserList: result[0]
+                blockUserList: result
             }
         });
     }
