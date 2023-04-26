@@ -79,13 +79,13 @@ const receiverCheck = (receiver) =>{
 }
 
 const loadMessage = async(req, res) => {
-    const msg = await callMsg(req.userID, req.body.roomID, req.body.page).catch((err)=>{
+    console.log('body', req.body);
+    const msg = await callMsg(req.userID, req.body.roomID, req.body.indexMessage).catch((err)=>{
         console.log('load msg err: ', err);
         res.status(200).json({success: false});
     });
     console.log('msg : ', msg);
-
-    res.status(200).json({success: true, message: msg});
+    if(msg) res.status(200).json({success: true, message: msg});
 }
 
 const callMsg = async(userID, roomID, indexMessage)=>{
