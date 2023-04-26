@@ -79,7 +79,6 @@ const receiverCheck = (receiver) =>{
 }
 
 const loadMessage = async(req, res) => {
-    console.log('body', req.body);
     const msg = await callMsg(req.userID, req.body.roomID, req.body.indexMessage).catch((err)=>{
         console.log('load msg err: ', err);
         return res.status(200).json({success: false});
@@ -93,7 +92,6 @@ const callMsg = async(userID, roomID, indexMessage)=>{
     const isLastMsgQuery = `SELECT firstMsgIndex FROM chatroom_log WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing';`
     const isFirstMsg = await getMySQL(isLastMsgQuery);
-    console.log('first', isFirstMsg);
     if(isFirstMsg){
         const firstMsgIndex = isFirstMsg[0].firstMsgIndex;
 
