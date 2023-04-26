@@ -59,6 +59,9 @@ const setFirstMessageIndex = async(userID, roomID)=>{
         console.log('check last message err: ', err);
     });
 
+    console.log('first messg',FirstMessage);
+    console.log('first messg',FirstMessage[0].indexMessage);
+
     const firstMsgIndex = FirstMessage[0].indexMessage;
 
     const updateFirstMsgQuery = `UPDATE chatroom_log SET firstMsgIndex = ? WHERE userID='${userID}'

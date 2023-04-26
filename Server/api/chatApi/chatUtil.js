@@ -92,6 +92,7 @@ const callMsg = async(userID, roomID, indexMessage)=>{
     const isLastMsgQuery = `SELECT firstMsgIndex FROM chatroom_log WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing';`
     const isFirstMsg = await getMySQL(isLastMsgQuery);
+    console.log('is first', isFirstMsg);
     if(isFirstMsg){
         const firstMsgIndex = isFirstMsg[0].firstMsgIndex;
 
