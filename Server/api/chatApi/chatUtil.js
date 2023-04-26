@@ -101,11 +101,11 @@ const callMsg = async(userID, roomID, indexMessage)=>{
         indexMessage >= ${firstMsgIndex} ${index} ORDER BY indexMessage desc LIMIT 20;`
     
         const msgArr = await getMySQL(msgQuery);
-        if(indexMessage===0) return msgArr;
-        else {
+        if(indexMessage===0) {
             const reverseMsgArr = msgArr.reverse();
             return reverseMsgArr;
         }
+        else return msgArr;
     }
     else return [];
 }
