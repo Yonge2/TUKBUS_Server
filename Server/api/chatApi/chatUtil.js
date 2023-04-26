@@ -88,8 +88,7 @@ const loadMessage = async(req, res) => {
 }
 
 const callMsg = async(userID, roomID, indexMessage)=>{
-    const offset = (indexMessage===0)?0 : 20;
-    let index = (indexMessage===0)?'' : "AND indexMessage < '${indexMessage}'";
+    const index = (indexMessage===0)?'' : "AND indexMessage < '${indexMessage}'";
 
     const isLastMsgQuery = `SELECT firstMsgIndex FROM chatroom_log WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing';`
@@ -99,7 +98,7 @@ const callMsg = async(userID, roomID, indexMessage)=>{
         const firstMsgIndex = isFirstMsg[0].firstMsgIndex;
 
         const msgQuery = `SELECT indexMessage, userID, time, message FROM chatmessage WHERE roomID='${roomID}' AND
-        indexMessage >= ${firstMsgIndex} ${index} ORDER BY indexMessage desc LIMIT 20 OFFSET ${offset};`
+        indexMessage >= ${firstMsgIndex} ${index} ORDER BY indexMessage desc LIMIT 20;`
     
         const msgArr = await getMySQL(msgQuery);
         const reverseMsgArr = msgArr.reverse();
