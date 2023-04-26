@@ -67,11 +67,13 @@ const checkBlock = async(userID, roomID)=>{
 
     const blockedUserID = await getMySQL(blockedUserQuery);
     console.log('차단유저 ', blockedUserID);
-    if(blockedUserID.isBlocked===undefined) return false;
+    if(blockedUserID[0].isBlocked===undefined) return false;
     else {
         const inUser = await redisGetSmembers(`${roomID}_IN`);
+        console.log('안에 있는 유저', inUser);
         
         const isblock = blockedUserID.map((ele) => {
+            console.log('차단 돌리기', inUser.includes(ele.isBlocked));
             if(inUser.includes(ele.isBlocked)) {
                 console.log('차단 트루');
                 return true;
@@ -79,7 +81,10 @@ const checkBlock = async(userID, roomID)=>{
             else return false;
         });
         
-        if(isblock.includes(true)) return true;
+        if(isblock.includes(true)) {
+            console.log('막줄 차단', isblock.includes(true));
+            return true;
+        }
         else return false;
     }
 }
