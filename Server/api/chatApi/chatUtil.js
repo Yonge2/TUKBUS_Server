@@ -90,6 +90,7 @@ const loadMessage = async(req, res) => {
 
 const callMsg = async(userID, roomID, indexMessage)=>{
     const now = dayjs().format('HH:mm');
+    const index = (indexMessage===0)?'':"AND indexMessage <= '${indexMessage}'";
 
     const isLastMsgQuery = `SELECT firstMsgIndex FROM chatroom_log WHERE userID='${userID}'
     AND roomID='${roomID}' AND status='ing';`
@@ -99,7 +100,9 @@ const callMsg = async(userID, roomID, indexMessage)=>{
         const firstMsgIndex = isFirstMsg[0].firstMsgIndex;
 
         const msgQuery = `SELECT indexMessage, userID, time, message FROM chatmessage WHERE roomID='${roomID}' AND
-        indexMessage >= ${firstMsgIndex} AND indexMessage <= '${indexMessage}' ORDER BY indexMessage desc LIMIT 20 OFFSET 20;`
+        indexMessage >= ${firstMsgIndex} ${index} ORDER BY indexMessage desc LIMIT 20 OFFSET 20;`
+
+        console.log(msgQuery);
     
         const msgArr = await getMySQL(msgQuery);
         const reverseMsgArr = msgArr.reverse();
