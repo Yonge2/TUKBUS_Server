@@ -19,31 +19,33 @@ const socketJWTMiddleware = async(socket, next) => {
                 socket.errMessage = '차단된 유저 있음';
                 next();
             }
+            else{
             
-            await redisClient.sAdd(`${roomID}_IN`, `${userID}`, async(err, data)=>{
-                if(!err) {
-                    if(data){
-                        const insertLogQuery = 'INSERT INTO chatroom_log SET ?'
-                        await setMySQL(insertLogQuery, {
-                            userID: userID, 
-                            univNAME: result.univNAME, 
-                            roomID: roomID, 
-                            status: "ing",
-                            time: dayjs().format('YYYY-MM-DD HH:mm')
-                        });
-                        socket.firstIn = true;
-                        next();
+                await redisClient.sAdd(`${roomID}_IN`, `${userID}`, async(err, data)=>{
+                    if(!err) {
+                        if(data){
+                            const insertLogQuery = 'INSERT INTO chatroom_log SET ?'
+                            await setMySQL(insertLogQuery, {
+                                userID: userID, 
+                                univNAME: result.univNAME, 
+                                roomID: roomID, 
+                                status: "ing",
+                                time: dayjs().format('YYYY-MM-DD HH:mm')
+                            });
+                            socket.firstIn = true;
+                            next();
+                        }
+                        else {
+                            socket.firstIn = false;
+                            next();
+                        }
                     }
                     else {
-                        socket.firstIn = false;
-                        next();
+                        console.log("socket middleware err: ", err);
+                        socket.roomID = null;
                     }
-                }
-                else {
-                    console.log("socket middleware err: ", err);
-                    socket.roomID = null;
-                }
-            });
+                });
+            }
         }
         else {
             console.log("socketJWT err: ", result);

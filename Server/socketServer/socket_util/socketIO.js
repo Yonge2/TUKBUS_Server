@@ -4,36 +4,41 @@ const dayjs = require('dayjs');
 const chatting = (io) =>{
 
     const chat = io.of('/chat').on('connection', async(socket)=>{
-        socket.join(socket.roomID);
-        
-        if(socket.firstIn) {
-            await setFirstMessageIndex(socket.userID, socket.roomID);
-            chat.to(socket.roomID).emit("in", socket.userID);
+        if(socket.errMessage){
+            socket.emit('checkErr', 'out');
         }
+        else{
+            socket.join(socket.roomID);
         
-        socket.on('chat message', async(data)=>{
-            data.roomID = socket.roomID;
-            data.userID = socket.userID;
-
-            chat.to(socket.roomID).emit('chat message', {
-                userID : data.userID,
-                message : data.message,
-                time : data.time
-            });
-        })
-    
-        socket.on('disconnect', async()=>{
-            const now = new dayjs().subtract(1, "m").format('HH:mm');
-            const isOutQuery = `SELECT * FROM chatroom_log WHERE roomID='${socket.roomID}' AND 
-            userID='${socket.userID}' AND time>='${now}' AND status='out';`
-
-            const isOut = await getMySQL(isOutQuery);
-
-            //out
-            if(isOut.length) {
-                chat.to(socket.roomID).emit('out', socket.userID);
+            if(socket.firstIn) {
+                await setFirstMessageIndex(socket.userID, socket.roomID);
+                chat.to(socket.roomID).emit("in", socket.userID);
             }
-        });
+            
+            socket.on('chat message', async(data)=>{
+                data.roomID = socket.roomID;
+                data.userID = socket.userID;
+    
+                chat.to(socket.roomID).emit('chat message', {
+                    userID : data.userID,
+                    message : data.message,
+                    time : data.time
+                });
+            })
+        
+            socket.on('disconnect', async()=>{
+                const now = new dayjs().subtract(1, "m").format('HH:mm');
+                const isOutQuery = `SELECT * FROM chatroom_log WHERE roomID='${socket.roomID}' AND 
+                userID='${socket.userID}' AND time>='${now}' AND status='out';`
+    
+                const isOut = await getMySQL(isOutQuery);
+    
+                //out
+                if(isOut.length) {
+                    chat.to(socket.roomID).emit('out', socket.userID);
+                }
+            });
+        }
     })
 }
 
