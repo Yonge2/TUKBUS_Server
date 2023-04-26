@@ -84,7 +84,6 @@ const loadMessage = async(req, res) => {
         console.log('load msg err: ', err);
         res.status(200).json({success: false});
     });
-    console.log('msg : ', msg);
     if(msg) res.status(200).json({success: true, message: msg});
 }
 
