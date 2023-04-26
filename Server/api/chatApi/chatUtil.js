@@ -93,7 +93,7 @@ const callMsg = async(userID, roomID, indexMessage)=>{
     AND roomID='${roomID}' AND status='ing';`
     const isFirstMsg = await getMySQL(isLastMsgQuery);
     console.log('is first', isFirstMsg);
-    if(isFirstMsg){
+    if(isFirstMsg.length){
         const firstMsgIndex = isFirstMsg[0].firstMsgIndex;
 
         const msgQuery = `SELECT indexMessage, userID, time, message FROM chatmessage WHERE roomID='${roomID}' AND
