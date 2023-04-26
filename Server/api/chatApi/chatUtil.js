@@ -82,9 +82,9 @@ const loadMessage = async(req, res) => {
     console.log('body', req.body);
     const msg = await callMsg(req.userID, req.body.roomID, req.body.indexMessage).catch((err)=>{
         console.log('load msg err: ', err);
-        res.status(200).json({success: false});
+        return res.status(200).json({success: false});
     });
-    if(msg) res.status(200).json({success: true, message: msg});
+    res.status(200).json({success: true, message: msg});
 }
 
 const callMsg = async(userID, roomID, indexMessage)=>{
@@ -101,9 +101,11 @@ const callMsg = async(userID, roomID, indexMessage)=>{
         indexMessage >= ${firstMsgIndex} ${index} ORDER BY indexMessage desc LIMIT 20;`
     
         const msgArr = await getMySQL(msgQuery);
-        const reverseMsgArr = msgArr.reverse();
-    
-        return reverseMsgArr;
+        if(indexMessage===0) return msgArr;
+        else {
+            const reverseMsgArr = msgArr.reverse();
+            return reverseMsgArr;
+        }
     }
     else return [];
 }
