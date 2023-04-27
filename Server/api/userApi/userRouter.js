@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const {register, sendmail, mail_auth_check, userIdCheck} = require('./user_util/register_util');
-const {loginPass, logOut} = require('./user_util/login_util');
+const {loginPass, logOut, Withdraw} = require('./user_util/login_util');
 const jwt_middleWare = require('./user_util/authMiddleware');
 const refresh_token = require('./user_util/refresh_token');
 const {checkPW, changingPW, findPW} = require('./user_util/changePW');
@@ -35,7 +35,7 @@ router.post('/findpw/changingpw', findPW);
 
 //-------------------------------------------------//
 //checking password -> changing password
-router.post('/settings/checkPW', jwt_middleWare, checkPW);
+router.post('/settings/checkpw', jwt_middleWare, checkPW);
 router.post('/settings/changingpw', jwt_middleWare, changingPW);
 
 //-------------------------------------------------//
@@ -45,5 +45,7 @@ router.get('/settings/block/getlist', jwt_middleWare, blockedUserList);
 router.post('/settings/block/delete', jwt_middleWare, delBlockedUser);
 router.post('/settings/report', jwt_middleWare, reportUser);
 
+//-------------------------------------------------//
+router.post('/settings/withdraw', jwt_middleWare, Withdraw);
 
 module.exports = router;
