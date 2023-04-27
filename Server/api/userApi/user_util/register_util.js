@@ -11,7 +11,7 @@ const {makeRandomNum} = require('../../../util/utilFunc');
 //-----------------------------------register-------------------------------------//
 const register = async(req, res)=>{
     //check mail auth
-    if(await redisClient.v4.get(req.body.userEmail+"_registerAuth")){
+    if(await redisClient.v4.get(req.body.userEmail+"_Auth")){
 
         const registerSet = await reqInfo(req);
         const insertQuery = 'insert into user set ?'
@@ -30,7 +30,7 @@ const register = async(req, res)=>{
 const sendmail = async(req, res, purpose)=>{
     const mail_authNum = makeRandomNum(4);
 
-    redisClient.set(req.body.userEmail+"_Auth", mail_authNum, 'EX', 600, ()=>{
+    redisClient.set(req.body.userEmail+"_AuthNum", mail_authNum, 'EX', 600, ()=>{
         console.log('mail Auth redis set for 10 min to ', req.body.userEmail);
     });
     
@@ -53,7 +53,7 @@ const sendmail = async(req, res, purpose)=>{
       
 //---------------------------------chck auth num-------------------------------------------//
 const mail_auth_check = async(req, res)=>{
-    const checkNum = await redisClient.v4.get(req.body.userEmail+"_mailAuth");
+    const checkNum = await redisClient.v4.get(req.body.userEmail+"_AuthNum");
 
     if(checkNum){
         if(checkNum == req.body.mail_authNum){
@@ -66,14 +66,14 @@ const mail_auth_check = async(req, res)=>{
             });
         }
         else{
-            res.status(204).json({
+            res.status(200).json({
                 success: false,
                 message: "인증번호 틀림"
             });
         }
     }
     else{
-        res.status(204).json({
+        res.status(200).json({
             success: false,
             message: "요청 아이디로 잘못됨."
         })
