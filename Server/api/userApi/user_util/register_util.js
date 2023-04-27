@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const dayjs = require('dayjs');
 
-const {setMySQL} = require('../../../db/conMysql');
+const {getMySQL, setMySQL} = require('../../../db/conMysql');
 const redisClient = require('../../../db/redis');
 const auth_private = require('../../../private/privatekey_Tuk').nodemailer_private;
 const {makeRandomNum} = require('../../../util/utilFunc');
@@ -10,20 +10,28 @@ const {makeRandomNum} = require('../../../util/utilFunc');
 
 //-----------------------------------register-------------------------------------//
 const register = async(req, res)=>{
-    //check mail auth
-    if(await redisClient.v4.get(req.body.userEmail+"_Auth")){
+    const isRegistered = await getMySQL(`SELECT userEmail FROM user WHERE userEmail='${req.body.userEmail}'`)
+    .catch((err)=>{
+        console.log('중복가입 확인 err ', err);
+        return res.status(200).json({success: false, message: 'db err'});
+    });
+    if(isRegistered.length) res.status(200).json({success: false, message: '중복가입'});
+    else{
+        //check mail auth
+        if(await redisClient.v4.get(req.body.userEmail+"_Auth")){
 
-        const registerSet = await reqInfo(req);
-        const insertQuery = 'insert into user set ?'
-
-        const result = await setMySQL(insertQuery, registerSet)
-        .catch((e)=>{
-            console.log(e);
-            res.status(200).json({success: false, message: e});
-        })
-        if(result) res.status(200).json({success: true});
+            const registerSet = await reqInfo(req);
+            const insertQuery = 'insert into user set ?'
+    
+            const result = await setMySQL(insertQuery, registerSet)
+            .catch((e)=>{
+                console.log(e);
+                res.status(200).json({success: false, message: e});
+            })
+            if(result) res.status(200).json({success: true});
+        }
+        else res.status(200).json({success: false, message: "메일이 인증되지 않았음."})
     }
-    else res.status(200).json({success: false, message: "메일이 인증되지 않았음."})
 }
 
 //-----------------------------------send to auth mail-------------------------------------//
