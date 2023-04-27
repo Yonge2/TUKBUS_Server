@@ -1,14 +1,3 @@
-/*
-creatae table reported(userID varchar(20) not null, reportedUserID varchar(20) not null, reportedReason varchar(50));
-userID varchar
-reportedUserID varchar
-reportedReason varchar
-
-<blocked>
-userID varchar
-blockedUserID varchar
-*/
-
 const {setMySQL, getMySQL} = require('../../../db/conMysql');
 const dayjs = require('dayjs');
 
@@ -62,8 +51,17 @@ const getBlockedUserList = async(userID)=>{
     })
 }
 
+const delBlockedUser = async(req, res)=>{
+    const delBlockedUserQuery = `DELETE FROM blocked WHERE userID='${req.userID}' 
+    AND blockedUserID='${req.body.blockedUserID}';`
+    const result = await getMySQL(delBlockedUserQuery).catch((err)=>{
+        console.log('delete blockedUser err ', err);
+        res.status(200).json({success: false, message: 'db err'});
+    });
+    if(result.affectedRows) res.status(200).json({success: true});
+}
 
-//요청 시간 추가, 테이블에 컬럼 추가 
+
 const submitOpnion = async(req, res)=>{
     const date = new dayjs().format('YYYY-MM-DD HH:mm');
     const insertQuery = `INSERT INTO submitOpinion SET ?`
@@ -80,7 +78,7 @@ const submitOpnion = async(req, res)=>{
 
 
 
-module.exports = {reportUser, blockUser, blockedUserList, submitOpnion};
+module.exports = {reportUser, blockUser, blockedUserList, submitOpnion, delBlockedUser};
 
 const blockObj = (req) =>{
     return {
