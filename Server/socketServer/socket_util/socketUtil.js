@@ -21,7 +21,7 @@ const socketJWTMiddleware = async(socket, next) => {
             }
             else{
             
-                await redisClient.sAdd(`${roomID}_IN`, `${userID}`, async(err, data)=>{
+                const enterUser = await redisClient.sAdd(`${roomID}_IN`, `${userID}`, async(err, data)=>{
                     if(!err) {
                         if(data){
                             const insertLogQuery = 'INSERT INTO chatroom_log SET ?'
@@ -41,19 +41,24 @@ const socketJWTMiddleware = async(socket, next) => {
                         }
                     }
                     else {
-                        console.log("socket middleware err: ", err);
+                        socket.errMessage = err;
+                        console.log('enterUser redis 저장오류 : ', err);
                         socket.roomID = null;
+                        next();
                     }
                 });
             }
         }
         else {
-            console.log("socketJWT err: ", result);
+            socket.errMessage = result;
+            console.log('socket jwt suceess err : ', result);
             socket.roomID = null;
+            next();
         }
     }
     else {
-        console.log("socketJWT - No header!");
+        socket.errMessage = "socketJWT - No header!";
+        console.log(socket.errMessage);
         socket.roomID = null;
         next();
     }
@@ -68,23 +73,19 @@ const checkBlock = async(userID, roomID)=>{
         from blocked where userID='${userID}' or blockedUserID='${userID}';`
 
     const blockedUserID = await getMySQL(blockedUserQuery);
-    console.log('차단유저 ', blockedUserID);
+
     if(blockedUserID.length===0) return false;
     else {
         const inUser = await redisGetSmembers(`${roomID}_IN`);
-        console.log('안에 있는 유저', inUser);
         
         const isblock = blockedUserID.map((ele) => {
-            console.log('차단 돌리기', inUser.includes(ele.isBlocked));
             if(inUser.includes(ele.isBlocked)) {
-                console.log('차단 트루');
                 return true;
             }
             else return false;
         });
         
         if(isblock.includes(true)) {
-            console.log('막줄 차단', isblock.includes(true));
             return true;
         }
         else return false;
