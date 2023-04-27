@@ -46,6 +46,6 @@ router.post('/settings/block/delete', jwt_middleWare, delBlockedUser);
 router.post('/settings/report', jwt_middleWare, reportUser);
 
 //-------------------------------------------------//
-router.post('/settings/withdraw', jwt_middleWare, Withdraw);
+router.get('/settings/withdraw', jwt_middleWare, Withdraw);
 
 module.exports = router;
