@@ -3,15 +3,14 @@ const salt = require('../../../private/privatekey_Tuk').nodemailer_private.salt;
 const bcrypt = require('bcrypt');
 const redisClient = require('../../../db/redis');
 
-const changingPW = async(req, res)=>{
-    const authCheck = await redisClient.v4.get(req.userID+"_PwAuth");
-
+const findPW = async(req, res)=>{
+    const userEmail = req.body.userEmail;
+    const authCheck = await redisClient.v4.get(userEmail+"_Auth");
     if(authCheck){
         const chagedPW = await bcrypt.hash(req.body.userPW, salt);
-        const updateQuery = 'UPDATE user SET userPW = ? WHERE userID = ?;';
-        const sqlset = [chagedPW, req.userID];
-
-        const insertResult = await setMySQL(updateQuery, sqlset).catch((e)=>{
+        const updateQuery = 'UPDATE user SET userPW = ? WHERE userEmail = ?;';
+        const updateSet = [chagedPW, userEmail];
+        const insertResult = await setMySQL(updateQuery, updateSet).catch((e)=>{
             console.log("update PW err: ", err);
             res.status(200).json({
                 success: false,
@@ -20,7 +19,29 @@ const changingPW = async(req, res)=>{
         });
         if(insertResult.affectedRows) res.status(200).json({success: true});
     }
+    else res.status(200).json({
+        success: false,
+        message: "메일 체크부터 하시오"
+    });
+}
 
+const changingPW = async(req, res)=>{
+    const authCheck = await redisClient.v4.get(req.userID+"_PwAuth");
+    
+    if(authCheck){
+        const chagedPW = await bcrypt.hash(req.body.userPW, salt);
+        const updateQuery = 'UPDATE user SET userPW = ? WHERE userID = ?;';
+        const updateSet = [chagedPW, req.userID];
+
+        const insertResult = await setMySQL(updateQuery, updateSet).catch((e)=>{
+            console.log("update PW err: ", err);
+            res.status(200).json({
+                success: false,
+                message: err
+            });
+        });
+        if(insertResult.affectedRows) res.status(200).json({success: true});
+    }
     else res.status(200).json({
         success: false,
         message: "비번 체크부터 하시오"
@@ -32,7 +53,7 @@ const checkPW = async(req, res)=>{
     const userOBJ = await getMySQL(query).catch((e)=>{console.log(e)});
     
     const resultPW = await bcrypt.compare(req.body.userPW, userOBJ[0].userPW).catch((e)=>{
-        console.log("에러", e);
+        console.log("비번 확인 에러", e);
     });
 
     if(resultPW){
@@ -49,4 +70,4 @@ const checkPW = async(req, res)=>{
     })
 }
 
-module.exports = {changingPW, checkPW};
+module.exports = {changingPW, checkPW, findPW};

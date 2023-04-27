@@ -27,19 +27,18 @@ const register = async(req, res)=>{
 }
 
 //-----------------------------------send to auth mail-------------------------------------//
-const sendmail = async(req, res)=>{
+const sendmail = async(req, res, purpose)=>{
     const mail_authNum = makeRandomNum(4);
 
-    //example("email_mailAuth" : "1234", expire after 5min)
-    redisClient.set(req.body.userEmail+"_mailAuth", mail_authNum, 'EX', 600, ()=>{
+    redisClient.set(req.body.userEmail+"_Auth", mail_authNum, 'EX', 600, ()=>{
         console.log('mail Auth redis set for 10 min to ', req.body.userEmail);
     });
     
-    const mailOBJ = mailObj(mail_authNum, req.body.userEmail);
+    const mailOBJ = mailObj(mail_authNum, req.body.userEmail, purpose);
 
     const mailTransport = nodemailer.createTransport(mailOBJ.createMailObj);
 
-    await mailTransport.sendMail(mailOBJ.mailOptions,(err, info)=>{
+    mailTransport.sendMail(mailOBJ.mailOptions,(err, info)=>{
 
         if(err) {
             res.status(204).json({success: false, message: "email 발송 오류"})
@@ -58,7 +57,7 @@ const mail_auth_check = async(req, res)=>{
 
     if(checkNum){
         if(checkNum == req.body.mail_authNum){
-            redisClient.set(req.body.userEmail+"_registerAuth", "OK", 'EX', 600, ()=>{
+            redisClient.set(req.body.userEmail+"_Auth", "OK", 'EX', 600, ()=>{
                 console.log('register Auth redis set for 10 min to ', req.body.userEmail);
             })
             res.status(200).json({
@@ -97,7 +96,8 @@ module.exports = {register, sendmail, mail_auth_check, userIdCheck}
 
 
 //---------------------------------------for clean code -------------------------// 
-const mailObj = (authnum, userEmail) => {
+const mailObj = (authnum, userEmail, purpose) => {
+    const titleText = (purpose==='register')?"'통학러' 가입을":"비밀번호 찾기를";
     return {createMailObj: {
             service: "Gmail",
             auth: auth_private.auth,
@@ -108,7 +108,7 @@ const mailObj = (authnum, userEmail) => {
         mailOptions: {
             from: auth_private.email,
             to: userEmail,
-            subject: "TUK BUS 가입을 위한 인증번호 입니다.",
+            subject: `${titleText} 위한 인증번호 입니다.`,
             text: "인증번호는 " + authnum + " 입니다."
         }
     }
