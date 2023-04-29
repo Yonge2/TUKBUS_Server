@@ -102,7 +102,7 @@ module.exports = {register, sendmail, mail_auth_check, userIdCheck}
 
 //---------------------------------------for clean code -------------------------// 
 const mailObj = (authnum, userEmail, purpose) => {
-    const titleText = (purpose==='register')?"'통학러' 가입을":"비밀번호 찾기를";
+    const titleText = (purpose==='register')?"'통학러' 가입을":"계정 찾기를";
     return {createMailObj: {
             service: "Gmail",
             auth: auth_private.auth,
