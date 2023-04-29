@@ -21,16 +21,20 @@ router.get('/login/refresh', refresh_token);
 router.post('/register/authmail', async(req, res)=>{
     sendmail(req, res, 'register');
 });
-router.post('/register/authmail/check', mail_auth_check);
+router.post('/register/authmail/check', async(req, res)=>{
+    mail_auth_check(req, res, 'register');
+})
 router.post('/register/idcheck', userIdCheck);
 router.post('/register', register);
 
 //-------------------------------------------------//
-//checking mail -> changing password
+//checking mail -> finding userID, password
 router.post('/findpw/authmail', async(req, res)=>{
-    sendmail(req, res, 'findpassword');
+    sendmail(req, res, 'find');
 })
-router.post('/findpw/authmail/check', mail_auth_check);
+router.post('/findpw/authmail/check', async(req, res)=>{
+    mail_auth_check(req, res, 'find');
+})
 router.post('/findpw/changingpw', findPW);
 
 //-------------------------------------------------//

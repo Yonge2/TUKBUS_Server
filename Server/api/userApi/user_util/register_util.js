@@ -60,18 +60,15 @@ const sendmail = async(req, res, purpose)=>{
 }
       
 //---------------------------------chck auth num-------------------------------------------//
-const mail_auth_check = async(req, res)=>{
+const mail_auth_check = async(req, res, purpose)=>{
     const checkNum = await redisClient.v4.get(req.body.userEmail+"_AuthNum");
-
     if(checkNum){
         if(checkNum == req.body.mail_authNum){
             redisClient.set(req.body.userEmail+"_Auth", "OK", 'EX', 600, ()=>{
                 console.log('register Auth redis set for 10 min to ', req.body.userEmail);
             })
-            res.status(200).json({
-                success: true,
-                message: "메일인증 완료, 10분간 메일 인증 유효"
-            });
+            const resObj = await checkResObj(purpose, req.body.userEmail);
+            res.status(200).json(resObj);
         }
         else{
             res.status(200).json({
@@ -118,6 +115,32 @@ const mailObj = (authnum, userEmail, purpose) => {
             to: userEmail,
             subject: `${titleText} 위한 인증번호 입니다.`,
             text: "인증번호는 " + authnum + " 입니다."
+        }
+    }
+}
+
+const checkResObj = async(purpose, userEmail)=>{
+    if(purpose==='register'){
+        return {
+            success: true,
+            message: "메일인증 완료, 10분간 메일 인증 유효"
+        }
+    }
+    else {
+        const userID = await getMySQL(`SELECT userID FROM user WHERE userEmail='${userEmail}';`).catch((err)=>{
+            console.log('find userID err : ', err);
+        });
+        if(userID.length){
+            return {
+                success: true,
+                message: {userID: userID[0].userID}
+            }
+        }
+        else{
+            return {
+                success: false,
+                message: '이메일 없음'
+            }
         }
     }
 }
