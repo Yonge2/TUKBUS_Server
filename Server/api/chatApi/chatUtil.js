@@ -5,7 +5,6 @@ const dayjs = require('dayjs');
 const outChatroom = async(req, res)=>{
     const now = new dayjs();
     const roomID = req.body.roomID;
-    const matching = req.body.matching;
     const sremResult = await redisSrem(`${roomID}_IN`, req.userID);
 
     const logQuery = 'INSERT INTO chatroom_log SET ?'
@@ -14,7 +13,6 @@ const outChatroom = async(req, res)=>{
         univNAME: req.univNAME, 
         roomID: roomID,
         status: 'out',
-        matching: matching,
         time: now.format('YYYY-MM-DD HH:mm')
     })
     .catch((e)=>{ console.log('chatroom_log setsql err:', e);});
