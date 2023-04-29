@@ -1,13 +1,14 @@
 const bcrypt = require('bcrypt');
 const dayjs = require('dayjs');
 
+const {outChatroom} = require('../../chatApi/chatUtil');
 const {getMySQL, setMySQL} = require('../../../db/conMysql');
 const redisClient = require('../../../db/redis');
 const jwt = require('./jwt_util');
 
 
 const loginPass = async(req, res) => {
-    const loginQuery = `select userID, userPW, univNAME from user where userID = "${req.body.userID}";`
+    const loginQuery = `SELECT userID, userPW, univNAME FROM user WHERE BINARY(userID) = '${req.body.userID}';`
     
     const userOBJ = await getMySQL(loginQuery);
 
@@ -66,7 +67,8 @@ const Withdraw = async(req, res)=>{
         }
 
         await setMySQL(insertWithdrawalQuery, insertSet);
-        const delToken = await redisClient.v4.del(`${userID}_token`);
+        const delToken = await redisClient.v4.del(`${req.userID}_token`);
+
 
         const delUserQuery = `DELETE FROM user WHERE userID='${req.userID}';`
         const result = await getMySQL(delUserQuery)
@@ -82,3 +84,15 @@ const Withdraw = async(req, res)=>{
 }
     
 module.exports = {loginPass, logOut, Withdraw};
+
+
+//--------------------------고쳐--------------------------
+const chatroomOut = async(req)=>{
+    
+    const isOutQuery = `SELECT roomID FROM chatroom_log WHERE userID='${userID}' AND status='ing';`
+    const result = await getMySQL(isOutQuery);
+    if(result.length){
+        req.roomID = result[0].roomID;
+        await outChatroom(req, res);
+    }
+}
