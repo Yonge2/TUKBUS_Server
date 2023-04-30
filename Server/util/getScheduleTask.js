@@ -2,6 +2,7 @@ const dayjs = require('dayjs');
 const scheduler = require('node-schedule');
 const kakaoDuration = require('./kakaoDuration');
 const {getMySQL} = require('../db/conMysql');
+const { schQuery } = require('../private/query');
 
 let toTUKsch = [];
 let TUK_toStationSch = [];
@@ -178,7 +179,7 @@ const getScheduleQuery = (univName, destination, hour, min) => {
     const now = new dayjs();
 
     const query = (tableName, destination, hour, min) =>{
-        return `SELECT * FROM ${tableName} WHERE destination = ${destination} AND(hour >= ${hour} AND min > ${min} OR hour > ${hour}) ORDER BY hour, min LIMIT 4 ;`;
+        return schQuery.getSch(tableName, destination, hour, min);
     }
 
     if(now.format('ddd')==='Sat') {

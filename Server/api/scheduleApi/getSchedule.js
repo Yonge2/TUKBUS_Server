@@ -3,6 +3,7 @@ const getOptionOBJ = require('./taskScheduler');
 const {TUK_Schedule, GTEC_Schedule} = require('../../util/getScheduleTask');
 
 const dayjs = require('dayjs');
+const { schQuery } = require('../../private/query');
 
 
 const getScheduleData = async(req, res, univNAME, direction)=>{
@@ -65,7 +66,7 @@ const schClassification = (univNAME, direction) =>{
 
 const allOfScheduleQuery = (req)=>{
     const query =(table)=>{
-        return `SELECT * FROM ${table} ORDER BY destination, hour, min;`;
+        return schQuery.allSchedule(table);
     }
     if(req.query.univNAME==="TUK") return query('TUK_Sch_Weekday');
     else if(req.query.univNAME==="GTEC") return query('GTEC_Sch');

@@ -1,4 +1,5 @@
 const {getMySQL, setMySQL} = require("../../db/conMysql");
+const { schQuery } = require("../../private/query");
 const {sch_Csv2Json} = require("../../util/editcsv");
 
 //insert data
@@ -8,7 +9,7 @@ const insertSchedule = async(req, res) => {
 
     const tableName = (day===undefined)?(univName==="TUK")?"TUK_Sch_Weekday" : "GTEC_Sch": "TUK_Sch_Saturday";
 
-    const inserQuery = `INSERT INTO ${tableName} SET ?`;
+    const inserQuery = schQuery.insertSch(tableName);
 
     const newSchedule = await sch_Csv2Json(univName, day);
 
@@ -29,7 +30,7 @@ const deleteSchedule = async(req, res) => {
 
     const tableName = (day===null)?(univName==="TUK")?"TUK_Sch_Weekday" : "GTEC_Sch": "TUK_Sch_Saturday";
 
-    const delQuery = `DELETE FROM ${tableName}`;
+    const delQuery = schQuery.deleteSch(tableName);
 
     const result = await getMySQL(delQuery).catch((e)=>{
         console.log("del mysql err: ", e);
