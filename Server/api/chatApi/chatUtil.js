@@ -3,39 +3,11 @@ const {redisSrem, redisGetScard, redisGetSmembers} = require('../../util/redisUt
 const dayjs = require('dayjs');
 
 const outChatroom = async(req, res)=>{
-    const now = new dayjs();
-    const roomID = req.body.roomID;
-    const sremResult = await redisSrem(`${roomID}_IN`, req.userID);
-
-    const logQuery = 'INSERT INTO chatroom_log SET ?'
-    const sqlresult = await setMySQL(logQuery, {
-        userID: req.userID, 
-        univNAME: req.univNAME, 
-        roomID: roomID,
-        status: 'out',
-        time: now.format('YYYY-MM-DD HH:mm')
-    })
-    .catch((e)=>{ console.log('chatroom_log setsql err:', e);});
-
-    const updateInQuery = `UPDATE chatroom_log SET status = ? WHERE userID='${req.userID}'
-    AND roomID='${roomID}' AND status='ing';`
-
-    await setMySQL(updateInQuery, 'in').catch((err)=>{
-        console.log('update into chatroom_log status err : ', err);
-    });
-
-    if(sremResult && sqlresult.affectedRows) {
-        await recordOutMsg(req.userID, roomID, now);
-        res.status(200).json({success: true});
+    const result = await recordOutStatus(req);
+    if(result.message){
+        res.status(200).json({success: result.success, message: result.message});
     }
-    else res.status(200).json({success:false, message: "chatroom out err"});
-
-    if(!await redisGetScard(`${roomID}_IN`)){
-        const updateQuery = "UPDATE chatInfo SET isLive = ? WHERE roomID = ?;";
-        await setMySQL(updateQuery, [false, roomID]).catch((e)=>{
-            console.log('update chatInfo err :', e);
-        });
-    }
+    else res.status(200).json({success: result.success});
 }
 
 
@@ -126,4 +98,42 @@ const recordOutMsg = async(userID, roomID, now)=>{
     .catch((err)=>{
         console.log('record Out msg err : ', err);
     })
+}
+
+const recordOutStatus = async(req)=>{
+    const now = new dayjs();
+    const userID = req.userID;
+    const univNAME = req.univNAME;
+    const roomID = req.body.roomID;
+    const sremResult = await redisSrem(`${roomID}_IN`, userID);
+
+    const logQuery = 'INSERT INTO chatroom_log SET ?'
+    const sqlresult = await setMySQL(logQuery, {
+        userID: userID, 
+        univNAME: univNAME, 
+        roomID: roomID,
+        status: 'out',
+        time: now.format('YYYY-MM-DD HH:mm')
+    })
+    .catch((e)=>{ console.log('chatroom_log setsql err:', e);});
+
+    const updateInQuery = `UPDATE chatroom_log SET status = ? WHERE userID='${userID}'
+    AND roomID='${roomID}' AND status='ing';`
+
+    await setMySQL(updateInQuery, 'in').catch((err)=>{
+        console.log('update into chatroom_log status err : ', err);
+    });
+
+    if(!await redisGetScard(`${roomID}_IN`)){
+        const updateQuery = "UPDATE chatInfo SET isLive = ? WHERE roomID = ?;";
+        await setMySQL(updateQuery, [false, roomID]).catch((e)=>{
+            console.log('update chatInfo err :', e);
+        });
+    }
+
+    if(sremResult && sqlresult.affectedRows) {
+        await recordOutMsg(userID, roomID, now);
+        return {success: true};
+    }
+    else return{success:false, message: "chatroom out err"};
 }

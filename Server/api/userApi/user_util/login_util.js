@@ -68,6 +68,7 @@ const Withdraw = async(req, res)=>{
 
         await setMySQL(insertWithdrawalQuery, insertSet);
         const delToken = await redisClient.v4.del(`${req.userID}_token`);
+        await chatroomOut(req);
 
 
         const delUserQuery = `DELETE FROM user WHERE userID='${req.userID}';`
@@ -86,13 +87,13 @@ const Withdraw = async(req, res)=>{
 module.exports = {loginPass, logOut, Withdraw};
 
 
-//--------------------------고쳐--------------------------
+
 const chatroomOut = async(req)=>{
     
     const isOutQuery = `SELECT roomID FROM chatroom_log WHERE userID='${userID}' AND status='ing';`
     const result = await getMySQL(isOutQuery);
-    if(result.length){
+    if(result[0].roomID){
         req.roomID = result[0].roomID;
-        await outChatroom(req, res);
+        await outChatroom(req);
     }
 }
