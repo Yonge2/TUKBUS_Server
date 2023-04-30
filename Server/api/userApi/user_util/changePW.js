@@ -2,15 +2,15 @@ const {getMySQL, setMySQL} = require('../../../db/conMysql');
 const salt = require('../../../private/privatekey_Tuk').nodemailer_private.salt;
 const bcrypt = require('bcrypt');
 const redisClient = require('../../../db/redis');
+const { redisQuery, userQuery } = require('../../../private/query');
 
 const findPW = async(req, res)=>{
     const userEmail = req.body.userEmail;
-    const authCheck = await redisClient.v4.get(userEmail+"_Auth");
+    const authCheck = await redisClient.v4.get(redisQuery.emailAuth(userEmail));
     if(authCheck){
         const chagedPW = await bcrypt.hash(req.body.userPW, salt);
-        const updateQuery = 'UPDATE user SET userPW = ? WHERE userEmail = ?;';
         const updateSet = [chagedPW, userEmail];
-        const insertResult = await setMySQL(updateQuery, updateSet).catch((e)=>{
+        const insertResult = await setMySQL(userQuery.updatePW, updateSet).catch((e)=>{
             console.log("update PW err: ", err);
             res.status(200).json({
                 success: false,
@@ -26,14 +26,14 @@ const findPW = async(req, res)=>{
 }
 
 const changingPW = async(req, res)=>{
-    const authCheck = await redisClient.v4.get(req.userID+"_PwAuth");
+    const pwAuth = redisQuery.pwAuth(req.userID);
+    const authCheck = await redisClient.v4.get(pwAuth);
     
     if(authCheck){
         const chagedPW = await bcrypt.hash(req.body.userPW, salt);
-        const updateQuery = 'UPDATE user SET userPW = ? WHERE userID = ?;';
         const updateSet = [chagedPW, req.userID];
 
-        const insertResult = await setMySQL(updateQuery, updateSet).catch((e)=>{
+        const insertResult = await setMySQL(userQuery.changePW, updateSet).catch((e)=>{
             console.log("update PW err: ", err);
             res.status(200).json({
                 success: false,
@@ -49,7 +49,7 @@ const changingPW = async(req, res)=>{
 }
 
 const checkPW = async(req, res)=>{
-    const query = `select userID, userPW from user where userID = "${req.userID}";`
+    const query = userQuery.getPW(req.userID);
     const userOBJ = await getMySQL(query).catch((e)=>{console.log(e)});
     
     const resultPW = await bcrypt.compare(req.body.userPW, userOBJ[0].userPW).catch((e)=>{
@@ -57,7 +57,8 @@ const checkPW = async(req, res)=>{
     });
 
     if(resultPW){
-        redisClient.set(req.userID+"_PwAuth", "OK", 'EX', 600, ()=>{
+        const pwAuth = redisQuery.pwAuth(req.userID);
+        redisClient.set(pwAuth, "OK", 'EX', 600, ()=>{
             console.log('PW Auth redis set for 10 min to ', req.userID);
         })
         res.status(200).json({

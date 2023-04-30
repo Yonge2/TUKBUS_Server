@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const redisClient = require('../../../db/redis');
+const { redisQuery } = require('../../../private/query');
 const privateJwt = require('../../../private/privatekey_Tuk').jwt;
 
 /**
@@ -51,7 +52,7 @@ const refresh = () => { // sign refresh token
 const refreshVerify = async (token, userID) => { // refresh token 검증
     
   try {
-    const data = await redisClient.v4.get(userID+"_token"); //redis<userID, refresh token>
+    const data = await redisClient.v4.get(redisQuery.token(userID)); //redis<userID, refresh token>
 
     if (token === data) { //req.refresh_token
       try {

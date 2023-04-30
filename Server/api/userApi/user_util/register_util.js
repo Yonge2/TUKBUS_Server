@@ -6,11 +6,13 @@ const {getMySQL, setMySQL} = require('../../../db/conMysql');
 const redisClient = require('../../../db/redis');
 const auth_private = require('../../../private/privatekey_Tuk').nodemailer_private;
 const {makeRandomNum} = require('../../../util/utilFunc');
+const {userQuery, redisQuery} = require('../../../private/query');
 
 
 //-----------------------------------register-------------------------------------//
 const register = async(req, res)=>{
-    const isRegistered = await getMySQL(`SELECT userEmail FROM user WHERE userEmail='${req.body.userEmail}'`)
+    const isRegisterQuery = userQuery.isRegister(req.body.userEmail);
+    const isRegistered = await getMySQL(isRegisterQuery)
     .catch((err)=>{
         console.log('중복가입 확인 err ', err);
         return res.status(200).json({success: false, message: 'db err'});
@@ -18,12 +20,10 @@ const register = async(req, res)=>{
     if(isRegistered.length) res.status(200).json({success: false, message: '중복가입'});
     else{
         //check mail auth
-        if(await redisClient.v4.get(req.body.userEmail+"_Auth")){
-
+        if(await redisClient.v4.get(redisQuery.emailAuth(userEmail))){
             const registerSet = await reqInfo(req);
-            const insertQuery = 'insert into user set ?'
     
-            const result = await setMySQL(insertQuery, registerSet)
+            const result = await setMySQL(userQuery.register, registerSet)
             .catch((e)=>{
                 console.log(e);
                 res.status(200).json({success: false, message: e});
@@ -38,7 +38,7 @@ const register = async(req, res)=>{
 const sendmail = async(req, res, purpose)=>{
     const mail_authNum = makeRandomNum(4);
 
-    redisClient.set(req.body.userEmail+"_AuthNum", mail_authNum, 'EX', 600, ()=>{
+    redisClient.set(redisQuery.emailAuthNum(req.body.userEmail), mail_authNum, 'EX', 600, ()=>{
         console.log('mail Auth redis set for 10 min to ', req.body.userEmail);
     });
     
@@ -61,10 +61,10 @@ const sendmail = async(req, res, purpose)=>{
       
 //---------------------------------chck auth num-------------------------------------------//
 const mail_auth_check = async(req, res, purpose)=>{
-    const checkNum = await redisClient.v4.get(req.body.userEmail+"_AuthNum");
+    const checkNum = await redisClient.v4.get(redisQuery.emailAuthNum(req.body.userEmail));
     if(checkNum){
         if(checkNum == req.body.mail_authNum){
-            redisClient.set(req.body.userEmail+"_Auth", "OK", 'EX', 600, ()=>{
+            redisClient.set(redisQuery.emailAuth(req.body.userEmail), "OK", 'EX', 600, ()=>{
                 console.log('register Auth redis set for 10 min to ', req.body.userEmail);
             })
             const resObj = await checkResObj(purpose, req.body.userEmail);
@@ -88,12 +88,12 @@ const mail_auth_check = async(req, res, purpose)=>{
  //중복확인
  const userIdCheck = async(req, res)=>{
     const checkID = req.body.userID;
-    const result = await redisClient.v4.get(checkID+"_token");
-    if(!result) {
-        res.status(200).json({success:true});
+    const result = await redisClient.v4.get(redisQuery.token(checkID));
+    if(result) {
+        res.status(200).json({success: false});
     }
     else {
-        res.status(200).json({success: false});
+        res.status(200).json({success:true});
     }
 }
 
@@ -127,7 +127,8 @@ const checkResObj = async(purpose, userEmail)=>{
         }
     }
     else {
-        const userID = await getMySQL(`SELECT userID FROM user WHERE userEmail='${userEmail}';`).catch((err)=>{
+        const findUserIdQuery = userQuery.findUserID(userEmail);
+        const userID = await getMySQL(findUserIdQuery).catch((err)=>{
             console.log('find userID err : ', err);
         });
         if(userID.length){

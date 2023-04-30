@@ -1,26 +1,29 @@
 const {setMySQL, getMySQL} = require('../../../db/conMysql');
 const dayjs = require('dayjs');
+const {userQuery} = require('../../../private/query');
 
 const reportUser = async(req, res)=>{
-    const reportQuery = 'INSERT INTO reported SET ?'
     const reportSet = reportObj(req);
-    const result = await setMySQL(reportQuery, reportSet).catch((e)=>{
+
+    const result = await setMySQL(userQuery.report, reportSet).catch((e)=>{
         console.log('inserting "reported" err:', e);
         res.status(200).json({success: false, message: e});
     });
-    if(result) res.status(200).json({success: true, message: "신고완료"});
+
+    if(result.affectedRows) res.status(200).json({success: true, message: "신고완료"});
+    else res.status(200).json({success: false});
 }
 
 const blockUser = async(req, res)=>{
-    console.log("in");
-    const blockQuery = 'INSERT INTO blocked SET ?'
     const blockSet = blockObj(req);
-    const result = await setMySQL(blockQuery, blockSet).catch((e)=>{
+
+    const result = await setMySQL(userQuery.block, blockSet).catch((e)=>{
         console.log("inserting blocked err: ",e);
         res.status(200).json({success: false, message: e});
     });
-    console.log(result);
-    if(result) res.status(200).json({success: true, message: "차단완료"});
+
+    if(result.affectedRows) res.status(200).json({success: true, message: "차단완료"});
+    else res.status(200).json({success: false});
 }
 
 
@@ -28,7 +31,15 @@ const blockedUserList = async(req, res)=>{
     const result = await getBlockedUserList(req.userID).catch((e)=>{
         res.status(200).json({success: false, message: e});
     });
-    if(result.length){
+    if(result.length===1){
+        res.status(200).json({
+            success: true,
+            message: {
+                blockUserList: [result]
+            }
+        });
+    }
+    else if(result.length>1){
         res.status(200).json({
             success: true,
             message: {
@@ -42,7 +53,7 @@ const blockedUserList = async(req, res)=>{
 
 const getBlockedUserList = async(userID)=>{
     return new Promise(async(resolve, reject)=>{
-        const getBlockedQuery = `SELECT blockedUserID FROM blocked WHERE userID = "${userID}";`
+        const getBlockedQuery = userQuery.getBlock(userID);
         const result = await getMySQL(getBlockedQuery).catch((e)=>{
             console.log('getting "reported" err:', e);
             reject(e);
@@ -52,21 +63,25 @@ const getBlockedUserList = async(userID)=>{
 }
 
 const delBlockedUser = async(req, res)=>{
-    const delBlockedUserQuery = `DELETE FROM blocked WHERE userID='${req.userID}' 
-    AND blockedUserID='${req.body.blockedUserID}';`
+    const delBlockedUserQuery = userQuery.delBlock(req.userID, req.body.blockedUserID);
+
     const result = await getMySQL(delBlockedUserQuery).catch((err)=>{
         console.log('delete blockedUser err ', err);
         res.status(200).json({success: false, message: 'db err'});
     });
     if(result.affectedRows) res.status(200).json({success: true});
+    else res.status(200).json({success: false});
 }
 
 
 const submitOpnion = async(req, res)=>{
-    const date = new dayjs().format('YYYY-MM-DD HH:mm');
-    const insertQuery = `INSERT INTO submitOpinion SET ?`
-    const insertSet = {userID: req.userID, detail: req.body.detail, date: date};
-    const result = await setMySQL(insertQuery, insertSet).catch((err)=>{
+    const insertSet = {
+        userID: req.userID,
+        detail: req.body.detail,
+        date: new dayjs().format('YYYY-MM-DD HH:mm')
+    }
+
+    const result = await setMySQL(userQuery.submit, insertSet).catch((err)=>{
         console.log('submitOpinion err: ', err);
         res.status(200).json({success: false});
     });

@@ -5,38 +5,34 @@ const {outChatroom} = require('../../chatApi/chatUtil');
 const {getMySQL, setMySQL} = require('../../../db/conMysql');
 const redisClient = require('../../../db/redis');
 const jwt = require('./jwt_util');
+const {userQuery, redisQuery, chatQuery} = require('../../../private/query');
 
 
-const loginPass = async(req, res) => {
-    const loginQuery = `SELECT userID, userPW, univNAME FROM user WHERE BINARY(userID) = '${req.body.userID}';`
-    
-    const userOBJ = await getMySQL(loginQuery);
+const loginPass = async(req, res) => {    
+    const userOBJ = await getMySQL(userQuery.login(req.body.userID));
 
-    if(userOBJ.length){ //아디 통과
-        if(await bcrypt.compare(req.body.userPW, userOBJ[0].userPW)){ //비번통과
+    if(userOBJ.length){
+        if(await bcrypt.compare(req.body.userPW, userOBJ[0].userPW)){
             try {
                 const accessToken = jwt.sign(userOBJ[0]);
                 const refreshToken = jwt.refresh();
-                redisClient.v4.set(userOBJ[0].userID+"_token", refreshToken);
+                redisClient.v4.set(redisQuery.token(userOBJ[0].userID), refreshToken);
 
-                res.status(200).json({
+                return res.status(200).json({
                     success: true,
                     token:{
                         accessToken: accessToken,
                         refreshToken: refreshToken
                     }
-                })
-                return ;
+                });
             }
             catch(err) {
                 console.log(userOBJ[0].userID, ' 토큰실패\n err: ',err);
-                res.status(200).json({success:false, message:'token sign failed'});
-                return ;
+                return res.status(200).json({success:false, message:'token sign failed'});
             }
         }
-        else { //비번틀림
-            res.status(200).json({success:false, message:'Incorrected PW'});
-            return ;
+        else {
+            return res.status(200).json({success:false, message:'Incorrected PW'});
         }
     }
     else {
@@ -46,19 +42,19 @@ const loginPass = async(req, res) => {
 
 const logOut = async(req, res)=>{
     const userID = req.userID;
-    const delToken = await redisClient.v4.del(`${userID}_token`);
-    if(delToken) res.status(200).json({success: true});
+    const result = await setMySQL(userQuery.logout(userID), {status: 'logout', time: new dayjs().format('YYYY-MM-DD-HH:mm')})
+    if(result.affectedRows) res.status(200).json({success: true});
     else res.status(200).json({success: false, message: 'failed logout'});
 }
 
 const Withdraw = async(req, res)=>{
-    const authCheck = await redisClient.v4.get(req.userID+"_PwAuth");
+    pwAuth = redisQuery.pwAuth(req.userID);
+    const authCheck = await redisClient.v4.get(pwAuth);
     
     if(authCheck){
-        const getUserQuery = `SELECT userID, userEmail, dayOfRegister FROM user WHERE userID='${req.userID}';`
+        const getUserQuery = userQuery.getUser(req.userID);
         const withdrawalUserSet = await getMySQL(getUserQuery);
 
-        const insertWithdrawalQuery = 'INSERT INTO withdrawalUser SET ?'
         const insertSet = {
             userID : withdrawalUserSet[0].userID,
             userEmail : withdrawalUserSet[0].userEmail,
@@ -66,12 +62,12 @@ const Withdraw = async(req, res)=>{
             dayOfWithdraw : new dayjs().format('YYYY-MM-DD-HH:mm')
         }
 
-        await setMySQL(insertWithdrawalQuery, insertSet);
-        const delToken = await redisClient.v4.del(`${req.userID}_token`);
+        await setMySQL(userQuery.withdraw, insertSet);
+        const delToken = await redisClient.v4.del(redisQuery.token(req.userID));
         await chatroomOut(req);
 
 
-        const delUserQuery = `DELETE FROM user WHERE userID='${req.userID}';`
+        const delUserQuery = userQuery.delUser(req.userID);
         const result = await getMySQL(delUserQuery)
         .catch((err)=>{
             console.log('del user err : ', err);
@@ -90,7 +86,7 @@ module.exports = {loginPass, logOut, Withdraw};
 
 const chatroomOut = async(req)=>{
     
-    const isOutQuery = `SELECT roomID FROM chatroom_log WHERE userID='${userID}' AND status='ing';`
+    const isOutQuery = chatQuery.isChatting(req.userID);
     const result = await getMySQL(isOutQuery);
     if(result[0].roomID){
         req.roomID = result[0].roomID;

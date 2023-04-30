@@ -1,9 +1,9 @@
 const { verify } = require('./jwt_util');
 
-const authJWT = (req, res, next) => {
-
-  if (req.headers.authorization) {
-    const result = verify(req.headers.authorization);
+const authJWT = async(req, res, next) => {
+  const token = req.headers.authorization;
+  if (token) {
+    const result = verify(token);
 
     if (result.success) {
       req.userID = result.userID;
@@ -12,11 +12,11 @@ const authJWT = (req, res, next) => {
     }
     else {
       console.log("<토큰인증>"+result.message);
-      res.status(201).json({success: false, message: result.message});
+      res.status(200).json({success: false, message: result.message});
     }
   }
   else {
-    res.status(201).json({success: false, message: "No Tokens"})
+    res.status(200).json({success: false, message: "No Tokens"})
   }
 };
 
