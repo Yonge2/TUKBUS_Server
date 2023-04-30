@@ -3,6 +3,7 @@ const redisClient = require('../../db/redis');
 const {verify} = require('../../api/userApi/user_util/jwt_util');
 const dayjs = require('dayjs');
 const { redisGetSmembers } = require('../../util/redisUtil');
+const { chatQuery, redisQuery } = require('../../private/query');
 
 
 const socketJWTMiddleware = async(socket, next) => {
@@ -21,11 +22,10 @@ const socketJWTMiddleware = async(socket, next) => {
             }
             else{
             
-                const enterUser = await redisClient.sAdd(`${roomID}_IN`, `${userID}`, async(err, data)=>{
+                const enterUser = await redisClient.sAdd(redisQuery.chatRoom(roomID), `${userID}`, async(err, data)=>{
                     if(!err) {
                         if(data){
-                            const insertLogQuery = 'INSERT INTO chatroom_log SET ?'
-                            await setMySQL(insertLogQuery, {
+                            await setMySQL(chatQuery.chatRoomLog, {
                                 userID: userID, 
                                 univNAME: result.univNAME, 
                                 roomID: roomID, 
@@ -69,14 +69,13 @@ const socketJWTMiddleware = async(socket, next) => {
 module.exports = {socketJWTMiddleware};
 
 const checkBlock = async(userID, roomID)=>{
-    const blockedUserQuery = `select if(userID='${userID}', blockedUserID, userID) as isBlocked 
-        from blocked where userID='${userID}' or blockedUserID='${userID}';`
+    const blockedUserQuery = chatQuery.blockedUserRoom(userID);
 
     const blockedUserID = await getMySQL(blockedUserQuery);
 
     if(blockedUserID.length===0) return false;
     else {
-        const inUser = await redisGetSmembers(`${roomID}_IN`);
+        const inUser = await redisGetSmembers(redisQuery.chatRoom(roomID));
         
         const isblock = blockedUserID.map((ele) => {
             if(inUser.includes(ele.isBlocked)) {

@@ -1,5 +1,6 @@
 const {getMySQL, setMySQL} = require('../../db/conMysql');
 const dayjs = require('dayjs');
+const { chatQuery } = require('../../private/query');
 
 const chatting = (io) =>{
 
@@ -28,8 +29,7 @@ const chatting = (io) =>{
         
             socket.on('disconnect', async()=>{
                 const now = new dayjs().subtract(1, "m").format('HH:mm');
-                const isOutQuery = `SELECT * FROM chatroom_log WHERE roomID='${socket.roomID}' AND 
-                userID='${socket.userID}' AND time>='${now}' AND status='out';`
+                const isOutQuery = chatQuery.isOut(socket.roomID, socket.userID, now);
     
                 const isOut = await getMySQL(isOutQuery);
     
@@ -52,8 +52,7 @@ const setFirstMessageIndex = async(userID, roomID)=>{
         console.log('record In msg err : ', err);
     });
 
-    const checkMessageQuery = `SELECT indexMessage FROM chatmessage WHERE roomID='${roomID}' 
-    AND time='${now.format('HH:mm')}' AND message='${userID}님이 입장했습니다.';`
+    const checkMessageQuery = chatQuery.checkFirstMessage(roomID, now.format('HH:mm'), userID);
     
     const FirstMessage = await getMySQL(checkMessageQuery).catch((err)=>{
         console.log('check last message err: ', err);
@@ -61,8 +60,7 @@ const setFirstMessageIndex = async(userID, roomID)=>{
 
     const firstMsgIndex = FirstMessage[0].indexMessage;
 
-    const updateFirstMsgQuery = `UPDATE chatroom_log SET firstMsgIndex = ? WHERE userID='${userID}'
-    AND roomID='${roomID}' AND status='ing'`
+    const updateFirstMsgQuery = chatQuery.updateFirstMessage(userID, roomID)
 
     const setFristMessage = await setMySQL(updateFirstMsgQuery, firstMsgIndex).catch((err)=>{
         console.log('update first message index err: ', err);
@@ -70,8 +68,7 @@ const setFirstMessageIndex = async(userID, roomID)=>{
 }
 
 const recordInMsg = async(userID, roomID, now)=>{
-    const inQuery = `INSERT INTO chatmessage SET ?`
-    await setMySQL(inQuery, {
+    await setMySQL(chatQuery.insertMessage, {
         roomID: roomID,
         userID: null,
         message: `${userID}님이 입장했습니다.`,

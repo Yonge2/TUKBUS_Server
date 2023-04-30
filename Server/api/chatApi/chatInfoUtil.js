@@ -2,14 +2,14 @@ const {makeRandomNum} = require('../../util/utilFunc');
 const {redisGetScard, redisGetSmembers} = require('../../util/redisUtil');
 const {setMySQL, getMySQL} = require('../../db/conMysql');
 const dayjs = require('dayjs');
+const { chatQuery, redisQuery } = require('../../private/query');
 
 
 const getChatRoomList = async(req, res)=>{
-    const isIngQuery = `SELECT roomID FROM chatroom_log WHERE userID='${req.userID}' AND status='ing';`
+    const isIngQuery = chatQuery.isChatting(req.userID);
     const isIng = await getMySQL(isIngQuery);
     if(isIng.length){
-        const chatroomQuery = `SELECT * FROM chatInfo WHERE roomID = '${isIng[0].roomID}'`;
-        const ingChatRoom = await getMySQL(chatroomQuery).catch((err)=>{
+        const ingChatRoom = await getMySQL(chatQuery.isChattingRoom(isIng[0].roomID)).catch((err)=>{
             console.log('get ING chat room err : ', err);
         });
 
@@ -23,8 +23,7 @@ const getChatRoomList = async(req, res)=>{
 
 const createChatRoom = async(req, res) => {
     const createChatObj = createRoomObj(req);
-    const insertQuery = "INSERT INTO chatInfo set ?;";
-    const result = await setMySQL(insertQuery, createChatObj).catch((e)=>{
+    const result = await setMySQL(chatQuery.createChatRoom, createChatObj).catch((e)=>{
         res.status(200).json({success: false, message: e});
         console.log("CreateChatRoom err : ", e);
     });
@@ -42,16 +41,14 @@ module.exports = {getChatRoomList, createChatRoom};
 
 
 const ChatRoomList = async(req, res)=>{
-    const blocedkHostQuery = `SELECT * FROM chatInfo WHERE hostID NOT IN (SELECT blockedUserID FROM blocked
-         WHERE userID='${req.userID}' or blockedUserID='${req.userID}') AND isLive=true;`
+    const blocedkHostQuery = chatQuery.blockedHostRoom(req.userID);
     const liveChatRoomData = await getMySQL(blocedkHostQuery).catch((e)=>{
         console.log('getChatList err: ', e);
         res.status(500).json({ success: false, message: e});
     });
 
     if(liveChatRoomData.length){
-        const blockedUserQuery = `select if(userID='${req.userID}', blockedUserID, userID) as isBlocked 
-        from blocked where userID='${req.userID}' or blockedUserID='${req.userID}';`
+        const blockedUserQuery = chatQuery.blockedUserRoom(req.userID);
 
         const blockedUserID = await getMySQL(blockedUserQuery);
 
@@ -77,8 +74,8 @@ const ChatRoomList = async(req, res)=>{
 
 const addInUserInfo = (element, blockedUserID)=>{
     return new Promise(async(resolve, reject)=>{
-        const userCount = await redisGetScard(element.roomID+'_IN');
-        const roomInPeople = await redisGetSmembers(element.roomID+'_IN');
+        const userCount = await redisGetScard(redisQuery.chatRoom(element.roomID));
+        const roomInPeople = await redisGetSmembers(redisQuery.chatRoom(element.roomID));
         if(blockedUserID.length){
             blockedUserID.forEach((ele) => {
                 if(roomInPeople.includes(ele.isBlocked)) {

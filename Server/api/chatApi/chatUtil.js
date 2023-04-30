@@ -1,4 +1,5 @@
 const {getMySQL, setMySQL} = require('../../db/conMysql');
+const { redisQuery, chatQuery } = require('../../private/query');
 const {redisSrem, redisGetScard, redisGetSmembers} = require('../../util/redisUtil');
 const dayjs = require('dayjs');
 
@@ -14,7 +15,7 @@ const outChatroom = async(req, res)=>{
 const saveMessage = async(req, res) =>{
     const roomID = req.body.roomID
     const userID = req.userID;
-    const roomUser = await redisGetSmembers(`${roomID}_IN`);
+    const roomUser = await redisGetSmembers(redisQuery.chatRoom(roomID));
     const receiver = roomUser.filter((ele)=> ele !== userID);
 
     const message = {
@@ -26,8 +27,7 @@ const saveMessage = async(req, res) =>{
         Date: new dayjs().format('YYYY-MM-DD'),
     }
 
-    const Insertquery = "INSERT INTO chatmessage set ?;";
-    const result = await setMySQL(Insertquery, message).catch((e)=>{
+    const result = await setMySQL(chatQuery.insertMessage, message).catch((e)=>{
         console.log("Insert message to DB err : ", e);
     });
 
@@ -61,15 +61,13 @@ const loadMessage = async(req, res) => {
 const callMsg = async(userID, roomID, indexMessage)=>{
     const index = (indexMessage===0)?'' : `AND indexMessage < '${indexMessage}'`;
 
-    const isLastMsgQuery = `SELECT firstMsgIndex FROM chatroom_log WHERE userID='${userID}'
-    AND roomID='${roomID}' AND status='ing';`
-    const isFirstMsg = await getMySQL(isLastMsgQuery);
+    const isFirstMsgQuery = chatQuery.firstMessage(userID, roomID);
+    const isFirstMsg = await getMySQL(isFirstMsgQuery);
     
     if(isFirstMsg.length){
         const firstMsgIndex = isFirstMsg[0].firstMsgIndex;
 
-        const msgQuery = `SELECT indexMessage, userID, time, message FROM chatmessage WHERE roomID='${roomID}' AND
-        indexMessage >= ${firstMsgIndex} ${index} ORDER BY indexMessage desc LIMIT 20;`
+        const msgQuery = chatQuery.loadMessage(roomID, firstMsgIndex, index);
     
         const msgArr = await getMySQL(msgQuery);
         if(indexMessage===0) {
@@ -86,8 +84,7 @@ const callMsg = async(userID, roomID, indexMessage)=>{
 module.exports = {outChatroom, saveMessage, loadMessage}
 
 const recordOutMsg = async(userID, roomID, now)=>{
-    const outQuery = `INSERT INTO chatmessage SET ?`
-    await setMySQL(outQuery, {
+    await setMySQL(chatQuery.out, {
         roomID: roomID,
         userID: null,
         message: `${userID}님이 퇴장했습니다.`,
@@ -105,10 +102,9 @@ const recordOutStatus = async(req)=>{
     const userID = req.userID;
     const univNAME = req.univNAME;
     const roomID = req.body.roomID;
-    const sremResult = await redisSrem(`${roomID}_IN`, userID);
+    const sremResult = await redisSrem(redisQuery.chatRoom(roomID), userID);
 
-    const logQuery = 'INSERT INTO chatroom_log SET ?'
-    const sqlresult = await setMySQL(logQuery, {
+    const sqlresult = await setMySQL(chatQuery.chatRoomLog, {
         userID: userID, 
         univNAME: univNAME, 
         roomID: roomID,
@@ -117,16 +113,14 @@ const recordOutStatus = async(req)=>{
     })
     .catch((e)=>{ console.log('chatroom_log setsql err:', e);});
 
-    const updateInQuery = `UPDATE chatroom_log SET status = ? WHERE userID='${userID}'
-    AND roomID='${roomID}' AND status='ing';`
+    const updateInQuery = chatQuery.updateOut(userID, roomID);
 
     await setMySQL(updateInQuery, 'in').catch((err)=>{
         console.log('update into chatroom_log status err : ', err);
     });
 
-    if(!await redisGetScard(`${roomID}_IN`)){
-        const updateQuery = "UPDATE chatInfo SET isLive = ? WHERE roomID = ?;";
-        await setMySQL(updateQuery, [false, roomID]).catch((e)=>{
+    if(!await redisGetScard(redisQuery.chatRoom(roomID))){
+        await setMySQL(chatQuery.deadChatroom, [false, roomID]).catch((e)=>{
             console.log('update chatInfo err :', e);
         });
     }
