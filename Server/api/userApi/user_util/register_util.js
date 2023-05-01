@@ -11,7 +11,8 @@ const {userQuery, redisQuery} = require('../../../private/query');
 
 //-----------------------------------register-------------------------------------//
 const register = async(req, res)=>{
-    const isRegisterQuery = userQuery.isRegister(req.body.userEmail);
+    const userEmail = req.body.userEmail;
+    const isRegisterQuery = userQuery.isRegister(userEmail);
     const isRegistered = await getMySQL(isRegisterQuery)
     .catch((err)=>{
         console.log('중복가입 확인 err ', err);

@@ -41,14 +41,14 @@ const loginPass = async(req, res) => {
 }
 
 const logOut = async(req, res)=>{
-    const userID = req.userID;
-    const result = await setMySQL(userQuery.logout(userID), {status: 'logout', time: new dayjs().format('YYYY-MM-DD-HH:mm')})
+    const result = await setMySQL(userQuery.logout, 
+        {userID: req.userID, status: 'logout', time: new dayjs().format('YYYY-MM-DD-HH:mm')});
     if(result.affectedRows) res.status(200).json({success: true});
     else res.status(200).json({success: false, message: 'failed logout'});
 }
 
 const Withdraw = async(req, res)=>{
-    pwAuth = redisQuery.pwAuth(req.userID);
+    const pwAuth = redisQuery.pwAuth(req.userID);
     const authCheck = await redisClient.v4.get(pwAuth);
     
     if(authCheck){
