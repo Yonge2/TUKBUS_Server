@@ -26,9 +26,8 @@ const sign = (user) => { // sign access token
   * @returns 
   */
 const verify = (token) => { // access token 검증
-  let decoded = null;
   try {
-    decoded = jwt.verify(token, privateJwt.secret);
+    const decoded = jwt.verify(token, privateJwt.secret);
     return {
       success: true,
       userID: decoded.userID,
