@@ -12,6 +12,23 @@ const {userQuery, redisQuery} = require('../../../private/query');
 //-----------------------------------register-------------------------------------//
 const register = async(req, res)=>{
     const userEmail = req.body.userEmail;
+    //check mail auth
+    if(await redisClient.v4.get(redisQuery.emailAuth(userEmail))){
+        const registerSet = await reqInfo(req);
+
+        const result = await setMySQL(userQuery.register, registerSet)
+        .catch((e)=>{
+            console.log(e);
+            res.status(200).json({success: false, message: e});
+        })
+        if(result) res.status(200).json({success: true});
+    }
+    else res.status(200).json({success: false, message: "메일이 인증되지 않았음."})
+}
+
+//-----------------------------------send to auth mail-------------------------------------//
+const sendmail = async(req, res, purpose)=>{
+    const userEmail = req.body.userEmail;
     const isRegisterQuery = userQuery.isRegister(userEmail);
     const isRegistered = await getMySQL(isRegisterQuery)
     .catch((err)=>{
@@ -19,45 +36,29 @@ const register = async(req, res)=>{
         return res.status(200).json({success: false, message: 'db err'});
     });
     if(isRegistered.length) res.status(200).json({success: false, message: '중복가입'});
-    else{
-        //check mail auth
-        if(await redisClient.v4.get(redisQuery.emailAuth(userEmail))){
-            const registerSet = await reqInfo(req);
+    else {
+        const mail_authNum = makeRandomNum(4);
+
+        redisClient.set(redisQuery.emailAuthNum(req.body.userEmail), mail_authNum, 'EX', 600, ()=>{
+            console.log('mail Auth redis set for 10 min to ', req.body.userEmail);
+        });
+        
+        const mailOBJ = mailObj(mail_authNum, req.body.userEmail, purpose);
     
-            const result = await setMySQL(userQuery.register, registerSet)
-            .catch((e)=>{
-                console.log(e);
-                res.status(200).json({success: false, message: e});
-            })
-            if(result) res.status(200).json({success: true});
-        }
-        else res.status(200).json({success: false, message: "메일이 인증되지 않았음."})
+        const mailTransport = nodemailer.createTransport(mailOBJ.createMailObj);
+    
+        mailTransport.sendMail(mailOBJ.mailOptions,(err, info)=>{
+    
+            if(err) {
+                res.status(204).json({success: false, message: "email 발송 오류"})
+                console.log("email 발송오류 : ",err);
+            }
+            else{
+                res.status(200).json({success: true, message: ""});
+                console.log(info.envelope.to," 에게 인증메일 발송");
+            }
+        }); 
     }
-}
-
-//-----------------------------------send to auth mail-------------------------------------//
-const sendmail = async(req, res, purpose)=>{
-    const mail_authNum = makeRandomNum(4);
-
-    redisClient.set(redisQuery.emailAuthNum(req.body.userEmail), mail_authNum, 'EX', 600, ()=>{
-        console.log('mail Auth redis set for 10 min to ', req.body.userEmail);
-    });
-    
-    const mailOBJ = mailObj(mail_authNum, req.body.userEmail, purpose);
-
-    const mailTransport = nodemailer.createTransport(mailOBJ.createMailObj);
-
-    mailTransport.sendMail(mailOBJ.mailOptions,(err, info)=>{
-
-        if(err) {
-            res.status(204).json({success: false, message: "email 발송 오류"})
-            console.log("email 발송오류 : ",err);
-        }
-        else{
-            res.status(200).json({success: true, message: ""});
-            console.log(info.envelope.to," 에게 인증메일 발송");
-        }
-    });       
 }
       
 //---------------------------------chck auth num-------------------------------------------//
