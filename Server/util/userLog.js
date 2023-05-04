@@ -1,5 +1,6 @@
 const requestIp = require('request-ip');
 const dayjs = require('dayjs');
+const redisClient = require('../db/redis');
 const { redisQuery } = require('../private/query');
 
 const getLog = async(req)=> {
