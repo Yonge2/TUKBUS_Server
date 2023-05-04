@@ -14,7 +14,6 @@ const socketJWTMiddleware = async(socket, next) => {
         if(result.success){
             const userID = socket.userID = result.userID;
             const roomID = socket.roomID = socket.handshake.auth.roomID;
-            const inUser = await redisGetScard(redisQuery.chatRoom(roomID));
             const isBlocked = await checkBlock(userID, roomID);
             if(isBlocked){
                 socket.roomID = null;
@@ -26,6 +25,7 @@ const socketJWTMiddleware = async(socket, next) => {
                 const enterUser = await redisClient.sAdd(redisQuery.chatRoom(roomID), `${userID}`, async(err, data)=>{
                     if(!err) {
                         if(data){
+                            const inUser = await redisGetScard(redisQuery.chatRoom(roomID));
                             if(inUser>3){
                                 socket.errMessage = "인원 초과";
                                 await redisSrem(redisQuery.chatRoom(roomID), `${userID}`);
