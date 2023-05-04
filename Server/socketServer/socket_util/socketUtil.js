@@ -17,7 +17,7 @@ const socketJWTMiddleware = async(socket, next) => {
             const isBlocked = await checkBlock(userID, roomID);
             if(isBlocked){
                 socket.roomID = null;
-                socket.errMessage = '차단된 유저 있음';
+                socket.errMessage = '차단된 유저가 있습니다.';
                 next();
             }
             else{
@@ -60,7 +60,7 @@ const socketJWTMiddleware = async(socket, next) => {
             }            
         }
         else {
-            socket.errMessage = result;
+            socket.errMessage = "토큰만료, 재로그인 요망";
             console.log('socket jwt suceess err : ', result);
             socket.roomID = null;
             next();
