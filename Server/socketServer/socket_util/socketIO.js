@@ -6,7 +6,7 @@ const chatting = (io) =>{
 
     const chat = io.of('/chat').on('connection', async(socket)=>{
         if(socket.errMessage){
-            socket.emit('checkErr', 'out');
+            socket.emit('checkErr', socket.errMessage);
         }
         else{
             socket.join(socket.roomID);
