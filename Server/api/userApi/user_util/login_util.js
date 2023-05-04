@@ -9,7 +9,6 @@ const {userQuery, redisQuery, chatQuery} = require('../../../private/query');
 
 
 const loginPass = async(req, res) => {    
-    console.log(req.body);
     const userOBJ = await getMySQL(userQuery.login(req.body.userID));
 
     if(userOBJ.length){
