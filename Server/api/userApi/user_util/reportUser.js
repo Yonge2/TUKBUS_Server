@@ -31,15 +31,7 @@ const blockedUserList = async(req, res)=>{
     const result = await getBlockedUserList(req.userID).catch((e)=>{
         res.status(200).json({success: false, message: e});
     });
-    if(result.length===1){
-        res.status(200).json({
-            success: true,
-            message: {
-                blockUserList: [result]
-            }
-        });
-    }
-    else if(result.length>1){
+    if(result.length){
         res.status(200).json({
             success: true,
             message: {
