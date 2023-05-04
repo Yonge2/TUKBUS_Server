@@ -88,7 +88,7 @@ const chatroomOut = async(req)=>{
     
     const isOutQuery = chatQuery.isChatting(req.userID);
     const result = await getMySQL(isOutQuery);
-    if(result[0].roomID){
+    if(result.length){
         req.roomID = result[0].roomID;
         await outChatroom(req);
     }

@@ -6,7 +6,10 @@ const { redisQuery, userQuery } = require('../../../private/query');
 
 const findPW = async(req, res)=>{
     const userEmail = req.body.userEmail;
+    console.log(userEmail);
     const authCheck = await redisClient.v4.get(redisQuery.emailAuth(userEmail));
+    console.log(redisQuery.emailAuth(userEmail));
+    console.log(authCheck);
     if(authCheck){
         const chagedPW = await bcrypt.hash(req.body.userPW, salt);
         const updateSet = [chagedPW, userEmail];
