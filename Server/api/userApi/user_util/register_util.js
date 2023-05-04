@@ -35,7 +35,10 @@ const sendmail = async(req, res, purpose)=>{
         console.log('중복가입 확인 err ', err);
         return res.status(200).json({success: false, message: 'db err'});
     });
-    if(isRegistered.length) res.status(200).json({success: false, message: '중복가입'});
+
+    if(purpose==='register'&&isRegistered.length){
+        res.status(200).json({success: false, message: '중복가입'});
+    }
     else {
         const mail_authNum = makeRandomNum(4);
 
