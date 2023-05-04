@@ -2,7 +2,7 @@ const {getMySQL, setMySQL} = require('../../db/conMysql');
 const redisClient = require('../../db/redis');
 const {verify} = require('../../api/userApi/user_util/jwt_util');
 const dayjs = require('dayjs');
-const { redisGetSmembers } = require('../../util/redisUtil');
+const { redisGetSmembers, redisGetScard } = require('../../util/redisUtil');
 const { chatQuery, redisQuery } = require('../../private/query');
 
 
@@ -14,40 +14,50 @@ const socketJWTMiddleware = async(socket, next) => {
         if(result.success){
             const userID = socket.userID = result.userID;
             const roomID = socket.roomID = socket.handshake.auth.roomID;
-            const isBlocked = await checkBlock(userID, roomID);
-            if(isBlocked){
-                socket.roomID = null;
-                socket.errMessage = '차단된 유저 있음';
-                next();
-            }
-            else{
-            
-                const enterUser = await redisClient.sAdd(redisQuery.chatRoom(roomID), `${userID}`, async(err, data)=>{
-                    if(!err) {
-                        if(data){
-                            await setMySQL(chatQuery.chatRoomLog, {
-                                userID: userID, 
-                                univNAME: result.univNAME, 
-                                roomID: roomID, 
-                                status: "ing",
-                                time: dayjs().format('YYYY-MM-DD HH:mm')
-                            });
-                            socket.firstIn = true;
-                            next();
+            const inUser = await redisGetScard(redisQuery.chatRoom(roomID));
+            if(inUser<4){
+                const isBlocked = await checkBlock(userID, roomID);
+                if(isBlocked){
+                    socket.roomID = null;
+                    socket.errMessage = '차단된 유저 있음';
+                    next();
+                }
+                else{
+                
+                    const enterUser = await redisClient.sAdd(redisQuery.chatRoom(roomID), `${userID}`, async(err, data)=>{
+                        if(!err) {
+                            if(data){
+                                await setMySQL(chatQuery.chatRoomLog, {
+                                    userID: userID, 
+                                    univNAME: result.univNAME, 
+                                    roomID: roomID, 
+                                    status: "ing",
+                                    time: dayjs().format('YYYY-MM-DD HH:mm')
+                                });
+                                socket.firstIn = true;
+                                next();
+                            }
+                            else {
+                                socket.firstIn = false;
+                                next();
+                            }
                         }
                         else {
-                            socket.firstIn = false;
+                            socket.errMessage = err;
+                            console.log('enterUser redis 저장오류 : ', err);
+                            socket.roomID = null;
                             next();
                         }
-                    }
-                    else {
-                        socket.errMessage = err;
-                        console.log('enterUser redis 저장오류 : ', err);
-                        socket.roomID = null;
-                        next();
-                    }
-                });
+                    });
+                }
             }
+            else {
+                socket.errMessage = "Max User";
+                console.log('socket enter err : Max User');
+                socket.roomID = null;
+                next();
+            }
+            
         }
         else {
             socket.errMessage = result;
