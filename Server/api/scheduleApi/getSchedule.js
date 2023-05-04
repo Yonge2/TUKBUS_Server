@@ -1,6 +1,7 @@
 const {getMySQL} = require('../../db/conMysql');
 const getOptionOBJ = require('./taskScheduler');
 const {TUK_Schedule, GTEC_Schedule} = require('../../util/getScheduleTask');
+const {getLog} = require('../../util/userLog');
 
 const dayjs = require('dayjs');
 const { schQuery } = require('../../private/query');
@@ -10,7 +11,7 @@ const getScheduleData = async(req, res, univNAME, direction)=>{
     if(getOptionOBJ.holiday_CODE){ //not holiday
 
         if(getOptionOBJ.operation_CODE){ //operating time
-
+            await getLog(req);
             const Bus_schedule = await schClassification(univNAME, direction);
             res.status(200).json({success: true, Bus_schedule: Bus_schedule,
                  Subway_schedule: getOptionOBJ.sub_INFO});

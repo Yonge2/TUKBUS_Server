@@ -16,6 +16,6 @@ app.use('/api/user', require('./api/userApi/userRouter'));
 app.use('/api/chatting', require('./api/chatApi/chatRouter'));
 
 
-const server = app.listen(port, function(){
+const server = app.listen(port, '0.0.0.0', ()=> {
     console.log("Express server has started")
 })
