@@ -1,4 +1,4 @@
-const sub_request = require('./callMetroSchedule');
+const {sortingMetro} = require('./callMetroSchedule');
 const holiday = require('./holiday');
 const dayjs = require('dayjs');
 
@@ -40,7 +40,7 @@ const operation_Start_schedulerJob = (Get_Option_Obj)=> {
         Get_Option_Obj.operation_CODE = 1;
         //subway
         Get_Option_Obj.subwayIntervalID = setInterval(async()=>{
-            Get_Option_Obj.sub_INFO = await sub_request();
+            Get_Option_Obj.sub_INFO = await sortingMetro();
         }, SUBWAY_intervalGap);
     }
     else {
