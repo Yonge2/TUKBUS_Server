@@ -6,7 +6,7 @@ const station_name = encodeURI('정왕');
 
 const sortingMetro = async()=>{
     let data = await getMetro(0);
-    data.push(await getMetro(1));
+    data.push(...await getMetro(1));
 
     let sortingSubInfo = [];
     let upline4 = [];
@@ -83,7 +83,7 @@ const priorSub = (arr)=>{
                     if(arr[i].arvlMsg2==='전역 진입') return arr[i];
                     else{
                         const tostring = (arr[i].arvlMsg2.substring(3,4)===']')?parseInt(arr[i].arvlMsg2.substring(1,3)) : parseInt(arr[i].arvlMsg2.substring(1,2));
-                        if(tostring<min){
+                        if(tostring<=min){
                             min=tostring;
                             prior = arr[i];
                         }
