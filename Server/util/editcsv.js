@@ -4,7 +4,6 @@ const path = require("path");
 
 const sch_Csv2Json = (univName , day) => {
     const fileName = setFileName(univName, day);
-    console.log(fileName);
     const csvPath = path.join(__dirname, '..', 'csvdir', fileName);
     const csv_weekday = fs.readFileSync(csvPath, "UTF-8");
     const schedule_weekday = scheduleCsvToJson(csv_weekday);

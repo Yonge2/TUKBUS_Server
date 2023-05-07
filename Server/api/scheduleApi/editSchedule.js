@@ -12,6 +12,7 @@ const insertSchedule = async(req, res) => {
     const inserQuery = schQuery.insertSch(tableName);
 
     const newSchedule = await sch_Csv2Json(univName, day);
+    console.log(newSchedule);
 
     const pormises = newSchedule.map(async(ele)=>{
         return setMySQL(inserQuery, ele).catch((e)=>{
@@ -20,6 +21,7 @@ const insertSchedule = async(req, res) => {
     })
 
     const insertingResult = await Promise.allSettled(pormises);
+    console.log(insertingResult);
     if(insertingResult.length === newSchedule.length) res.status(200).json({success: true})
     else res.status(200).json({success: false})
 }
