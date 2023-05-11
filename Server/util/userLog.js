@@ -43,7 +43,6 @@ const getLog = async(req, subject)=> {
         await redisClient.sAdd(redisQuery.userLog(now), `${ip}`);
         dailyReq += 1;
         checkReq(subject);
-        console.log(now, schTuk, schGtec, dailyReq, settings, chat);
     }
 }
 
