@@ -21,7 +21,9 @@ const sortingMetro = async()=>{
         }
         else if(ele.subwayId==='1075'){
             if(ele.updnLine === '상행') uplineSu.push(ele);
-            else if(ele.updnLine === '하행') downlineSu.push(ele);
+            else if(ele.updnLine === '하행') {
+                if(ele.bstatnNm === '인천행') downlineSu.push(ele);
+            }
         }
     });
 
