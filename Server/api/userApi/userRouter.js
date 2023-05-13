@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
 
 const {register, sendmail, mail_auth_check, userIdCheck} = require('./user_util/register_util');
 const {loginPass, logOut, Withdraw} = require('./user_util/login_util');
@@ -75,5 +76,10 @@ router.post('/settings/report', jwt_middleWare, async(req, res)=>{
 
 //-------------------------------------------------//
 router.get('/settings/withdraw', jwt_middleWare, Withdraw);
+
+//-------------------------------------------------//
+router.get('/privacypolicy', (req, res)=>{
+    res.sendFile(path.join(__dirname, '../../private/tong_privacypolicy.html'));
+});
 
 module.exports = router;
