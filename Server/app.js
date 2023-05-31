@@ -6,7 +6,7 @@ const app = express();
 
 const port = require('./private/privatekey_Tuk').PORT.appPort;
 
-app.use(express.static(path.join(__dirname, 'introPage/build')));
+app.use(express.static(path.join(__dirname, 'intro/build')));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -17,7 +17,7 @@ app.use('/api/user', require('./api/userApi/userRouter'));
 app.use('/api/chatting', require('./api/chatApi/chatRouter'));
 
 app.get('/', (req, res)=>{
-    res.sendFile(__dirname + '/introPage/build/index.html')
+    res.sendFile(__dirname + '/intro/build/index.html')
 });
 
 
