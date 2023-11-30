@@ -10,6 +10,7 @@ const {userQuery, redisQuery} = require('../../../private/query');
 
 
 //-----------------------------------register-------------------------------------//
+//회원가입 API, 메일 인증 여부 확인 후 통과 로직
 const register = async(req, res)=>{
     const userEmail = req.body.userEmail;
     //check mail auth
@@ -27,6 +28,7 @@ const register = async(req, res)=>{
 }
 
 //-----------------------------------send to auth mail-------------------------------------//
+//학교 인증 메일 발송 API, 랜덤한 번호를 생성 후 redis에 캐싱
 const sendmail = async(req, res, purpose)=>{
     const userEmail = req.body.userEmail;
     const isRegisterQuery = userQuery.isRegister(userEmail);
@@ -65,6 +67,7 @@ const sendmail = async(req, res, purpose)=>{
 }
       
 //---------------------------------chck auth num-------------------------------------------//
+//메일 인증 여부 후 권한 캐싱
 const mail_auth_check = async(req, res, purpose)=>{
     const checkNum = await redisClient.v4.get(redisQuery.emailAuthNum(req.body.userEmail));
     if(checkNum){
@@ -91,6 +94,7 @@ const mail_auth_check = async(req, res, purpose)=>{
 }
  //------------------------------id check---------------------------------------//
  //중복확인
+ //회원가입 후 로그인 하도록 모바일 앱에서 제어 -> 로그인 후 refresh token 생성 -> refresh token이 유저 아이디 캐싱 역할
  const userIdCheck = async(req, res)=>{
     const checkID = req.body.userID;
     const result = await redisClient.v4.get(redisQuery.token(checkID));
