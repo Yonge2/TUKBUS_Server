@@ -2,6 +2,7 @@ const {setMySQL, getMySQL} = require('../../../db/conMysql');
 const dayjs = require('dayjs');
 const {userQuery} = require('../../../private/query');
 
+//유저 신고 API
 const reportUser = async(req, res)=>{
     const reportSet = reportObj(req);
 
@@ -14,6 +15,7 @@ const reportUser = async(req, res)=>{
     else res.status(200).json({success: false});
 }
 
+//유저 차단 API
 const blockUser = async(req, res)=>{
     const blockSet = blockObj(req);
 
@@ -26,11 +28,14 @@ const blockUser = async(req, res)=>{
     else res.status(200).json({success: false});
 }
 
-
+//유저 차단 리스트 API
 const blockedUserList = async(req, res)=>{
-    const result = await getBlockedUserList(req.userID).catch((e)=>{
+    const getBlockedQuery = userQuery.getBlock(userID);
+
+    const result = await getMySQL(getBlockedQuery).catch((e)=>{
         res.status(200).json({success: false, message: e});
     });
+
     if(result.length){
         res.status(200).json({
             success: true,
@@ -42,18 +47,7 @@ const blockedUserList = async(req, res)=>{
     else res.status(200).json({success: true, message: {blockUserList: []}});
 }
 
-
-const getBlockedUserList = async(userID)=>{
-    return new Promise(async(resolve, reject)=>{
-        const getBlockedQuery = userQuery.getBlock(userID);
-        const result = await getMySQL(getBlockedQuery).catch((e)=>{
-            console.log('getting "reported" err:', e);
-            reject(e);
-        })
-        resolve(result);
-    })
-}
-
+//유저 차단내역 삭제 API
 const delBlockedUser = async(req, res)=>{
     const delBlockedUserQuery = userQuery.delBlock(req.userID, req.body.blockedUserID);
 
@@ -65,7 +59,7 @@ const delBlockedUser = async(req, res)=>{
     else res.status(200).json({success: false});
 }
 
-
+//건의 사항 API
 const submitOpnion = async(req, res)=>{
     const insertSet = {
         userID: req.userID,
@@ -82,8 +76,6 @@ const submitOpnion = async(req, res)=>{
     }
     else res.status(200).json({success: false});
 }
-
-
 
 module.exports = {reportUser, blockUser, blockedUserList, submitOpnion, delBlockedUser};
 
