@@ -24,20 +24,25 @@
 
 ### 프로젝트 아키텍처
  - 배포
-   - EC2, Route53, let's encrypt, Nginx, pm2 모듈을 통한 배포
+   - EC2(t2.micro), Route53, let's encrypt, Nginx, pm2 모듈을 통한 배포
  - 구동
    - 하나의 EC2에 REST API Servr와 Socket.io Server 두 개의 서비스를 함께 구동
      - 이유 : 작은 서비스이기도 하고, pm2 모듈과 nginx로 감당 가능한 예상 부하라고 판단함
  - DB
    - EC2 내, MySQL 설치 후 사용
-     - 이유 : 만들 당시, RDS의 존재를 몰랐음. -> 추후 RDS로 마이그레이션 예정
-     - 현재는 문제 없음
+     - 이유 : 만들 당시 RDS의 존재를 몰랐음, 현재는 구동에 문제 없음 
+     - 추후 필요시, RDS 사용 예정
    - Cloud Rdis : [Redis Labs](https://redis.com/)의 free memory 사용 중 
  - open API
    - [서울시 공공데이터](https://data.seoul.go.kr/dataList/OA-12764/F/1/datasetView.do)
      - 실시간 지하철 정보 사용
+     - 08시~23시 1분에 1회 업데이트 (setInterval method 사용)
    - [카카오 디벨로퍼스](https://developers.kakao.com/docs/latest/ko/kakaonavi/common)
      - 실시간 교통정보를 이용, 도착 예정 정보 사용
+     - 이벤트 기반 호출, 캐싱으로 호출량 일((4~8)*시간표 갯수)회 이하 호출
+   - [공휴일 정보](https://www.data.go.kr/data/15012690/openapi.do)
+     - 공휴일에는 통학정보 미제공 (택시합승 채팅만 이용 가능)
+     - 매 01시에 1회 작동(node-scheduler 사용)
  - 전체 구조
  ![아키텍처](https://github.com/Yonge2/TUKBUS_Server/assets/99579139/9de8477a-29cc-416c-8599-700926569dcf)
 
@@ -98,10 +103,6 @@
 
 
 ## API Docs
-### API 테스트와 함께 Post Man 으로 API 문서화를 진행하였습니다.
+### Post Man 으로 API 테스트와 함께 API 문서화를 진행.
 
 [통학러 API Docs](https://documenter.getpostman.com/view/21311885/2s93zGyxS1)
-
-
-## 회고
- -TBD
