@@ -12,6 +12,7 @@ const { getLog } = require('../../util/userLog');
 
 
 //로그인
+//2023-11-30 : 협의 후 path를 restful 하게 변경 필요 있음. 
 router.post('/login', async(req, res)=>{
     loginPass(req, res);
     getLog(req, 'Settings');

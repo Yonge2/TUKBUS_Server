@@ -49,18 +49,17 @@ const refresh = () => { // sign refresh token
 }
 
 const refreshVerify = async (token, userID) => { // refresh token 검증
-    
   try {
     const data = await redisClient.v4.get(redisQuery.token(userID)); //redis<userID, refresh token>
 
     if (token === data) { //req.refresh_token
-      try {
-        jwt.verify(token, privateJwt.secret); //sucess verify
-        return true;
-      }
-      catch (err) {
-        return false;
-      }
+        const result = jwt.verify(token, privateJwt.secret); //sucess verify
+        if(result) {
+          return true
+        }
+        else {
+          return false
+        }
     }
     else { //req.refresh_token != redis<userID, refresh_token>
       return false;
