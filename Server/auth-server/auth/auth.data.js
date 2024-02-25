@@ -1,4 +1,5 @@
-const mysql = require('../../database/connection')
+const mysql = require('../database/connection')
+const uuid = require('uuid')
 
 const USER_TABLE = 'user'
 
@@ -13,21 +14,22 @@ const checkEmail = async (email) => {
 }
 
 const joinUser = async (UserObject) => {
+  UserObject.id = uuid.v4()
   const connection = await mysql.getConnection()
   const query = `INSERT INTO ${USER_TABLE} SET ?`
-  const result = await connection.query(query, UserObject)
+  const [result] = await connection.query(query, UserObject)
   connection.release()
   return result
 }
 
-const getUserPassword = async (email) => {
+const getUserInfo = async (email) => {
   const connection = await mysql.getConnection()
   const query = `
-  SELECT password FROM ${USER_TABLE} WHERE email = '${email}'
+  SELECT email, password, univ_name AS unviName FROM ${USER_TABLE} WHERE email = '${email}'
   `
   const [result] = await connection.query(query)
   connection.release()
   return result
 }
 
-module.exports = { checkEmail, joinUser, getUserPassword }
+module.exports = { checkEmail, joinUser, getUserInfo }
