@@ -1,13 +1,13 @@
 const mysql = require('mysql2/promise')
-const AA_DB = require('../../private/privatekey_Tuk').AA_DB
+const AUTH_DB = require('../../private/privatekey_Tuk').AUTH_DB
 
 //Database configuration
 const connection = mysql.createPool({
-  host: AA_DB.HOST,
-  user: AA_DB.USER,
-  database: AA_DB.NAME,
-  password: AA_DB.PW,
-  port: AA_DB.PORT,
+  host: AUTH_DB.HOST,
+  user: AUTH_DB.USER,
+  database: AUTH_DB.NAME,
+  password: AUTH_DB.PW,
+  port: AUTH_DB.PORT,
 })
 
 module.exports = connection
