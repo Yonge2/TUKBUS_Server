@@ -3,7 +3,7 @@ const privateJwt = require('../../private/privatekey_Tuk').jwt
 
 /**
  * sign jwt
- * @param {{email, univNAME}} user
+ * @param {{email, univName}} user
  * @returns {String} token
  */
 const sign = (user) => {
@@ -22,7 +22,7 @@ const verify = async (token) => {
     const verified = jwt.verify(token, privateJwt.secret)
     return {
       email: verified.email,
-      univNAME: verified.univNAME,
+      univName: verified.univName,
     }
   } catch (err) {
     return {
