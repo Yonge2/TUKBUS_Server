@@ -1,12 +1,12 @@
 const mysql = require('mysql2/promise')
-const SCHEDUEL_DB = require('../../private/privatekey_Tuk').SCHEDUEL_DB
+require('dotenv').config()
 
 const connection = mysql.createPool({
-    host: SCHEDUEL_DB.HOST,
-    user: SCHEDUEL_DB.USER,
-    database: SCHEDUEL_DB.NAME,
-    password: SCHEDUEL_DB.PW,
-    port: SCHEDUEL_DB.PORT
+  host: process.env.RDS_HOST,
+  user: process.env.RDS_USER,
+  database: process.env.RDS_NAME,
+  password: process.env.RDS_PASSWORD,
+  port: 3306,
 })
 
 module.exports = connection

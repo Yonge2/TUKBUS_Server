@@ -1,17 +1,17 @@
-const { createClient } = require('redis');
-const redis_private = require('../../private/privatekey_Tuk').redis_private;
+const { createClient } = require('redis')
+require('dotenv').config()
 
 //cloud redis connection (Redislabs)
 const redisClient = createClient({
-   url: `redis://${redis_private.REDIS_USERNAME}:${redis_private.REDIS_PASSWORD}@${redis_private.REDIS_HOST}:${redis_private.REDIS_PORT}/0`,
-});
+  url: `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}/0`,
+})
 redisClient.connect()
 
 redisClient.on('connect', async () => {
-   console.info('Redis connected!');
+  console.info('Redis connected!')
 })
 redisClient.on('error', (err) => {
-   console.error('Redis Client Error', err);
+  console.error('Redis Client Error', err)
 })
 
 module.exports = { redisClient }
