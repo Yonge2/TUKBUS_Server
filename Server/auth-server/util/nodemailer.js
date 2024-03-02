@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer')
-const mailPrivate = require('../../private/privatekey_Tuk').nodemailer_private
+require('dotenv').config()
 
 const mailer = (mailObject) => {
   return new Promise((resolve, reject) => {
@@ -17,13 +17,16 @@ const mailContent = async (authNum, userEmail) => {
   return {
     createMailObj: {
       service: 'Gmail',
-      auth: mailPrivate.auth,
+      auth: {
+        user: process.env.NODE_MAIL_USER,
+        pass: process.env.NODE_MAIL_PASSWORD,
+      },
       tls: {
         rejectUnauthorized: false,
       },
     },
     mailOptions: {
-      from: mailPrivate.email,
+      from: process.env.NODE_MAIL_USER,
       to: userEmail,
       subject: title,
       text: content,

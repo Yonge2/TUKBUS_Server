@@ -1,14 +1,16 @@
 const redisClient = require('./redis')
-const tokenEX = require('../../private/privatekey_Tuk').jwt.refreshTokenExByNumber
+require('dotenv').config()
+
+const DAY_SECOND = 60 * 60 * 24
+const MINUTE_10 = 60 * 10
 
 const authNumKey = (email) => `AUTH_NUMBER:${email}`
 const isJoinKey = (email) => `AUTH_JOIN:${email}`
 const tokenKey = (email) => `REFRESH:${email}`
-const tenMinute = 60 * 10
 
 const setAuthJoinInRedis = async (email) => {
   const key = isJoinKey(email)
-  const result = await redisClient.set(key, 'OK', { EX: tenMinute })
+  const result = await redisClient.set(key, 'OK', { EX: MINUTE_10 })
   if (result != 'OK') return false
   return true
 }
@@ -32,7 +34,7 @@ const getAuthNumInRedis = async (email) => {
 
 const setRefreshInReids = async (email, token) => {
   const key = tokenKey(email)
-  const result = await redisClient.set(key, token, { EX: tokenEX })
+  const result = await redisClient.set(key, token, { EX: DAY_SECOND * Number(process.env.RT_EXPIRED_NUMBER) })
   if (result != 'OK') return false
   return true
 }
