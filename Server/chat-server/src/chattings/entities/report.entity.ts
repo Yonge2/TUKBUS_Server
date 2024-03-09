@@ -1,21 +1,15 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 
-@Entity({ name: 'chat_room' })
-export class ChatRoom {
-  @PrimaryGeneratedColumn('uuid')
-  roomId: string
+@Entity({ name: 'report' })
+export class Report {
+  @PrimaryGeneratedColumn()
+  reportIdx: number
 
   @Column({ nullable: false })
-  departureTime: string
+  reportedUser: number
 
-  @Column({ nullable: false })
-  departurePoint: string
-
-  @Column({ nullable: false })
-  arrivalPoint: string
-
-  @Column({ default: true })
-  isLive: boolean
+  @Column('text', { nullable: false })
+  reason: string
 
   @CreateDateColumn()
   createdAt: Date
@@ -24,6 +18,9 @@ export class ChatRoom {
   updateddAt: Date
 
   //join
+  @Column()
+  roomId: string
+
   @Column()
   userId: string
 
