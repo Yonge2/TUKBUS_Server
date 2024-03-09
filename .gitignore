@@ -10,3 +10,5 @@ Server/*/.env
 Server/private/
 
 Server/csvdir/
+
+Server/*/dist
