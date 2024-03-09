@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common'
+import { Controller, Get, Post, Body } from '@nestjs/common'
 import { RoomsService } from './rooms.service'
 import { CreateRoomDto } from './dto/create-room.dto'
+import { GetUser, ReqUser } from 'src/Authorization/Authorization.decorator'
 
 @Controller('api/chattings/rooms')
 export class RoomsController {
@@ -8,13 +9,13 @@ export class RoomsController {
 
   //채팅방 개설
   @Post()
-  create(@Body() createRoomDto: CreateRoomDto) {
-    return this.roomsService.create(createRoomDto)
+  createChattingRoom(@GetUser() user: ReqUser, @Body() createRoomDto: CreateRoomDto) {
+    return this.roomsService.createChattingRoom(user, createRoomDto)
   }
 
   //채팅방 리스트
   @Get()
-  findAll() {
-    return this.roomsService.findAll()
+  getChattingRooms(@GetUser() user: ReqUser) {
+    return this.roomsService.getChattingRooms(user)
   }
 }

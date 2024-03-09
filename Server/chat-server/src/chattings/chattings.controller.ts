@@ -1,34 +1,40 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, Patch } from '@nestjs/common';
 import { ChattingsService } from './chattings.service';
-import { CreateChattingDto } from './dto/create-chatting.dto';
-import { UpdateChattingDto } from './dto/update-chatting.dto';
 
 @Controller('chattings')
 export class ChattingsController {
   constructor(private readonly chattingsService: ChattingsService) {}
 
+  //차단
   @Post()
-  create(@Body() createChattingDto: CreateChattingDto) {
-    return this.chattingsService.create(createChattingDto);
-  }
+  createBlockUser(@Body()){}
 
+  //사용자 차단목록
   @Get()
-  findAll() {
-    return this.chattingsService.findAll();
-  }
+  getBlockUsers(){}
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.chattingsService.findOne(+id);
-  }
+  //차단 취소
+  @Delete()
+  deleteBlockUser(){}
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateChattingDto: UpdateChattingDto) {
-    return this.chattingsService.update(+id, updateChattingDto);
-  }
+  //채팅방 입장시
+  @Post()
+  inChatLog(@Body()){}
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.chattingsService.remove(+id);
-  }
+  //채팅방 나갈시
+  @Patch()
+  outChatLog(){}
+
+  //신고
+  @Post()
+  createReport(@Body()){}
+
+  //신고목록(관리자)
+  @Get()
+  getReportList(){}
+
+  //신고(관리자)
+  @Get()
+  getReport(){}
+
 }
