@@ -11,7 +11,7 @@ import { ChatRoom } from './room.entity'
 import { ChatNickname } from 'src/nicknames/entities/nickname.entity'
 
 @Entity({ name: 'chat_log' })
-export class ChatLog extends BaseEntity {
+export class ChatLog {
   @PrimaryGeneratedColumn()
   chatLogIdx: number
 

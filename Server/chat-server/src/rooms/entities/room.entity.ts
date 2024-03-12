@@ -34,7 +34,7 @@ export class ChatRoom {
   @UpdateDateColumn()
   updatedAt: Date
 
-  @ManyToOne(() => ChatNickname, (chatNickname) => chatNickname.rooms)
+  @ManyToOne(() => ChatNickname, (nickname) => nickname.rooms)
   nickname: ChatNickname
 
   @OneToMany(() => ChatLog, (chatLogs) => chatLogs.room)
