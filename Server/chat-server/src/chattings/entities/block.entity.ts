@@ -1,4 +1,13 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { ChatNickname } from 'src/nicknames/entities/nickname.entity'
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm'
 
 @Entity({ name: 'block' })
 export class Block {
@@ -14,7 +23,6 @@ export class Block {
   @UpdateDateColumn()
   updateddAt: Date
 
-  //join
-  @Column()
-  userId: string
+  @ManyToOne(() => ChatNickname, (nickname) => nickname.blocks)
+  nickname: ChatNickname
 }

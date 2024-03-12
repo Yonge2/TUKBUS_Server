@@ -1,4 +1,15 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { ChatNickname } from 'src/nicknames/entities/nickname.entity'
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm'
+import { ChatLog } from './chat-log.entity'
+import { Report } from 'src/chattings/entities/report.entity'
 
 @Entity({ name: 'chat_room' })
 export class ChatRoom {
@@ -21,12 +32,14 @@ export class ChatRoom {
   createdAt: Date
 
   @UpdateDateColumn()
-  updateddAt: Date
+  updatedAt: Date
 
-  //join
-  @Column()
-  userId: string
+  @ManyToOne(() => ChatNickname, (chatNickname) => chatNickname.rooms)
+  nickname: ChatNickname
 
-  @Column()
-  nickname: string
+  @OneToMany(() => ChatLog, (chatLogs) => chatLogs.room)
+  chatLogs: ChatLog[]
+
+  @OneToMany(() => Report, (reports) => reports.room)
+  reports: Report[]
 }

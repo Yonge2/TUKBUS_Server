@@ -1,4 +1,6 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { ChatNickname } from 'src/nicknames/entities/nickname.entity'
+import { ChatRoom } from 'src/rooms/entities/room.entity'
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 
 @Entity({ name: 'report' })
 export class Report {
@@ -6,7 +8,7 @@ export class Report {
   reportIdx: number
 
   @Column({ nullable: false })
-  reportedUser: number
+  reportedUserNickname: string
 
   @Column('text', { nullable: false })
   reason: string
@@ -17,13 +19,9 @@ export class Report {
   @UpdateDateColumn()
   updateddAt: Date
 
-  //join
-  @Column()
-  roomId: string
+  @ManyToOne(() => ChatRoom, (room) => room.reports)
+  room: ChatRoom
 
-  @Column()
-  userId: string
-
-  @Column()
-  nickname: string
+  @ManyToOne(() => ChatNickname, (nickname) => nickname.reports)
+  nickname: ChatNickname
 }
