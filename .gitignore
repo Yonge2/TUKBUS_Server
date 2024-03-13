@@ -5,7 +5,7 @@ Server/*/Dockerfile
 
 Server/docker-compose.yml
 
-Server/*/.env
+Server/*/*.env
 
 Server/private/
 
