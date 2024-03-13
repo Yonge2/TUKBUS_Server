@@ -11,14 +11,9 @@ export class NicknamesController {
   @Post()
   createNicknameElement(@Body() createNicknameDto: CreateNicknameDto) {}
 
-  //유저 정보 불러오기(auth-server에서 유저 생성시 자동으로 요청)
+  //유저 정보 불러오고, 만들기(auth-server에서 유저 생성시 자동으로 요청)
   @Post()
-  bringUser(@Body() bringUserDto: BringUserDto) {
-    return this.nicknamesService.bringUser(bringUserDto)
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.nicknamesService.remove(+id)
+  makeNickname(@Body() bringUserDto: BringUserDto) {
+    return this.nicknamesService.makeNickname(bringUserDto)
   }
 }
