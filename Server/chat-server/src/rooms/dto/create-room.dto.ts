@@ -2,10 +2,10 @@ import { IsString } from 'class-validator'
 
 export class CreateRoomDto {
   @IsString()
-  startTime: string
+  departureTime: string
 
   @IsString()
-  startPoint: string
+  departurePoint: string
 
   @IsString()
   arrivalPoint: string

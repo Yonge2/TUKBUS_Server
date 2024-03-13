@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common'
 import { RoomsService } from './rooms.service'
 import { CreateRoomDto } from './dto/create-room.dto'
 import { GetUser, ReqUser } from 'src/Authorization/Authorization.decorator'
+import { EnterRoomDto } from './dto/enter-room.dto'
 
 @Controller('api/chattings/rooms')
 export class RoomsController {
@@ -10,12 +11,21 @@ export class RoomsController {
   //채팅방 개설
   @Post()
   createChattingRoom(@GetUser() user: ReqUser, @Body() createRoomDto: CreateRoomDto) {
-    return this.roomsService.createChattingRoom(user, createRoomDto)
+    return this.roomsService.createChatRoom(user, createRoomDto)
   }
-
   //채팅방 리스트
   @Get()
   getChattingRooms(@GetUser() user: ReqUser) {
     return this.roomsService.getChattingRooms(user)
+  }
+  //채팅방 입장
+  @Post()
+  inChatRoom(@GetUser() user: ReqUser, @Body() enterRoomDto: EnterRoomDto) {
+    return this.roomsService.enterChatRoom(user, enterRoomDto)
+  }
+  //채팅방 퇴장
+  @Patch()
+  outChatRoom(@GetUser() user: ReqUser, @Param('roomid') roomId: string) {
+    return this.roomsService.outChatRoom(user, roomId)
   }
 }
