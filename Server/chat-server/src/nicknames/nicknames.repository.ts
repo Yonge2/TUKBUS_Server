@@ -26,4 +26,10 @@ export class NicknameRepository {
       return false
     }
   }
+
+  async getNicknameByUserId(userId: string) {
+    return await this.dataSource.manager.findOne(ChatNickname, {
+      where: { userId: userId },
+    })
+  }
 }

@@ -6,7 +6,6 @@ export const GetUser = createParamDecorator((data: unknown, ctx: ExecutionContex
 })
 
 export type ReqUser = {
-  id: string
   nickname: string
   univName: string
 }

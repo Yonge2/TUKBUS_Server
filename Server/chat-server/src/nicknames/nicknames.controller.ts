@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common'
+import { Controller, Get, Post, Body, Headers } from '@nestjs/common'
 import { NicknamesService } from './nicknames.service'
 import { BringUserDto } from './dto/bring-user.dto'
 import { CreateNicknameDto } from './dto/create-nickname.dto'
@@ -15,5 +15,10 @@ export class NicknamesController {
   @Post()
   makeNickname(@Body() bringUserDto: BringUserDto) {
     return this.nicknamesService.makeNickname(bringUserDto)
+  }
+
+  @Get()
+  getNickname(@Headers('userId') userId: string) {
+    return this.nicknamesService.getNickname(userId)
   }
 }

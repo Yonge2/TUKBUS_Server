@@ -3,12 +3,15 @@ require('dotenv').config()
 
 /**
  * sign jwt
- * @param {{email, univName}} user
+ * @param {{nickname, univName}} user
  * @returns {String} token
  */
 const sign = (user) => {
   // sign access token
-  const payload = { email: user.email, univName: user.univName }
+  const payload = {
+    nickname: user.nickname,
+    univName: user.univName,
+  }
 
   return jwt.sign(payload, process.env.JWT_SECRET, {
     algorithm: 'HS256',
@@ -21,7 +24,7 @@ const verify = async (token) => {
   try {
     const verified = jwt.verify(token, process.env.JWT_SECRET)
     return {
-      email: verified.email,
+      nickname: verified.nickname,
       univName: verified.univName,
     }
   } catch (err) {
@@ -31,9 +34,9 @@ const verify = async (token) => {
   }
 }
 
-const refresh = (email) => {
+const refresh = (userId) => {
   // sign refresh token
-  return jwt.sign({ email: email }, process.env.JWT_SECRET, {
+  return jwt.sign({ userId: userId }, process.env.JWT_SECRET, {
     algorithm: 'HS256',
     expiresIn: process.env.RT_EXPIRED,
   })
@@ -44,7 +47,7 @@ const refreshVerify = async (token) => {
   try {
     const verified = jwt.verify(token, process.env.JWT_SECRET) //sucess verify
     return {
-      email: verified.email,
+      userId: verified.userId,
     }
   } catch {
     return false

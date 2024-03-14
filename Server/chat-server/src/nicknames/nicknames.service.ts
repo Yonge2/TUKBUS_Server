@@ -37,4 +37,8 @@ export class NicknamesService {
       success: true,
     }
   }
+
+  async getNickname(userId: string) {
+    return await this.nicknameRepository.getNicknameByUserId(userId)
+  }
 }
