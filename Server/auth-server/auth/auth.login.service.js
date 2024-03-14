@@ -2,6 +2,11 @@ const bcrypt = require('bcrypt')
 const { getUserInfo } = require('./auth.data')
 const { jwt } = require('../util/util.mod')
 const { setRefreshInReids } = require('../redis/redis-util')
+const axios = require('axios')
+const dotenv = require('dotenv')
+dotenv.config()
+
+const NICKNAME_SERVER = process.env.NICKNAME_SERVER_URL
 
 const loginService = async (req, res) => {
   const [email, password] = [req.body.email, req.body.password]
@@ -14,10 +19,16 @@ const loginService = async (req, res) => {
     return res.status(401).json({ message: '잘못된 로그인 정보' })
   }
 
-  const accessToken = jwt.sign({ email: user.email, univName: user.email })
-  const refreshToken = jwt.refresh(user.email)
+  const nickname = await axios.get(NICKNAME_SERVER, {
+    headers: {
+      userId: user.userId,
+    },
+  })
 
-  await setRefreshInReids(email, refreshToken)
+  const accessToken = jwt.sign({ nickname: nickname, univName: user.univName })
+  const refreshToken = jwt.refresh(user.userId)
+
+  await setRefreshInReids(user.userId, refreshToken)
 
   return res.status(200).json({ accessToken, refreshToken })
 }

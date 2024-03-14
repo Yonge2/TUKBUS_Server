@@ -1,7 +1,12 @@
 const { setAuthNumInRedis, getAuthNumInRedis, setAuthJoinInRedis, getAuthJoinInRedis } = require('../redis/redis-util')
 const { mailer } = require('../util/util.mod')
 const bcrypt = require('bcrypt')
-const { joinUser, checkEmail } = require('./auth.data')
+const { joinUser, checkEmail, getUserInfo } = require('./auth.data')
+const axios = require('axios')
+const dotenv = require('dotenv')
+dotenv.config()
+
+const NICKNAME_SERVER = process.env.NICKNAME_SERVER_URL
 
 const checkEmailService = async (req, res) => {
   const email = req.body.email
@@ -63,11 +68,14 @@ const joinService = async (req, res) => {
   try {
     const password = await bcrypt.hash(plainPassword, await bcrypt.genSalt())
     const joinResult = await joinUser({ email, password, univ_name: univName })
-    if (joinResult.affectedRows) {
-      return res.status(201).json({ success: true, message: `${email}님, 성공적으로 회원가입을 완료했습니다.` })
+    if (!joinResult.affectedRows) {
+      return res.status(400).json({ success: false, message: '잘못된 요청, 다시 시도해주세요.' })
     }
 
-    return res.status(400).json({ success: false, message: '잘못된 요청, 다시 시도해주세요.' })
+    const [userInfo] = await getUserInfo(email)
+    await axios.post(NICKNAME_SERVER, { userInfo })
+
+    return res.status(201).json({ success: true, message: `${email}님, 성공적으로 회원가입을 완료했습니다.` })
   } catch (err) {
     console.log('join err : ', err.message)
     return res.status(500).json({ message: 'server 오류, 다시 시도해주세요.' })

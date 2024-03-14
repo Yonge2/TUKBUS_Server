@@ -20,7 +20,7 @@ export class RoomsService {
 
   async createChatRoom(user: ReqUser, createRoomDto: CreateRoomDto) {
     const newRoomObject: ChatRoom = {
-      nickname: { nickname: user.id },
+      nickname: { nickname: user.nickname },
       ...createRoomDto,
       ...new ChatRoom(),
     }
@@ -32,14 +32,14 @@ export class RoomsService {
 
     return {
       success: true,
-      message: `${user.id}님의 채팅방 생성 완료.`,
+      message: `${user.nickname}님의 채팅방 생성 완료.`,
     }
   }
 
   async getChattingRooms(user: ReqUser) {
     //로그확인(채팅 참여중인가)
     try {
-      const isInRoom = await this.roomsRepository.getRoomIdInChatRoom(user.id)
+      const isInRoom = await this.roomsRepository.getRoomIdInChatRoom(user.nickname)
 
       //채팅중(참여중인 방 제공)
       if (isInRoom) {
@@ -65,7 +65,7 @@ export class RoomsService {
     const lastMsgIdx = await this.roomsRepository.getLastMsgIdx(roomId)
     const enterChatRoomInfo: ChatLog = {
       nickname: {
-        nickname: user.id,
+        nickname: user.nickname,
         ...new ChatNickname(),
       },
       room: {
@@ -81,7 +81,7 @@ export class RoomsService {
     }
     return {
       success: true,
-      message: `${user.id}님 ${enterRoomDto.roomId} 채팅방 입장`,
+      message: `${user.nickname}님 ${enterRoomDto.roomId} 채팅방 입장`,
     }
   }
 
@@ -89,7 +89,7 @@ export class RoomsService {
     const delMemberKey = this.ROOM_MEMBER_IN_REDIS(roomId)
     const isOutRedis = await this.redis.sRem(delMemberKey, user.nickname)
 
-    const isOutRoom = await this.roomsRepository.updateOutChatLog(user.id, roomId)
+    const isOutRoom = await this.roomsRepository.updateOutChatLog(user.nickname, roomId)
     if (!isOutRoom || !isOutRedis) {
       throw new HttpException('채팅방 퇴장 오류', HttpStatus.INTERNAL_SERVER_ERROR)
     }

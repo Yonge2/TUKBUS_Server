@@ -36,11 +36,11 @@ const authorizationService = async (req, res) => {
   const [bearer, accessToken] = token.split(' ')
 
   const result = await jwt.verify(accessToken)
-  if (!result) {
+  if (result.message) {
     return res.status(401).json({ message: result.message })
   }
 
-  return res.status(200).json({ user: { email: result.email, univName: result.univName } })
+  return res.status(200).json({ user: { nickname: result.nickname, univName: result.univName } })
 }
 
 module.exports = { newAccessTokenService, authorizationService }

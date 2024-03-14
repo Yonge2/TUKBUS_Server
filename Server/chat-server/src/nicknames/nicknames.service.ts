@@ -38,7 +38,10 @@ export class NicknamesService {
     }
   }
 
-  async getNickname(userId: string) {
+  async getNickname(ip: string, userId: string) {
+    if (ip != '::1') {
+      throw new HttpException('올바르지 못한 접근', HttpStatus.FORBIDDEN)
+    }
     return await this.nicknameRepository.getNicknameByUserId(userId)
   }
 }
