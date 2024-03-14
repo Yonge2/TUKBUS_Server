@@ -3,6 +3,7 @@ import { ChatRoom } from './entities/room.entity'
 import { DataSource } from 'typeorm'
 import { ChatLog } from './entities/chat-log.entity'
 import { ChatNickname } from 'src/nicknames/entities/nickname.entity'
+import { ChatMessage } from 'src/messages/entities/message.entity'
 
 @Injectable()
 export class RoomsRepository {
@@ -27,7 +28,7 @@ export class RoomsRepository {
           ...new ChatNickname(),
         },
         room: {
-          roomId: insertRoomResult.roomId,
+          id: insertRoomResult.roomId,
           ...new ChatRoom(),
         },
       }
@@ -75,9 +76,14 @@ export class RoomsRepository {
       .getOne()
   }
 
-  async getFirstMsgIdx() {
-    //socket.io-server 이후 수정
-    return 1
+  async getLastMsgIdx(roomId: string) {
+    return await this.dataSource.manager
+      .createQueryBuilder(ChatMessage, 'message')
+      .select('message.msg_idx', 'lastMsgIdx')
+      .where('message.room_id = :roomId', { roomId })
+      .orderBy('message.msg_idx', 'DESC')
+      .limit(1)
+      .getRawOne()
   }
 
   async insertInChatLog(chatLog: ChatLog) {

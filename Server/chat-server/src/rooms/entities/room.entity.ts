@@ -10,11 +10,12 @@ import {
 } from 'typeorm'
 import { ChatLog } from './chat-log.entity'
 import { Report } from 'src/chattings/entities/report.entity'
+import { ChatMessage } from 'src/messages/entities/message.entity'
 
 @Entity({ name: 'chat_room' })
 export class ChatRoom {
   @PrimaryGeneratedColumn('uuid')
-  roomId: string
+  id: string
 
   @Column({ nullable: false })
   departureTime: string
@@ -42,4 +43,7 @@ export class ChatRoom {
 
   @OneToMany(() => Report, (reports) => reports.room)
   reports: Report[]
+
+  @OneToMany(() => ChatMessage, (messages) => messages.room)
+  messages: ChatMessage[]
 }

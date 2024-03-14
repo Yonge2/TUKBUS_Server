@@ -1,5 +1,6 @@
 import { Block } from 'src/chattings/entities/block.entity'
 import { Report } from 'src/chattings/entities/report.entity'
+import { ChatMessage } from 'src/messages/entities/message.entity'
 import { ChatLog } from 'src/rooms/entities/chat-log.entity'
 import { ChatRoom } from 'src/rooms/entities/room.entity'
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm'
@@ -26,4 +27,7 @@ export class ChatNickname {
 
   @OneToMany(() => Block, (blocks) => blocks.nickname)
   blocks: Block[]
+
+  @OneToMany(() => ChatMessage, (messages) => messages.nickname)
+  messages: ChatMessage[]
 }
