@@ -9,6 +9,9 @@ import { RoomsController } from './rooms/rooms.controller'
 import { HttpModule } from '@nestjs/axios'
 import { NicknamesModule } from './nicknames/nicknames.module'
 import { ChattingsController } from './chattings/chattings.controller'
+import { MessagesModule } from './messages/messages.module'
+import { RedisModule } from './redis/redis.module'
+import { MessagesController } from './messages/messages.controller'
 
 @Module({
   imports: [
@@ -24,10 +27,12 @@ import { ChattingsController } from './chattings/chattings.controller'
     }),
     HttpModule,
     NicknamesModule,
+    MessagesModule,
+    RedisModule,
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware).forRoutes(RoomsController, ChattingsController)
+    consumer.apply(AuthMiddleware).forRoutes(RoomsController, ChattingsController, MessagesController)
   }
 }

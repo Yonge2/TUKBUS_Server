@@ -6,8 +6,6 @@ dotenv.config({
 })
 
 async function bootstrap() {
-  console.log(process.env.MODE)
-  console.log(process.env.CHAT_SERVER_PORT)
   const app = await NestFactory.create(AppModule)
   await app.listen(process.env.CHAT_SERVER_PORT)
 }
