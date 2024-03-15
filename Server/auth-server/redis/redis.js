@@ -1,5 +1,7 @@
 const { createClient } = require('redis')
-require('dotenv').config()
+require('dotenv').config({
+  path: process.env.MODE === 'production' ? '.production.env' : '.development.env',
+})
 
 const redisClient = createClient({
   url: `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}/0`,

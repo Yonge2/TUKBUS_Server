@@ -3,6 +3,7 @@ require('dotenv').config()
 
 const DAY_SECOND = 60 * 60 * 24
 const MINUTE_10 = 60 * 10
+const REFRESH_EX = DAY_SECOND * Number(process.env.RT_EXPIRED_NUMBER)
 
 const authNumKey = (email) => `AUTH_NUMBER:${email}`
 const isJoinKey = (email) => `AUTH_JOIN:${email}`
@@ -22,7 +23,7 @@ const getAuthJoinInRedis = async (email) => {
 
 const setAuthNumInRedis = async (email, authNum) => {
   const key = authNumKey(email)
-  const result = await redisClient.set(key, authNum, { EX: tenMinute })
+  const result = await redisClient.set(key, authNum, { EX: MINUTE_10 })
   if (result != 'OK') return false
   return true
 }
@@ -32,15 +33,15 @@ const getAuthNumInRedis = async (email) => {
   return await redisClient.get(key)
 }
 
-const setRefreshInReids = async (email, token) => {
-  const key = tokenKey(email)
-  const result = await redisClient.set(key, token, { EX: DAY_SECOND * Number(process.env.RT_EXPIRED_NUMBER) })
+const setRefreshInReids = async (userId, token) => {
+  const key = tokenKey(userId)
+  const result = await redisClient.set(key, token, { EX: REFRESH_EX })
   if (result != 'OK') return false
   return true
 }
 
-const getRefreshInRedis = async (email) => {
-  const key = tokenKey(email)
+const getRefreshInRedis = async (userId) => {
+  const key = tokenKey(userId)
   return await redisClient.get(key)
 }
 module.exports = {

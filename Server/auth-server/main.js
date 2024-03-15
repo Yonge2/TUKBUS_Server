@@ -1,6 +1,8 @@
 const express = require('express')
 const authRouter = require('./auth/auth.router')
-require('dotenv').config()
+require('dotenv').config({
+  path: process.env.MODE === 'production' ? '.production.env' : '.development.env',
+})
 
 const app = express()
 
