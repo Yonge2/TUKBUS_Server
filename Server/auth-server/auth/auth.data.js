@@ -49,7 +49,7 @@ const setUserLog = async (userId) => {
   const [isUpdate] = await connection.query(selectQuery)
 
   const query = isUpdate[0].isUpdate
-    ? `UPDATE ${USER_LOG_TABLE} SET is_login=1 WHERE user_id='${userID}';`
+    ? `UPDATE ${USER_LOG_TABLE} SET is_login=1 WHERE user_id='${userId}';`
     : `INSERT INTO ${USER_LOG_TABLE} SET user_id='${userId}';`
 
   const [result] = await connection.query(query)
