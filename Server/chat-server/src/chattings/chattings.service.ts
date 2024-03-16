@@ -14,7 +14,7 @@ export class ChattingsService {
   async addBlockUser(user: ReqUser, blockDto: BlockDto) {
     const blockObject = {
       nickname: {
-        nickname: user.id,
+        nickname: user.nickname,
         ...new ChatNickname(),
       },
       ...blockDto,
@@ -31,7 +31,7 @@ export class ChattingsService {
   }
 
   async getBlockUsers(user: ReqUser) {
-    const blockUsers = await this.chattingsRepository.getBlockUsers(user.id)
+    const blockUsers = await this.chattingsRepository.getBlockUsers(user.nickname)
     if (!blockUsers.length) {
       return {
         success: true,
@@ -45,7 +45,7 @@ export class ChattingsService {
   }
 
   async deleteBlockUser(user: ReqUser, blockedIdx: number) {
-    const isDeletedBlockUser = await this.chattingsRepository.deleteBlockUser(user.id, blockedIdx)
+    const isDeletedBlockUser = await this.chattingsRepository.deleteBlockUser(user.nickname, blockedIdx)
     if (!isDeletedBlockUser) {
       throw new HttpException('유저 차단 삭제 실패', HttpStatus.INTERNAL_SERVER_ERROR)
     }
@@ -55,7 +55,7 @@ export class ChattingsService {
   async createReport(user: ReqUser, reportDto: ReportDto) {
     const reportObjet = {
       nickname: {
-        nickname: user.id,
+        nickname: user.nickname,
         ...new ChatNickname(),
       },
       ...reportDto,

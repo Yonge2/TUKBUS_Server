@@ -13,7 +13,6 @@ export const typeOrmConfig = async (configService: ConfigService): Promise<TypeO
     entities: [__dirname + '/../**/*.entity.{js,ts}'],
     autoLoadEntities: true,
     synchronize: Boolean(configService.get<Boolean>('DB_SYNC')),
-    dropSchema: Boolean(configService.get<Boolean>('DB_DROP_SCHEMA')),
     logging: ['query', 'error'],
     namingStrategy: new SnakeNamingStrategy(),
   }

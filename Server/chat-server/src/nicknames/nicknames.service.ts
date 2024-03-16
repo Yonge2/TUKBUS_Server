@@ -14,21 +14,21 @@ export class NicknamesService {
   async makeNickname(bringUserDto: BringUserDto) {
     //유저 아이디 받기
     const nicknameObject = {
-      ...bringUserDto,
+      userId: bringUserDto.userId,
+      univName: bringUserDto.univName,
+      nickname: '',
       ...new ChatNickname(),
     }
     //랜덤 닉네임 생성하기
     const randomPickArray = this.nicknameUtil.randomPicker()
-    let nickname = ''
+    const makeNicknameJob = randomPickArray.map(async (elementIdx, wordLocation) => {
+      wordLocation += 1
+      elementIdx += (wordLocation - 1) * 10
+      const nicknameElement = await this.nicknameRepository.getNicknameElement(elementIdx, wordLocation)
+      nicknameObject.nickname += nicknameElement.element
+    })
+    await Promise.all(makeNicknameJob)
 
-    for (const arrayIdx of randomPickArray) {
-      const wordLocation = arrayIdx + 1
-      const nicknameElement = await this.nicknameRepository.getNicknameElement(randomPickArray[arrayIdx], wordLocation)
-
-      nickname += nicknameElement.element
-    }
-    //생성한 닉네임 삽입
-    nicknameObject.nickname = nickname
     const isInsertSuccess = await this.nicknameRepository.insertNickname(nicknameObject)
     if (!isInsertSuccess) {
       throw new HttpException('삽입 실패, 재시도 요망', HttpStatus.CONFLICT)

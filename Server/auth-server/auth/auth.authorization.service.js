@@ -1,6 +1,12 @@
 const { jwt } = require('../util/util.mod')
 const { getUserInfo } = require('./auth.data')
 const { getRefreshInRedis } = require('../redis/redis-util')
+const dotenv = require('dotenv')
+dotenv.config({
+  path: process.env.MODE === 'production' ? '.production.env' : '.development.env',
+})
+
+const NICKNAME_SERVER = process.env.NICKNAME_SERVER_URL
 
 const newAccessTokenService = async (req, res) => {
   const reqAccessToken = req.headers.authorization
@@ -22,8 +28,16 @@ const newAccessTokenService = async (req, res) => {
   }
   //해당 user정보로 재발급
   const [userInfo] = await getUserInfo(result.email)
-  const { password, ...user } = userInfo
-  const newAccessToken = jwt.sign(user)
+  const nickname = await axios.get(NICKNAME_SERVER, {
+    headers: {
+      userId: user.userId,
+    },
+  })
+  const payLoad = {
+    ...userInfo,
+    ...nickname,
+  }
+  const newAccessToken = jwt.sign(payLoad)
 
   return res.status(200).json({ newAccessToken })
 }

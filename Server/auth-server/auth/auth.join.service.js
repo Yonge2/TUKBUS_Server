@@ -13,17 +13,14 @@ const checkEmailService = async (req, res) => {
   if (!email) {
     return res.status(400).json({ message: '올바른 이메일 주소를 넣어주세요.' })
   }
-  const isExist = await checkEmail(email)
-  return res.status(200).json({ isExist: isExist[0].isExist })
+  const [isJoinable] = await checkEmail(email)
+  return res.status(200).json(isJoinable)
 }
 
 const sendMailService = async (req, res) => {
   const userEmail = req.body.email
-  console.log(userEmail)
-
   //인증번호 생성
   let authNum = Math.floor(Math.random() * 10000).toString()
-  console.log(authNum)
   const numLen = authNum.length
   authNum = numLen === 4 ? authNum : numLen === 3 ? '0' + authNum : numLen === 2 ? '00' + authNum : '000' + authNum
 
@@ -68,12 +65,16 @@ const joinService = async (req, res) => {
   try {
     const password = await bcrypt.hash(plainPassword, await bcrypt.genSalt())
     const joinResult = await joinUser({ email, password, univ_name: univName })
+    console.log(joinResult)
     if (!joinResult.affectedRows) {
       return res.status(400).json({ success: false, message: '잘못된 요청, 다시 시도해주세요.' })
     }
-
+    //닉네임 생성
     const [userInfo] = await getUserInfo(email)
-    await axios.post(NICKNAME_SERVER, { userInfo })
+    await axios.post(NICKNAME_SERVER, {
+      userId: userInfo.userId,
+      univName: userInfo.univName,
+    })
 
     return res.status(201).json({ success: true, message: `${email}님, 성공적으로 회원가입을 완료했습니다.` })
   } catch (err) {

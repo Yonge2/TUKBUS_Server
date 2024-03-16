@@ -11,8 +11,8 @@ export class NicknameRepository {
     return await this.dataSource.manager.findOne(NicknameElement, {
       select: ['element'],
       where: {
-        elementIdx,
-        wordLocation,
+        elementIdx: elementIdx,
+        wordLocation: wordLocation,
       },
     })
   }

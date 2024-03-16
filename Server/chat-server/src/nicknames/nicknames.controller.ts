@@ -19,8 +19,7 @@ export class NicknamesController {
   }
 
   @Get()
-  getNickname(@RealIP() ip: string, @Headers('userId') userId: string, @Req() req: Request) {
-    console.log(req.headers)
+  getNickname(@RealIP() ip: string, @Headers('userId') userId: string) {
     return this.nicknamesService.getNickname(ip, userId)
   }
 }

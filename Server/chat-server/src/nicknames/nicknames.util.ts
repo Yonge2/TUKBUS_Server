@@ -11,7 +11,8 @@ export class NicknamesUtil {
     let randomNumberArray: number[] = []
     for (let i = 0; i < this.NEENED_NUMBER; i++) {
       const baseNumber = Math.floor(Math.random() * Math.pow(10, this.DIGIT))
-      randomNumberArray.push(baseNumber % this.LIMIT_NUMBER)
+      const randomNumber = baseNumber % this.LIMIT_NUMBER === 0 ? 1 : baseNumber % this.LIMIT_NUMBER
+      randomNumberArray.push(randomNumber)
     }
 
     return randomNumberArray
