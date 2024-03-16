@@ -7,7 +7,7 @@ export class Block {
   blockIdx: number
 
   @Column({ nullable: false })
-  blcokedUser: number
+  blockedUser: string
 
   @CreateDateColumn()
   createdAt: Date

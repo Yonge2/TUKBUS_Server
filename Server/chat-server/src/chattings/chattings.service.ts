@@ -17,7 +17,7 @@ export class ChattingsService {
         nickname: user.nickname,
         ...new ChatNickname(),
       },
-      ...blockDto,
+      blockedUser: blockDto.blockedUser,
       ...new Block(),
     }
     const insertBlockUserResult = await this.chattingsRepository.insertBlockUser(blockObject)
@@ -26,7 +26,7 @@ export class ChattingsService {
     }
     return {
       success: true,
-      message: `${blockDto.blcokedUser}님 차단 완료`,
+      message: `${blockDto.blockedUser}님 차단 완료`,
     }
   }
 
@@ -35,17 +35,15 @@ export class ChattingsService {
     if (!blockUsers.length) {
       return {
         success: true,
-        data: [],
+        message: '차단한 유저가 없습니다.',
       }
     }
-    return {
-      success: true,
-      data: blockUsers,
-    }
+    return blockUsers
   }
 
-  async deleteBlockUser(user: ReqUser, blockedIdx: number) {
-    const isDeletedBlockUser = await this.chattingsRepository.deleteBlockUser(user.nickname, blockedIdx)
+  async deleteBlockUser(user: ReqUser, blockIdx: number) {
+    console.log(blockIdx)
+    const isDeletedBlockUser = await this.chattingsRepository.deleteBlockUser(user.nickname, blockIdx)
     if (!isDeletedBlockUser) {
       throw new HttpException('유저 차단 삭제 실패', HttpStatus.INTERNAL_SERVER_ERROR)
     }

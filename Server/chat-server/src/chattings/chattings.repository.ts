@@ -18,20 +18,33 @@ export class ChattingsRepository {
   }
 
   async getBlockUsers(nickname: string) {
-    return await this.dataSource.manager.find(Block, {
-      select: ['blockIdx', 'blcokedUser'],
-      where: { nickname: { nickname } },
-    })
+    return await this.dataSource.manager
+      .createQueryBuilder(Block, 'block')
+      .select([
+        'block.block_idx AS blockIdx',
+        'block.blocked_user AS blockedUser',
+        `DATE_FORMAT(block.created_at, '%m-%d') AS blockedDate`,
+      ])
+      .where('block.nickname_nickname = :nickname', { nickname })
+      .getRawMany()
   }
 
-  async deleteBlockUser(nickname: string, blockedIdx: number) {
+  async deleteBlockUser(nickname: string, blockIdx: number) {
     try {
-      const updateBlockUserJob = await this.dataSource.manager.delete(Block, { nickname: { nickname }, blockedIdx })
-      console.log(updateBlockUserJob)
+      const deleteBlockUserJob = await this.dataSource.manager
+        .createQueryBuilder()
+        .delete()
+        .from(Block)
+        .where('nickname_nickname = :nickname', { nickname })
+        .andWhere('block_idx = :blockIdx', { blockIdx })
+        .execute()
 
+      if (!deleteBlockUserJob.affected) {
+        throw new Error('삭제된 데이터 없음')
+      }
       return true
     } catch (err) {
-      console.log('update out ChatLog err : ', err)
+      console.log('delete block user err : ', err)
       return false
     }
   }
@@ -41,7 +54,7 @@ export class ChattingsRepository {
       const insertReportJob = await this.dataSource.manager.insert(Report, report)
       return true
     } catch (err) {
-      console.log('insert block err : ', err)
+      console.log('insert report err : ', err)
       return false
     }
   }
