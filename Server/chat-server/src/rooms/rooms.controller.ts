@@ -1,10 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, HttpCode } from '@nestjs/common'
 import { RoomsService } from './rooms.service'
 import { CreateRoomDto } from './dto/create-room.dto'
 import { GetUser, ReqUser } from 'src/Authorization/Authorization.decorator'
 import { EnterRoomDto } from './dto/enter-room.dto'
 
-@Controller('api/chattings/rooms')
+@Controller('api/chat/rooms')
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
@@ -19,13 +19,14 @@ export class RoomsController {
     return this.roomsService.getChattingRooms(user)
   }
   //채팅방 입장
-  @Post()
+  @Post('/in')
   inChatRoom(@GetUser() user: ReqUser, @Body() enterRoomDto: EnterRoomDto) {
     return this.roomsService.enterChatRoom(user, enterRoomDto)
   }
   //채팅방 퇴장
-  @Patch()
-  outChatRoom(@GetUser() user: ReqUser, @Param('roomid') roomId: string) {
-    return this.roomsService.outChatRoom(user, roomId)
+  @HttpCode(204)
+  @Patch('/out')
+  outChatRoom(@GetUser() user: ReqUser, @Body() enterRoomDto: EnterRoomDto) {
+    return this.roomsService.outChatRoom(user, enterRoomDto)
   }
 }

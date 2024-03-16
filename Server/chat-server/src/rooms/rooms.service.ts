@@ -20,7 +20,7 @@ export class RoomsService {
 
   async createChatRoom(user: ReqUser, createRoomDto: CreateRoomDto) {
     const newRoomObject: ChatRoom = {
-      nickname: { nickname: user.nickname },
+      nickname: { nickname: user.nickname, ...new ChatNickname() },
       ...createRoomDto,
       ...new ChatRoom(),
     }
@@ -29,6 +29,8 @@ export class RoomsService {
     if (!createChatRoomResult) {
       throw new HttpException('삽입 트랜잭션 실패, 재시도 요망.', HttpStatus.INTERNAL_SERVER_ERROR)
     }
+    const roomMemberKey = this.ROOM_MEMBER_IN_REDIS(createChatRoomResult)
+    await this.redis.sAdd(roomMemberKey, user.nickname)
 
     return {
       success: true,
@@ -40,11 +42,10 @@ export class RoomsService {
     //로그확인(채팅 참여중인가)
     try {
       const isInRoom = await this.roomsRepository.getRoomIdInChatRoom(user.nickname)
-
       //채팅중(참여중인 방 제공)
       if (isInRoom) {
-        const roomId = isInRoom.room.id
-        return await this.roomsRepository.getChatRoomList(user.univName, roomId)
+        const myRoomId = isInRoom.roomId
+        return await this.roomsRepository.getChatRoomList(user.univName, myRoomId)
       }
 
       //채팅중 아님(리스트 제공)
@@ -69,23 +70,26 @@ export class RoomsService {
         ...new ChatNickname(),
       },
       room: {
-        roomId,
+        id: roomId,
         ...new ChatRoom(),
       },
-      firstMsgIdx: lastMsgIdx.lastMsgIdx,
+      firstMsgIdx: lastMsgIdx ? lastMsgIdx.lastMsgIdx : 0,
       ...new ChatLog(),
     }
     const isEnterRoom = await this.roomsRepository.insertInChatLog(enterChatRoomInfo)
     if (!isEnterRoom) {
       throw new HttpException('채팅방에 입장하지 못함', HttpStatus.INTERNAL_SERVER_ERROR)
     }
+    const roomMemberKey = this.ROOM_MEMBER_IN_REDIS(roomId)
+    await this.redis.sAdd(roomMemberKey, user.nickname)
     return {
       success: true,
       message: `${user.nickname}님 ${enterRoomDto.roomId} 채팅방 입장`,
     }
   }
 
-  async outChatRoom(user: ReqUser, roomId: string) {
+  async outChatRoom(user: ReqUser, enterRoomDto: EnterRoomDto) {
+    const roomId = enterRoomDto.roomId
     const delMemberKey = this.ROOM_MEMBER_IN_REDIS(roomId)
     const isOutRedis = await this.redis.sRem(delMemberKey, user.nickname)
 

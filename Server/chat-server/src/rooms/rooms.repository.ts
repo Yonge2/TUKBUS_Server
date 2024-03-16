@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm'
 import { ChatLog } from './entities/chat-log.entity'
 import { ChatNickname } from 'src/nicknames/entities/nickname.entity'
 import { ChatMessage } from 'src/messages/entities/message.entity'
+import { query } from 'express'
 
 @Injectable()
 export class RoomsRepository {
@@ -17,26 +18,21 @@ export class RoomsRepository {
 
     await queryRunner.startTransaction()
     try {
-      const insertRoomJob = await queryRunner.manager.insert(ChatRoom, chatRoom)
-      const insertRoomResult = insertRoomJob.generatedMaps[0]
-
+      const insertRoomJob = await queryRunner.manager.save(ChatRoom, chatRoom)
+      console.log('insert room : ', insertRoomJob)
+      const roomId = insertRoomJob.id
       const newChatLogObject: ChatLog = {
         firstMsgIdx: this.INIT_CHAT_INDEX,
         ...new ChatLog(),
-        nickname: {
-          nickname: insertRoomResult.nickname,
-          ...new ChatNickname(),
-        },
+        nickname: insertRoomJob.nickname,
         room: {
-          id: insertRoomResult.roomId,
+          id: roomId,
           ...new ChatRoom(),
         },
       }
-
       const insertChatLogJob = await queryRunner.manager.insert(ChatLog, newChatLogObject)
       await queryRunner.commitTransaction()
-
-      return true
+      return roomId
     } catch (err) {
       await queryRunner.rollbackTransaction()
       console.log('createRoomTransaction rollback : ', err)
@@ -51,15 +47,23 @@ export class RoomsRepository {
     try {
       const baseQuery = this.dataSource.manager
         .createQueryBuilder(ChatRoom, 'room')
-        .select()
-        .leftJoinAndSelect('room.nickname', 'host', 'host.univ_name = :univName', { univName })
+        .select([
+          'room.id AS roomId',
+          'room.departureTime AS departureTime',
+          'room.departurePoint AS departurePoint',
+          'room.arrivalPoint AS arrivalPoint',
+          `DATE_FORMAT(room.created_at, '%m-%d %H:%i') AS createTime`,
+        ])
+        .innerJoin('room.nickname', 'chat_nickname', 'chat_nickname.univ_name = :univName', { univName })
         .where('room.is_live = :isLive', { isLive: true })
 
       if (roomId) {
-        baseQuery.andWhere('room.room_id = :roomId', { roomId })
+        baseQuery.andWhere('room.id = :roomId', { roomId })
+        const myRoom = await baseQuery.getRawOne()
+        return myRoom
       }
 
-      const roomList = await baseQuery.getMany()
+      const roomList = await baseQuery.getRawMany()
       return roomList
     } catch (err) {
       console.log('get ChatRoomList err : ', err)
@@ -71,9 +75,9 @@ export class RoomsRepository {
     return await this.dataSource.manager
       .createQueryBuilder(ChatLog, 'chatLog')
       .select('chatLog.room_id', 'roomId')
-      .where('chatLog.nickname = :nickname', { nickname })
+      .where('chatLog.nickname_nickname = :nickname', { nickname })
       .andWhere('chatLog.is_in = :isIn', { isIn: true })
-      .getOne()
+      .getRawOne()
   }
 
   async getLastMsgIdx(roomId: string) {
@@ -101,10 +105,10 @@ export class RoomsRepository {
       const updateChatLog = await this.dataSource
         .createQueryBuilder()
         .update(ChatLog)
-        .set({ is_in: false })
-        .where('nickname = :nickname', { nickname: nickname })
+        .set({ isIn: false })
+        .where('nickname_nickname = :nickname', { nickname: nickname })
         .andWhere('room_id = :roomId', { roomId: roomId })
-        .andWhere('is_in = :isIn', { inIn: true })
+        .andWhere('is_in = :isIn', { isIn: true })
         .execute()
 
       if (!updateChatLog.affected) {
