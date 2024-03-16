@@ -21,17 +21,17 @@ export class MessagesRepository {
   async getMessages(roomId: string, nickname: string, page: number) {
     return await this.dataSource.manager.query(
       `
-        SELECT msg_idx AS msgIdx, message, DATE_FORMAT(time, '%H:%i') AS time
+        SELECT msg_idx AS msgIdx, nickname_nickname AS sender, message, DATE_FORMAT(time, '%H:%i') AS time
         FROM chat_message
         WHERE room_id = '${roomId}' 
         AND msg_idx >= (
             SELECT first_msg_idx
             FROM chat_log
-            WHERE room_id='${roomId}' AND nickname='${nickname}' AND is_in=true
+            WHERE room_id='${roomId}' AND nickname_nickname='${nickname}' AND is_in=true
         )
         ORDER BY msg_idx desc
-        OFFSET ${page * this.MESSAGE_LIMIT}
-        LIMIT ${this.MESSAGE_LIMIT};
+        LIMIT ${this.MESSAGE_LIMIT}
+        OFFSET ${page * this.MESSAGE_LIMIT};
         `,
     )
   }

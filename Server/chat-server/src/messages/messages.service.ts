@@ -29,7 +29,7 @@ export class MessagesService {
       receiver: receiver,
       message: saveMessageDto.message,
       room: {
-        roomId: roomId,
+        id: roomId,
         ...new ChatRoom(),
       },
       ...new ChatMessage(),
