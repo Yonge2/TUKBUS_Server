@@ -1,11 +1,13 @@
 const mysql = require('mysql2/promise')
-require('dotenv').config()
+require('dotenv').config({
+  path: process.env.MODE === 'production' ? '.production.env' : '.development.env',
+})
 
 const connection = mysql.createPool({
-  host: process.env.RDS_HOST,
-  user: process.env.RDS_USER,
-  database: process.env.RDS_NAME,
-  password: process.env.RDS_PASSWORD,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
   port: 3306,
 })
 

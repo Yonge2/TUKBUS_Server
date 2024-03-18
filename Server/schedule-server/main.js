@@ -2,7 +2,9 @@ const express = require('express')
 const scheduleApi = require('./schedule/schedule.router')
 const { holidaySchedulerJob, subwaySchedulerJob } = require('./schedule/schedule.batch/schedule.batch.task')
 const workObject = require('./schedule/schedule.batch/schedule.batch')
-require('dotenv').config()
+require('dotenv').config({
+  path: process.env.MODE === 'production' ? '.production.env' : '.development.env',
+})
 
 const app = express()
 

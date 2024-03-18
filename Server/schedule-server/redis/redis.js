@@ -1,5 +1,7 @@
 const { createClient } = require('redis')
-require('dotenv').config()
+require('dotenv').config({
+  path: process.env.MODE === 'production' ? '.production.env' : '.development.env',
+})
 
 //cloud redis connection (Redislabs)
 const redisClient = createClient({
