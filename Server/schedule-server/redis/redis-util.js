@@ -1,6 +1,7 @@
 const { redisClient } = require('./redis')
 
 const scheduleKey = (univeName, destination) => `SCHEDULE:${univeName}_${destination}`
+const CACHE_EX = 60 * 60
 
 const getScheduleInRedis = async (univeName, destination) => {
   const key = scheduleKey(univeName, destination)
@@ -20,7 +21,7 @@ const getScheduleInRedis = async (univeName, destination) => {
 const setScheduleInRedis = async (univeName, destination, schedule) => {
   const key = scheduleKey(univeName, destination)
   const value = JSON.stringify(schedule)
-  const result = await redisClient.set(key, value)
+  const result = await redisClient.set(key, value, { EX: CACHE_EX })
   return result
 }
 
