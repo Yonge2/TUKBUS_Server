@@ -1,5 +1,7 @@
 const axios = require('axios')
-require('dotenv').config()
+require('dotenv').config({
+  path: process.env.MODE === 'production' ? '.production.env' : '.development.env',
+})
 
 const JEONGWANG_STATION = encodeURI('정왕')
 const PRIORITY_1 = 1

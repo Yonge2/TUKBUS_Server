@@ -1,6 +1,8 @@
 const axios = require('axios')
 const dayjs = require('dayjs')
-require('dotenv').config()
+require('dotenv').config({
+  path: process.env.MODE === 'production' ? '.production.env' : '.development.env',
+})
 const { kakaoApi } = require('../../../private/privatekey_Tuk')
 
 /**
@@ -32,8 +34,8 @@ const addDuration = async (schedule) => {
  * @returns {number}duration(second)
  */
 const getDuration = async (direction, hour, min) => {
-  //따로 db에 두고 관리해야할 것 같다.
-  const url = kakaoApi.setFutureRouteSearchParams(direction, hour, min)
+  const currentDate = new dayjs().format('YYYYMMDD') + hour + min
+  const url = kakaoApi.setFutureRouteSearchParams(direction, currentDate)
   try {
     const kakaoNaviData = await axios(url, { headers: { Authorization: process.env.KAKAO_AUTH } })
     const duration = kakaoNaviData.data.routes[0].summary.duration
