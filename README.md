@@ -104,5 +104,5 @@
 
 ## API Docs
 ### Post Man 으로 API 테스트와 함께 API 문서화를 진행.
-
-[통학러 API Docs](https://documenter.getpostman.com/view/21311885/2s93zGyxS1)
+//api 문서 수정됨(3.18)
+[통학러 API Docs](https://documenter.getpostman.com/view/21311885/2sA2xnzAmY)
