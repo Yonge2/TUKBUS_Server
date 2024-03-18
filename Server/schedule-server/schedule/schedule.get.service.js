@@ -59,13 +59,12 @@ const getAllScheduleService = async (req, res) => {
     return res.status(400).json({ message: '잘못된 쿼리 요청' })
   }
   //all Schedule
-  if (!destination) {
-    const schedule = await getAllSchedule(univName)
-    if (!schedule.length) {
-      return res.status(404).json({ message: 'Not Found Schedule' })
-    }
-    return res.status(200).json({ schedule })
+
+  const schedule = await getAllSchedule(univName)
+  if (!schedule.length) {
+    return res.status(404).json({ message: 'Not Found Schedule' })
   }
+  return res.status(200).json({ schedule })
 }
 
 module.exports = { getScheduleService, getAllScheduleService }
