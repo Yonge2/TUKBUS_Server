@@ -1,5 +1,10 @@
 const mysql = require('../database/connection')
 const uuid = require('uuid')
+const axios = require('axios')
+const dotenv = require('dotenv')
+dotenv.config()
+
+const NICKNAME_SERVER = process.env.NICKNAME_SERVER_URL
 
 const USER_TABLE = 'user'
 const USER_LOG_TABLE = 'user_log'
@@ -17,20 +22,26 @@ const checkEmail = async (email) => {
 const joinUser = async (UserObject) => {
   UserObject.user_id = uuid.v4()
   const connection = await mysql.getConnection()
-  const query = `INSERT INTO ${USER_TABLE} SET ?`
-  const [result] = await connection.query(query, UserObject)
-  connection.release()
-  return result
-}
+  await connection.beginTransaction()
+  try {
+    const insertQuery = `INSERT INTO ${USER_TABLE} SET ?`
+    await connection.query(insertQuery, UserObject)
 
-const getUserInfo = async (email) => {
-  const connection = await mysql.getConnection()
-  const query = `
-  SELECT user_id AS userId, univ_name AS univName FROM ${USER_TABLE} WHERE email = '${email}'
-  `
-  const [result] = await connection.query(query)
-  connection.release()
-  return result
+    const getUserInfoQuery = `SELECT user_id AS userId, univ_name AS univName FROM ${USER_TABLE} WHERE email = '${UserObject.email}' LIMIT 1`
+    const [userInfo] = await connection.query(getUserInfoQuery)
+
+    await axios.post(NICKNAME_SERVER, {
+      userId: userInfo.userId,
+      univName: userInfo.univName,
+    })
+    await connection.commit()
+    return
+  } catch (err) {
+    await connection.rollback()
+    throw new Error('Join Transaction 오류 : ' + err)
+  } finally {
+    connection.release()
+  }
 }
 
 const getLoginInfo = async (email) => {
@@ -49,7 +60,7 @@ const setUserLog = async (userId) => {
   const [isUpdate] = await connection.query(selectQuery)
 
   const query = isUpdate[0].isUpdate
-    ? `UPDATE ${USER_LOG_TABLE} SET is_login=1 WHERE user_id='${userID}';`
+    ? `UPDATE ${USER_LOG_TABLE} SET is_login=1 WHERE user_id='${userId}';`
     : `INSERT INTO ${USER_LOG_TABLE} SET user_id='${userId}';`
 
   const [result] = await connection.query(query)
@@ -57,4 +68,4 @@ const setUserLog = async (userId) => {
   return result
 }
 
-module.exports = { checkEmail, joinUser, getUserInfo, getLoginInfo, setUserLog }
+module.exports = { checkEmail, joinUser, getLoginInfo, setUserLog }
