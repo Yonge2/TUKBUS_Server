@@ -116,52 +116,11 @@
   >*jest나 nodejs 내장 테스트 모듈 사용 예정
 - API 테스트
   - Postman을 이용한 API 테스트 + 문서화 동시 진행
+
 ### API 개발 문서
 
-[통학러 API Docs](https://documenter.getpostman.com/view/21311885/2sA2xnzAmY)
+[통학러 API Docs](https://documenter.getpostman.com/view/21311885/2sA2xnzAmY)  
 
-+ api 문서 사진 추가하기 +
+![api문서 예시 이미지](https://github.com/Yonge2/TUKBUS_Server/assets/99579139/662aff1d-1017-47e3-9ffa-9d1548d8acc3)
+
 ---
- - open API
-   - [서울시 공공데이터](https://data.seoul.go.kr/dataList/OA-12764/F/1/datasetView.do)
-     - 실시간 지하철 정보 사용
-     - 08시~23시 1분에 1회 업데이트 (setInterval method 사용)
-   - [카카오 디벨로퍼스](https://developers.kakao.com/docs/latest/ko/kakaonavi/common)
-     - 실시간 교통정보를 이용, 도착 예정 정보 사용
-     - 이벤트 기반 호출, 캐싱으로 호출량 일((4~8)*시간표 갯수)회 이하 호출
-   - [공휴일 정보](https://www.data.go.kr/data/15012690/openapi.do)
-     - 공휴일에는 통학정보 미제공 (택시합승 채팅만 이용 가능)
-     - 매 01시에 1회 작동(node-scheduler 사용)
-
-
-
-## 기능 주요 로직
-### REST API SERVER
-#### 스케줄
- - **sequence diagram**
-![schSeq](https://github.com/Yonge2/TUKBUS_Server/assets/99579139/4cfd37d9-3fdb-453a-ac97-88e9e450a936)
-
- - **flow chart**
- ![시간표flowchart](https://github.com/Yonge2/TUKBUS_Server/assets/99579139/7a92544d-ec88-478c-b3ef-c77db690c5d6)
-
-<br/>
-
-#### 채팅방 정보
- - **flow chart**
-![채팅정보flowchart](https://github.com/Yonge2/TUKBUS_Server/assets/99579139/31085212-2a3d-4ab7-b00d-b6edc0b75407)
-
-<br/>
-<br/>
-
-### Socket.io SERVER
- - **sequence diagram**
-![chatSeq](https://github.com/Yonge2/TUKBUS_Server/assets/99579139/caecad56-2086-4722-a622-829a2d110d97)
-
- - **flow chart**
-![채팅 flowchart](https://github.com/Yonge2/TUKBUS_Server/assets/99579139/dc511907-9ab5-4821-9991-a631fe622fd3)
-
-
-## API Docs
-### Post Man 으로 API 테스트와 함께 API 문서화를 진행.
-//api 문서 수정됨(3.18)
-[통학러 API Docs](https://documenter.getpostman.com/view/21311885/2sA2xnzAmY)
