@@ -19,7 +19,6 @@
 - Cache - Redis 6.2
 - Library
 
-  - bcrypt : 비밀번호 단방향 암호화
   - dayjs : 간편한 Date type 관리
   - axios : http 리소스 요청
   - node-schedule : batch 작업 관리
