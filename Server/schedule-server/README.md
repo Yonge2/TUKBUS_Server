@@ -8,8 +8,6 @@
 
 3.  문제 & 해결
 
----
-
 ## 1. 개발환경
 
 ### 1-1. 사용기술
@@ -38,8 +36,6 @@
 
 ![schedule-server module](https://github.com/Yonge2/TUKBUS_Server/assets/99579139/e5629311-d466-42e0-878e-e13029ce33c0)
 
----
-
 ## 2. 기능 주요 로직
 
 ### 2-1. 통학정보 생성 (Batch 작업)
@@ -55,8 +51,6 @@
 ### 2-3. Set-Schedule (POST 이벤트)
 
 ![set schedule-seq](https://github.com/Yonge2/TUKBUS_Server/assets/99579139/f8fa66df-b9f4-444b-afb0-090f687c10b6)
-
----
 
 ## 3. 문제 & 해결
 

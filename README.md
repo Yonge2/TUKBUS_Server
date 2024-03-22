@@ -14,7 +14,7 @@
  3. 프로젝트의 구조와 개발&배포 환경
 
  4. 테스트와 API 문서
----
+
 
 ## 1. 프로젝트 개요
 
@@ -26,7 +26,10 @@
 >
 >이는 너무 불편하다고 생각이 들었습니다. 그래서 조금 더 나은 방법을 찾는데 기여해보고자 시작하게 되었습니다.
 
----
+### MicroService
+- [Auth-Server 구현과정](https://github.com/Yonge2/TUKBUS_Server/blob/master/Server/auth-server/README.md)
+- [Schedule-Server 구현과정](https://github.com/Yonge2/TUKBUS_Server/blob/master/Server/schedule-server/README.md)
+- [Chat-Server 구현과정](https://github.com/Yonge2/TUKBUS_Server/blob/master/Server/chat-server/README.md)
 
 ## 2. 기능
 ### 비회원
@@ -52,7 +55,6 @@
   * 목적지, 출발지, 출발 시간으로 학교 별 채팅방 개설
   * 비매너 사용자 차단/신고 기능
 
----
 
 ## 3. 프로젝트의 구조와 개발&배포 환경
 
@@ -67,6 +69,7 @@
 > 각 micro service의 모듈 응집도는 높아지고, 결합도는 낮아지는 효과,  
 > 서비스의 유지보수성, 확장성이 높아지는 효과,  
 > 배포의 편리성, 효율성이 높아지는 효과를 경험 
+
 #### 프로젝트 전체 구조 참고 그림
 ![msa-new](https://github.com/Yonge2/TUKBUS_Server/assets/99579139/6f2b0a0d-1dbc-4e43-9416-afc499d11f92)
 
@@ -103,7 +106,7 @@
   - 도메인 연결 - AWS Route53
   - SSL 인증서 - let's encrypt
   - 프로세스 관리 - PM2
----
+
 
 ## 4. 테스트와 API 문서
 
@@ -122,5 +125,3 @@
 [통학러 API Docs](https://documenter.getpostman.com/view/21311885/2sA2xnzAmY)  
 
 ![api문서 예시 이미지](https://github.com/Yonge2/TUKBUS_Server/assets/99579139/662aff1d-1017-47e3-9ffa-9d1548d8acc3)
-
----
