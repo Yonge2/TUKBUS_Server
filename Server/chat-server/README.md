@@ -108,10 +108,13 @@ Math.random() 메서드를 이용한 각 요소 선택 후 조합
   - 채팅방 인원 구할 시, **Count() Order by roomId** 연산
 
   ```sql
-  SELECT CL.room_id AS roomId, count(user_id) as inUsers
-  FROM chat_log CL JOIN chat_room CR ON chat_log CL.room_id = CR.room_id
-  WHERE CR.is_live = true AND CL.is_in = true
-  ORDER BY CL.room_id;
+  SELECT C_L.room_id AS roomId, count(user_id) as inUsers
+  FROM chat_log C_L
+    JOIN chat_room C_R
+    ON chat_log C_L.room_id = C_R.room_id
+  WHERE C_R.is_live = true
+    AND C_L.is_in = true
+  ORDER BY C_L.room_id;
 
   --RESULT : [{roomId: 'room-A', inUsers: 2}, ...]
   ```
@@ -126,11 +129,12 @@ Math.random() 메서드를 이용한 각 요소 선택 후 조합
 
   ```javascript
   //roomId는 req로 받는다는 가정
-  const roomId = 'room-A'
-  const inUsers = await redis.sCard(roomId)
-  return {
-    roomId,
-    inUsers,
+  const getRoomMebers = async (roomId) => {
+    const inUsers = await redis.sCard(roomId)
+    return {
+      roomId,
+      inUsers,
+    }
   }
 
   //RESULT : {roomId: 'room-A', inUsers: 2}
