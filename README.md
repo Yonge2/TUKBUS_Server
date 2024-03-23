@@ -27,9 +27,9 @@
 >이는 너무 불편하다고 생각이 들었습니다. 그래서 조금 더 나은 방법을 찾는데 기여해보고자 시작하게 되었습니다.
 
 ### MicroService
-- [Auth-Server 구현과정](https://github.com/Yonge2/TUKBUS_Server/blob/master/Server/auth-server/README.md)
-- [Schedule-Server 구현과정](https://github.com/Yonge2/TUKBUS_Server/blob/master/Server/schedule-server/README.md)
-- [Chat-Server 구현과정](https://github.com/Yonge2/TUKBUS_Server/blob/master/Server/chat-server/README.md)
+- ### [Auth-Server 구현과정](https://github.com/Yonge2/TUKBUS_Server/blob/master/Server/auth-server/README.md)
+- ### [Schedule-Server 구현과정](https://github.com/Yonge2/TUKBUS_Server/blob/master/Server/schedule-server/README.md)
+- ### [Chat-Server 구현과정](https://github.com/Yonge2/TUKBUS_Server/blob/master/Server/chat-server/README.md)
 
 ## 2. 기능
 ### 비회원
@@ -122,6 +122,6 @@
 
 ### API 개발 문서
 
-[통학러 API Docs](https://documenter.getpostman.com/view/21311885/2sA2xnzAmY)  
+[배포된 통학러 API 개발 문서](https://documenter.getpostman.com/view/21311885/2sA2xnzAmY)  
 
 ![api문서 예시 이미지](https://github.com/Yonge2/TUKBUS_Server/assets/99579139/662aff1d-1017-47e3-9ffa-9d1548d8acc3)
