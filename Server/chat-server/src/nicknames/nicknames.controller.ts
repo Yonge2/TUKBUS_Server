@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Body, Headers, Req } from '@nestjs/common'
+import { Controller, Get, Post, Body, Headers } from '@nestjs/common'
 import { NicknamesService } from './nicknames.service'
 import { BringUserDto } from './dto/bring-user.dto'
-import { CreateNicknameDto } from './dto/create-nickname.dto'
 import { RealIP } from 'nestjs-real-ip'
 
 @Controller('nicknames')
