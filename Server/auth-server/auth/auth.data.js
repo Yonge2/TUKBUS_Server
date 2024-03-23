@@ -2,7 +2,9 @@ const mysql = require('../database/connection')
 const uuid = require('uuid')
 const axios = require('axios')
 const dotenv = require('dotenv')
-dotenv.config()
+dotenv.config({
+  path: process.env.MODE === 'production' ? '.production.env' : '.development.env',
+})
 
 const NICKNAME_SERVER = process.env.NICKNAME_SERVER_URL
 
@@ -27,7 +29,10 @@ const joinUser = async (UserObject) => {
     const insertQuery = `INSERT INTO ${USER_TABLE} SET ?`
     await connection.query(insertQuery, UserObject)
 
-    const getUserInfoQuery = `SELECT user_id AS userId, univ_name AS univName FROM ${USER_TABLE} WHERE email = '${UserObject.email}' LIMIT 1`
+    const getUserInfoQuery = `
+    SELECT user_id AS userId, univ_name AS univName
+    FROM ${USER_TABLE}
+    WHERE email = '${UserObject.email}'`
     const [userInfo] = await connection.query(getUserInfoQuery)
 
     await axios.post(NICKNAME_SERVER, {
@@ -54,6 +59,16 @@ const getLoginInfo = async (email) => {
   return result
 }
 
+const getUserUniv = async (email) => {
+  const connection = await mysql.getConnection()
+  const query = `
+  SELECT univ_name AS univName FROM ${USER_TABLE} WHERE email = '${email}'
+  `
+  const [result] = await connection.query(query)
+  connection.release()
+  return result
+}
+
 const setUserLog = async (userId) => {
   const connection = await mysql.getConnection()
   const selectQuery = `SELECT EXISTS(SELECT 1 FROM ${USER_LOG_TABLE} WHERE user_id='${userId}') AS isUpdate;`
@@ -68,4 +83,4 @@ const setUserLog = async (userId) => {
   return result
 }
 
-module.exports = { checkEmail, joinUser, getLoginInfo, setUserLog }
+module.exports = { checkEmail, joinUser, getLoginInfo, getUserUniv, setUserLog }

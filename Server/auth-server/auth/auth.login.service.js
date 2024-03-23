@@ -27,6 +27,7 @@ const loginService = async (req, res) => {
         userId: user.userId,
       },
     })
+    console.log(nicknameResponse.data)
 
     const accessToken = jwt.sign(nicknameResponse.data)
     const refreshToken = jwt.refresh(user.userId)
