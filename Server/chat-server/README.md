@@ -105,7 +105,7 @@ Math.random() 메서드를 이용한 각 요소 선택 후 조합
 
   - 채팅방 입장 시, 재입장인지 확인을 위한 조회 후 chat_log row 생성
 
-  - 채팅방 인원 구할 시, **Count() Order by roomId** 연산
+  - 채팅방 인원 구할 시, **Count() GROUP BY roomId** 연산
 
   ```sql
   SELECT C_L.room_id AS roomId, count(user_id) as inUsers
@@ -114,7 +114,7 @@ Math.random() 메서드를 이용한 각 요소 선택 후 조합
     ON chat_log C_L.room_id = C_R.room_id
   WHERE C_R.is_live = true
     AND C_L.is_in = true
-  ORDER BY C_L.room_id;
+  GROUP BY C_L.room_id;
 
   --RESULT : [{roomId: 'room-A', inUsers: 2}, ...]
   ```
